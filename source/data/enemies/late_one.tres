@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/behaviors/behavior_reversed.gd" id="1_bh3dc"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_intent.gd" id="2_aagt4"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_data.gd" id="3_0w036"]
+
+[sub_resource type="Resource" id="Resource_ty8ql"]
+script = ExtResource("2_aagt4")
+amount = 7
+
+[sub_resource type="Resource" id="Resource_yv42o"]
+script = ExtResource("2_aagt4")
+kind = 1
+amount = 4
+
+[resource]
+script = ExtResource("3_0w036")
+id = &"late_one"
+name_key = &"enemy.late_one.name"
+hp_min = 14
+hp_max = 18
+intents = Array[ExtResource("2_aagt4")]([SubResource("Resource_ty8ql"), SubResource("Resource_yv42o")])
+behavior_script = ExtResource("1_bh3dc")

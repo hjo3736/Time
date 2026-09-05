@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/events/event_choice.gd" id="1_ywpsm"]
+[ext_resource type="Script" path="res://source/scripts/events/event_outcome.gd" id="2_e45hu"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_restored.gd" id="3_cyyeg"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_health.gd" id="4_x2i4e"]
+[ext_resource type="Script" path="res://source/scripts/events/event_data.gd" id="5_ero2e"]
+
+[sub_resource type="Resource" id="Resource_6kv8j"]
+script = ExtResource("3_cyyeg")
+hours = -6
+
+[sub_resource type="Resource" id="Resource_t51q0"]
+script = ExtResource("4_x2i4e")
+amount = 14
+
+[sub_resource type="Resource" id="Resource_4bh16"]
+script = ExtResource("1_ywpsm")
+label_key = &"event.a1_the_debt.pay"
+outcomes = Array[ExtResource("2_e45hu")]([SubResource("Resource_6kv8j"), SubResource("Resource_t51q0")])
+needs_restored_hours = 6
+
+[sub_resource type="Resource" id="Resource_1c8re"]
+script = ExtResource("1_ywpsm")
+label_key = &"event.a1_the_debt.refuse"
+
+[resource]
+script = ExtResource("5_ero2e")
+id = &"a1_the_debt"
+weight = 8
+title_key = &"event.a1_the_debt.title"
+body_key = &"event.a1_the_debt.body"
+choices = Array[ExtResource("1_ywpsm")]([SubResource("Resource_4bh16"), SubResource("Resource_1c8re")])

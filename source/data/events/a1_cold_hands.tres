@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/events/event_choice.gd" id="1_ol0ve"]
+[ext_resource type="Script" path="res://source/scripts/events/event_outcome.gd" id="2_sfjjf"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_spend_time.gd" id="3_4c1db"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_health.gd" id="4_0avoe"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_memory.gd" id="5_pggsm"]
+[ext_resource type="Script" path="res://source/scripts/events/event_data.gd" id="6_ke022"]
+
+[sub_resource type="Resource" id="Resource_lij02"]
+script = ExtResource("3_4c1db")
+
+[sub_resource type="Resource" id="Resource_4t3nr"]
+script = ExtResource("4_0avoe")
+amount = 6
+
+[sub_resource type="Resource" id="Resource_ryapo"]
+script = ExtResource("5_pggsm")
+memory_id = &"cold-hands"
+
+[sub_resource type="Resource" id="Resource_0itru"]
+script = ExtResource("1_ol0ve")
+label_key = &"event.a1_cold_hands.warm"
+outcomes = Array[ExtResource("2_sfjjf")]([SubResource("Resource_lij02"), SubResource("Resource_4t3nr"), SubResource("Resource_ryapo")])
+
+[sub_resource type="Resource" id="Resource_52hdx"]
+script = ExtResource("1_ol0ve")
+label_key = &"event.a1_cold_hands.pass"
+
+[resource]
+script = ExtResource("6_ke022")
+id = &"a1_cold_hands"
+weight = 12
+title_key = &"event.a1_cold_hands.title"
+body_key = &"event.a1_cold_hands.body"
+choices = Array[ExtResource("1_ol0ve")]([SubResource("Resource_0itru"), SubResource("Resource_52hdx")])

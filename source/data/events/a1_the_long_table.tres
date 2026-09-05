@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/events/event_choice.gd" id="1_gbany"]
+[ext_resource type="Script" path="res://source/scripts/events/event_outcome.gd" id="2_nrc0d"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_spend_time.gd" id="3_jpbut"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_health.gd" id="4_a58xi"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_card.gd" id="5_o6vd0"]
+[ext_resource type="Script" path="res://source/scripts/events/event_data.gd" id="6_kypo8"]
+
+[sub_resource type="Resource" id="Resource_fnwja"]
+script = ExtResource("3_jpbut")
+
+[sub_resource type="Resource" id="Resource_gteh6"]
+script = ExtResource("4_a58xi")
+amount = 10
+
+[sub_resource type="Resource" id="Resource_nhh8f"]
+script = ExtResource("1_gbany")
+label_key = &"event.a1_the_long_table.eat"
+outcomes = Array[ExtResource("2_nrc0d")]([SubResource("Resource_fnwja"), SubResource("Resource_gteh6")])
+
+[sub_resource type="Resource" id="Resource_3r66c"]
+script = ExtResource("5_o6vd0")
+card_id = &"quick_cut"
+
+[sub_resource type="Resource" id="Resource_grp0m"]
+script = ExtResource("1_gbany")
+label_key = &"event.a1_the_long_table.take"
+outcomes = Array[ExtResource("2_nrc0d")]([SubResource("Resource_3r66c")])
+
+[sub_resource type="Resource" id="Resource_uffnd"]
+script = ExtResource("1_gbany")
+label_key = &"event.a1_the_long_table.leave"
+
+[resource]
+script = ExtResource("6_kypo8")
+id = &"a1_the_long_table"
+title_key = &"event.a1_the_long_table.title"
+body_key = &"event.a1_the_long_table.body"
+choices = Array[ExtResource("1_gbany")]([SubResource("Resource_nhh8f"), SubResource("Resource_grp0m"), SubResource("Resource_uffnd")])

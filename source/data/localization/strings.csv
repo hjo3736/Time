@@ -1,0 +1,310 @@
+keys,ko,en
+card.interrupt.name,차단,Interrupt
+card.brace.name,버티기,Brace
+card.disperse.name,분산,Disperse
+card.unravel.name,해체,Unravel
+card.scatter.name,산개,Scatter
+card.held_breath.name,숨 참기,Held Breath
+card.regather.name,추스르기,Regather
+card.delay.name,지연,Delay
+card.delay.text,시간이 흐른다.,Time passes.
+effect.damage,{amount}의 피해를 줍니다.,Deal {amount} damage.
+effect.damage_multi,{amount}의 피해를 {times}번 줍니다.,Deal {amount} damage {times} times.
+effect.block,{amount}의 방어도를 얻습니다.,Gain {amount} block.
+effect.status,{who}에게 {status} {stacks} 부여합니다.,Apply {stacks} {status} to {who}.
+effect.draw_one,카드 {count}장을 뽑습니다.,Draw {count} card.
+effect.draw_many,카드 {count}장을 뽑습니다.,Draw {count} cards.
+effect.refund_hours,이번 턴에 {hours}시간을 되찾습니다.,Regain {hours}h this turn.
+effect.refund_minutes,이번 턴에 {minutes}분을 되찾습니다.,Regain {minutes}m this turn.
+target.self,자신,yourself
+target.enemy,대상,the target
+target.single_enemy,적 하나,an enemy
+target.all_enemies,적 전체,all enemies
+target.random_enemy,무작위 적,a random enemy
+status.vulnerable,취약,Vulnerable
+enemy.afterimage.name,잔상,Afterimage
+enemy.pacing.name,서성임,Pacing
+enemy.crumbling.name,바스러지는 것,The Crumbling
+askew.looper.tell,같은 순간을 되풀이한다,Repeating one moment
+askew.reversed.tell,거꾸로 흐른다,Running backwards
+askew.stilled.tell,멈춰 있다,Stopped
+askew.overlaid.tell,두 시각에 겹쳐 있다,Overlaid on two times
+askew.withered.tell,너무 빨리 낡는다,Ageing too fast
+warden.name,파수꾼,Warden
+relic.broken_mainspring.name,깨진 태엽,Broken Mainspring
+relic.broken_mainspring.text,매 턴 1시간을 더 쓸 수 있다.,Gain 1h of turn budget each turn.
+relic.worn_shoes.name,닳은 신발,Worn Shoes
+relic.worn_shoes.text,걷는 데 시간이 들지 않는다.,Walking costs no time at all.
+relic.gleaning.name,거둔 것,Gleaning
+relic.gleaning.text,회수하는 시간이 25% 늘어난다.,Reclaim 25% more time.
+relic.stopped_watch.name,멈춘 회중시계,Stopped Watch
+relic.stopped_watch.text,매 턴 첫 카드는 시간이 들지 않는다.,The first card each turn costs nothing.
+status.weak,약화,Weak
+status.vulnerable.help,받는 피해가 50% 늘어난다.,Takes 50% more damage.
+status.weak.help,주는 피해가 25% 줄어든다.,Deals 25% less damage.
+keyword.exhaust,소멸,Exhaust
+keyword.exhaust.help,사용하면 이번 전투에서 완전히 빠진다.,Leaves the fight entirely once played.
+keyword.retain,보존,Retain
+keyword.retain.help,턴이 끝나도 버려지지 않는다.,Not discarded at end of turn.
+keyword.innate,선천,Innate
+keyword.innate.help,전투 첫 턴에 반드시 손에 들어온다.,Always in the opening hand.
+keyword.ethereal,휘발,Ethereal
+keyword.ethereal.help,턴이 끝날 때 손에 남아 있으면 소멸한다.,Exhausts if still in hand at end of turn.
+keyword.unplayable,사용 불가,Unplayable
+keyword.unplayable.help,낼 수 없다.,Cannot be played.
+help.target.single,적 하나를 골라 사용한다. 적 위로 끌어다 놓는다.,Aimed at one enemy. Drag it onto them.
+help.target.all,살아 있는 적 전부에게 적용된다.,Hits every living enemy.
+help.target.self,대상이 없다. 손패 위쪽으로 끌어올린다.,No target. Drag it upward.
+help.target.random,무작위 적에게 간다.,Goes to a random enemy.
+help.reroll,타격마다 대상을 다시 고른다.,Re-rolls its target for every hit.
+help.refund,이번 턴에만 돌아온다. 남은 시간과 흐른 시간은 건드리지 않는다.,Returns to this turn only — it never touches Remaining or Elapsed.
+help.exhaust_reason,코스트보다 많은 시간을 돌려주는 카드는 소멸이 없으면 무한히 돈다.,Without Exhaust a card that returns more time than it costs would loop forever.
+time.hours,{n}시간,{n}h
+effect.grows_per_card,이번 턴에 낸 카드마다 +{n},+{n} for each card played this turn
+effect.grows_per_turn,턴이 지날 때마다 +{n},+{n} for each turn elapsed
+effect.per_hour_damage,쓴 시간 1시간마다 {amount}의 피해를 줍니다.,Deal {amount} damage for each hour spent.
+effect.restore,{hours}시간을 회수합니다.,Reclaim {hours}h.
+help.scaling,이미 벌어진 일에 따라 커진다. 카드에 적힌 수는 지금 값이다.,Grows with what has already happened; the number shown is the current one.
+help.variable,남은 시간을 전부 쓴다.,Spends everything left in the turn.
+help.restore,회수한 시간이 늘어난다 — 돌려줄 몫도 상점에서 쓸 것도 함께 늘어난다.,More Restored — both what you can deliver and what you can spend.
+card.quick_cut.name,짧은 베기,Quick Cut
+card.double_cut.name,두 번 베기,Double Cut
+card.press.name,몰아치기,Press
+card.bulwark.name,방벽,Bulwark
+card.blunt.name,무디게,Blunt
+card.gather.name,추리기,Gather
+card.steady.name,다잡기,Steady
+card.unmake.name,풀기,Unmake
+card.wear_down.name,닳게 하기,Wear Down
+card.sever.name,끊어내기,Sever
+card.flurry.name,몰아침,Flurry
+card.harden.name,굳히기,Harden
+card.stillness.name,고요,Stillness
+card.unspool.name,풀어헤치기,Unspool
+card.momentum.name,탄력,Momentum
+card.long_hour.name,긴 시간,The Long Hour
+card.rewind.name,되감기,Rewind
+card.spend_it.name,다 쓰기,Spend It
+card.hourglass.name,모래시계,Hourglass
+card.all_at_once.name,한꺼번에,All At Once
+card.the_long_way.name,먼 길,The Long Way
+card.reclaim.name,되찾기,Reclaim
+card.unwind.name,태엽 풀기,Unwind
+card.drag.name,늘어짐,Drag
+card.drag.text,낼 수 없다. 손에 남아 자리를 차지한다.,Unplayable. It just sits in the hand.
+enemy.echo.name,되울림,Echo
+enemy.late_one.name,늦은 것,The Late One
+enemy.stood_still.name,선 자리,Where It Stood
+enemy.footsteps.name,겹친 발소리,Overlaid Footsteps
+enemy.long_standing.name,오래 선 것,The Long-Standing
+enemy.repeating_door.name,되풀이하는 문,The Repeating Door
+enemy.first_crack.name,첫 균열,The First Crack
+ui.hud.remaining,남은 시간,Remaining
+ui.hud.now,지금,Now
+ui.hud.hp,체력,Health
+ui.hud.restored,회복한 시간,Restored
+ui.hud.threat,위협,Threat
+ui.hud.act,막,Act
+ui.menu.map,지도,Map
+ui.menu.deck,덱,Deck
+ui.menu.close_map,닫기,Close
+ui.menu.close_deck,닫기,Close
+ui.menu.deck_count,지금 덱에 {n}장,{n} cards in the deck
+ui.battle.this_turn,이번 턴,This turn
+ui.battle.end_turn,턴 종료,End turn
+ui.battle.unspent_warning,남은 시간은 사라진다,Unspent time is lost
+ui.battle.turn_n,{n}턴째,Turn {n}
+ui.battle.pile_draw,남은 {n},Draw {n}
+ui.battle.pile_discard,버린 {n},Discard {n}
+ui.battle.pile_exhaust,소멸 {n},Exhaust {n}
+ui.battle.block,방어도 {n},Block {n}
+ui.battle.use_here,여기에 사용,Use here
+ui.battle.intent_none,―,―
+ui.battle.intent_attack,⚔ {n}{times},⚔ {n}{times}
+ui.battle.intent_times, ×{n}, ×{n}
+ui.battle.intent_block,◈ 방어 {n},◈ Block {n}
+ui.battle.intent_status,✦ {name} {n},✦ {name} {n}
+ui.battle.intent_wait,… 멈춰 있다,… stopped
+ui.card.exhaust,소멸,Exhaust
+ui.card.kind.attack,공격,Attack
+ui.card.kind.skill,스킬,Skill
+ui.card.kind.power,지속,Power
+ui.card.kind.curse,저주,Curse
+ui.picker.close,닫기,Close
+ui.overlay.close,닫는다,Close
+ui.overlay.back,←  돌아간다,←  Back
+ui.map.title,지도,Map
+ui.map.close,닫기,Close
+ui.map.boss_hint,보스 문까지 {n}칸 · {about}{span}{note},{n} rooms to the boss door · {about}{span}{note}
+ui.map.about,약 ,about 
+ui.map.no_move_in_battle,  ·  전투 중에는 이동할 수 없다,  ·  no walking during a fight
+ui.map.here,여기,Here
+ui.room.start,시작한 곳,Where it started
+ui.room.empty,빈 방,Empty room
+ui.room.combat,전투,Fight
+ui.room.elite,정예,Elite
+ui.room.shop,상점,Shop
+ui.room.fire,모닥불,Fire
+ui.room.boss,보스,Boss
+ui.room.event,무언가,Something
+ui.room.price_spent,{span} · 남은 것 없음,{span} · nothing left here
+ui.room.price,{span},{span}
+ui.room.north,북,N
+ui.room.west,서,W
+ui.room.east,동,E
+ui.room.south,남,S
+ui.room.spent_note,이 방은 지나갔다,This room is spent
+ui.room.boss_note,보스 문까지 {n}칸 · {about}{span},{n} rooms to the boss door · {about}{span}
+ui.title.continue,이어한다,Continue
+ui.title.new_run,내려간다,Descend
+ui.title.compendium,도감,Compendium
+ui.title.settings,설정,Settings
+ui.title.quit,그만둔다,Quit
+ui.title.version,v0.1  ·  가제,v0.1  ·  working title
+ui.compendium.tab_cards,카드,Cards
+ui.compendium.tab_enemies,적,Askew
+ui.compendium.tab_relics,유물,Relics
+ui.compendium.heading_cards,도감  ·  카드 {n}장,Compendium  ·  {n} cards
+ui.compendium.heading_enemies,도감  ·  적 {n}종,Compendium  ·  {n} Askew
+ui.compendium.heading_relics,도감  ·  유물 {n}개,Compendium  ·  {n} relics
+ui.compendium.before,벼리기 전,Before sharpening
+ui.compendium.after,벼린 뒤,After sharpening
+ui.compendium.no_upgrade,벼릴 수 없다,Cannot be sharpened
+ui.compendium.tier_normal,일반,Normal
+ui.compendium.tier_elite,정예,Elite
+ui.compendium.tier_boss,우두머리,Boss
+ui.compendium.hp_range,체력 {a}–{b},Health {a}–{b}
+ui.compendium.intent_attack,공격 {n},Attack {n}
+ui.compendium.intent_block,방어 {n},Block {n}
+ui.compendium.intent_status,{name} {n},{name} {n}
+ui.compendium.intent_wait,기다린다,Waits
+ui.settings.title,설정,Settings
+ui.settings.screen,화면,Screen
+ui.settings.windowed,창 모드,Windowed
+ui.settings.borderless,테두리 없는 창,Borderless
+ui.settings.fullscreen,전체 화면,Fullscreen
+ui.settings.window_size,창 크기,Window size
+ui.settings.language,언어,Language
+ui.settings.no_audio,음량은 아직 없다. 소리가 없기 때문이다.,No volume yet. There is no sound to turn down.
+ui.act.cleared,{n}막을 지났다,Act {n} is behind you
+ui.act.cleared_body,시계는 이어진다. 다음 막은 더 나빠져 있다.,The clock carries on. The next act is worse.
+ui.act.continue,계속한다,Go on
+ui.reward.title,무엇을 회수했는가,What was recovered
+ui.reward.body,한 장만 가져갈 수 있다. 이 방을 떠나면 나머지는 사라진다.,Only one can be taken. Leave the room and the rest are gone.
+ui.reward.skip,받지 않는다,Take none
+ui.fire.title,모닥불,Fire
+ui.fire.body,여덟 시간이 든다. 그 시간으로 할 수 있는 것은 하나뿐이다.,It costs eight hours. That time buys one thing.
+ui.fire.rest,쉰다,Rest
+ui.fire.rest_detail,체력 {n} 회복,Recover {n} health
+ui.fire.upgrade,카드를 벼린다,Sharpen a card
+ui.fire.upgrade_detail,어떤 카드를 벼릴지 고른다,Choose which card to sharpen
+ui.fire.convert,가져간다,Keep it
+ui.fire.convert_detail,회복한 시간 {a} → 남은 시간 {b},Restored {a} → Remaining {b}
+ui.fire.leave,그냥 지나간다,Walk past
+ui.fire.leave_detail,모닥불은 그대로 남는다,The fire stays lit
+ui.shop.title,상점,Shop
+ui.shop.body,값은 회수한 시간으로 치른다. 상인에게 준 시간은 하계에 남는다.,Paid for in recovered time. What the trader takes stays below.
+ui.shop.entry,{name}  ―  {price},{name}  ―  {price}
+ui.shop.remove,카드를 하나 지운다   {price},Cut one card   {price}
+ui.shop.remove_detail,어떤 카드를 지울지 고른다 · 다음 상점에서는 더 비싸진다,Choose which card to cut · the next shop charges more
+ui.shop.leave,나간다,Leave
+ui.end.finished,끝까지 갔다,It went all the way
+ui.end.fell,파수꾼이 쓰러졌다,The Warden fell
+ui.end.ran_out,시간이 다했다,The time ran out
+ui.end.other,끝,The end
+ui.end.body,돌려준 시간 {delivered}\n가져간 시간 {kept}\n회수한 기억 {memories}\n흐른 시간 {elapsed},Delivered {delivered}\nKept {kept}\nMemories {memories}\nElapsed {elapsed}
+ui.end.restart,다시 만들어진다,Made again
+ui.end.restart_detail,새로운 파수꾼 · 새로운 씨앗,A new Warden · a new seed
+ui.end.to_title,그만둔다,Stop here
+ui.end.to_title_detail,처음 화면으로,Back to the first screen
+ui.deck.title,덱  ({n}장),Deck  ({n} cards)
+ui.deck.body,지금 들고 있는 전부. 벼려진 카드는 이름 뒤에 +가 붙는다.,Everything carried right now. A sharpened card takes a + after its name.
+ui.deck.empty,덱이 비었다,The deck is empty
+ui.upgrade.title,무엇을 벼릴까,What to sharpen
+ui.upgrade.body,여덟 시간이 든다. 이미 벼려진 카드는 다시 벼릴 수 없다.,It costs eight hours. A sharpened card cannot be sharpened again.
+ui.upgrade.empty,벼릴 카드가 없다,Nothing to sharpen
+ui.remove.title,무엇을 지울까,What to cut
+ui.remove.body,덱이 얇을수록 좋은 카드가 자주 온다. 다음 상점에서는 더 비싸진다.,A thinner deck draws its good cards more often. The next shop charges more.
+ui.remove.empty,지울 카드가 없다,Nothing to cut
+ui.draw.title,남은 카드  ({n}장),Draw pile  ({n} cards)
+ui.draw.body,아직 뽑지 않은 카드. 순서는 알 수 없다.,Not drawn yet. The order is not shown.
+ui.draw.empty,더 뽑을 카드가 없다,Nothing left to draw
+ui.discard.title,버린 카드  ({n}장),Discard pile  ({n} cards)
+ui.discard.body,이번 전투에서 쓰고 버린 카드. 남은 카드가 떨어지면 섞여 돌아온다.,Spent this fight. They shuffle back when the draw pile runs out.
+ui.discard.empty,아직 버린 카드가 없다,Nothing discarded yet
+ui.exhaust.title,소멸한 카드  ({n}장),Exhausted  ({n} cards)
+ui.exhaust.body,이번 전투에서는 돌아오지 않는다.,These do not come back this fight.
+ui.exhaust.empty,소멸한 카드가 없다,Nothing exhausted
+ui.compendium.filter,필터,Filter
+ui.compendium.filter_all,전부 보기,Show all
+ui.compendium.filter_kind,종류,Type
+ui.compendium.filter_rarity,등급,Rarity
+ui.compendium.filter_lane,계열,Line
+ui.compendium.filter_tier,등급,Tier
+ui.compendium.filter_count,{n}개 보이는 중,Showing {n}
+ui.compendium.nothing_matches,조건에 맞는 것이 없다,Nothing matches those filters
+card.rarity.starter,기본,Starter
+card.rarity.common,흔함,Common
+card.rarity.uncommon,드묾,Uncommon
+card.rarity.rare,희귀,Rare
+card.rarity.special,특별,Special
+card.lane.rush,돌진,Rush
+card.lane.engine,기관,Engine
+card.lane.chronomancy,시간술,Chronomancy
+card.lane.none,공용,Neutral
+ui.compendium.search,이름으로 찾기,Search by name
+ui.pause.title,멈춤,Paused
+ui.pause.resume,돌아간다,Resume
+ui.pause.to_title,저장하고 나간다,Save and quit
+ui.settings.tab_screen,화면,Screen
+ui.settings.tab_keys,단축키,Keys
+ui.keys.end_turn,턴 종료,End turn
+ui.keys.map,지도,Map
+ui.keys.deck,덱,Deck
+ui.keys.pause,멈춤,Pause
+ui.keys.press,키를 누르세요,Press a key
+ui.keys.reset,기본값으로,Reset to defaults
+ui.pause.settings,설정,Settings
+ui.pause.abandon,게임 포기하기,Abandon run
+ui.pause.abandon_confirm,포기하면 이 런은 사라진다,Abandoning ends this run for good
+ui.pause.abandon_yes,포기한다,Abandon
+ui.pause.abandon_no,아니다,Keep playing
+effect.damage_at,{who}에게 {amount}의 피해를 줍니다.,Deal {amount} damage to {who}.
+effect.damage_multi_at,{who}에게 {amount}의 피해를 {times}번 줍니다.,Deal {amount} damage {times} times to {who}.
+effect.status_bare,{status} {stacks} 부여합니다.,Apply {stacks} {status}.
+outcome.spend_time,{span},{span}
+outcome.hurt,체력 -{n},-{n} health
+outcome.heal,체력 +{n},+{n} health
+outcome.restored,회복한 시간 +{span},+{span} restored
+outcome.restored_lost,회복한 시간 -{span},-{span} restored
+outcome.card,{card} 한 장,{card}
+outcome.memory,기억 하나,A memory
+event.a1_the_kettle.title,아직 끓는 주전자,The Kettle
+event.a1_the_kettle.body,불은 꺼져 있다. 주전자는 열한 시간째 끓고 있다. 물은 줄지 않았다.,The fire is out. The kettle has been boiling for eleven hours. The water has not gone down.
+event.a1_the_kettle.wait,끝까지 지켜본다,Watch it through
+event.a1_the_kettle.leave,지나간다,Walk on
+event.a1_cold_hands.title,언 손,Cold Hands
+event.a1_cold_hands.body,한 사람이 두 손을 불에 대고 있다. 불은 사흘 전에 꺼졌다. 손은 아직 녹지 않았다.,Someone holds both hands to a fire. The fire went out three days ago. The hands have not warmed.
+event.a1_cold_hands.warm,같이 선다,Stand there too
+event.a1_cold_hands.pass,지나간다,Walk on
+event.a1_the_late_one.title,늦는 사람,The One Who Is Late
+event.a1_the_late_one.body,문 앞에 두 사람 몫의 자리가 있다. 한 자리는 비어 있다. 앉은 사람은 열여섯 번 문을 본다.,Two places are set by the door. One is empty. The one sitting looks at the door sixteen times.
+event.a1_the_late_one.wait,올 때까지 기다린다,Wait until they come
+event.a1_the_late_one.go,간다,Go
+event.a1_the_long_table.title,긴 상,The Long Table
+event.a1_the_long_table.body,상 위의 음식은 아홉 사람 몫이다. 김이 오르고 있다. 의자는 전부 밀려 있다.,Food for nine on the table. It is still steaming. Every chair is pushed in.
+event.a1_the_long_table.eat,앉아서 먹는다,Sit and eat
+event.a1_the_long_table.take,칼 하나를 집는다,Take a knife
+event.a1_the_long_table.leave,건드리지 않는다,Touch nothing
+event.a1_the_stopped_clock.title,멈춘 시계,The Stopped Clock
+event.a1_the_stopped_clock.body,벽시계의 초침이 같은 자리를 짚고 있다. 안쪽에서 무언가 감겨 있다. 손을 넣을 수 있다.,The second hand rests on the same mark. Something is wound inside. A hand will fit.
+event.a1_the_stopped_clock.wind,손을 넣는다,Reach in
+event.a1_the_stopped_clock.leave,닫는다,Close it
+event.a1_the_debt.title,갚을 것,What Is Owed
+event.a1_the_debt.body,한 사람이 셈을 하고 있다. 장부의 숫자는 여섯이다. 여섯은 스물세 해 전에 적혔다.,Someone is doing sums. The figure in the ledger is six. The six was written twenty-three years ago.
+event.a1_the_debt.pay,대신 셈을 치른다,Settle it for them
+event.a1_the_debt.refuse,셈을 보지 않는다,Do not look at the ledger
+memory.the-kettle,아직 끓는 주전자,The Kettle
+memory.cold-hands,언 손,Cold Hands
+memory.the-late-one,늦는 사람,The One Who Is Late
+ui.battle.out_of_reach,닿지 않는다,Out of reach

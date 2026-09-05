@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/events/event_choice.gd" id="1_r84va"]
+[ext_resource type="Script" path="res://source/scripts/events/event_outcome.gd" id="2_bkt8f"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_health.gd" id="3_82q45"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_restored.gd" id="4_i18hl"]
+[ext_resource type="Script" path="res://source/scripts/events/event_data.gd" id="5_ab5qp"]
+
+[sub_resource type="Resource" id="Resource_e84ga"]
+script = ExtResource("3_82q45")
+amount = -6
+
+[sub_resource type="Resource" id="Resource_d7chh"]
+script = ExtResource("4_i18hl")
+hours = 6
+
+[sub_resource type="Resource" id="Resource_6t1cr"]
+script = ExtResource("1_r84va")
+label_key = &"event.a1_the_stopped_clock.wind"
+outcomes = Array[ExtResource("2_bkt8f")]([SubResource("Resource_e84ga"), SubResource("Resource_d7chh")])
+
+[sub_resource type="Resource" id="Resource_hq5pa"]
+script = ExtResource("1_r84va")
+label_key = &"event.a1_the_stopped_clock.leave"
+
+[resource]
+script = ExtResource("5_ab5qp")
+id = &"a1_the_stopped_clock"
+title_key = &"event.a1_the_stopped_clock.title"
+body_key = &"event.a1_the_stopped_clock.body"
+choices = Array[ExtResource("1_r84va")]([SubResource("Resource_6t1cr"), SubResource("Resource_hq5pa")])

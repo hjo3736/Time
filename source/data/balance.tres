@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="Balance" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/balance.gd" id="1_balance"]
+
+[resource]
+script = ExtResource("1_balance")
+starting_remaining = 20160
+starting_max_hp = 70
+turn_cost = 180
+room_transition_cost = 90
+room_cost_min = 60
+room_cost_max = 180
+fire_cost = 480
+shop_cost = 60
+threat_step = 2880
+expected_threat_steps = 14
+enemy_hp_scale = 1.0
+enemy_damage_scale = 1.0
+threat_hp_bonus_per_step = 0.06
+threat_damage_bonus_per_step = 0.05
+encounter_history_length = 2
+restored_per_normal_fight = 360
+restored_minutes_per_hp = 12
+conversion_rate = 2
+conversion_cap = 2160
+fire_heal_fraction = 0.4
+reward_weight_common = 60
+reward_weight_uncommon = 34
+reward_weight_rare = 6
+reward_card_choices = 3
+price_common = 240
+price_uncommon = 360
+price_rare = 540
+shop_card_count = 4
+price_removal = 360
+price_removal_increment = 180
+acts_per_run = 3
+starting_deck = Array[StringName]([&"interrupt", &"interrupt", &"interrupt", &"interrupt", &"interrupt", &"brace", &"brace", &"brace", &"brace", &"sever"])
+rooms_per_act_available = 12
+rooms_per_act_affordable = 6
+fires_per_act = 3
+shops_per_act = 2
+elites_per_act = 2
+events_per_act = 3
+clock_start_minute = 480

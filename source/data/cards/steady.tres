@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_lue2j"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_block.gd" id="2_dypie"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_draw.gd" id="3_ux2j3"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_q8vr5"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="5_uf2oa"]
+
+[sub_resource type="Resource" id="Resource_71dd4"]
+script = ExtResource("2_dypie")
+amount = 4
+
+[sub_resource type="Resource" id="Resource_a3xfp"]
+script = ExtResource("3_ux2j3")
+
+[sub_resource type="Resource" id="Resource_k2ife"]
+script = ExtResource("2_dypie")
+amount = 6
+
+[sub_resource type="Resource" id="Resource_c5thb"]
+script = ExtResource("3_ux2j3")
+
+[sub_resource type="Resource" id="Resource_6h8cd"]
+script = ExtResource("5_uf2oa")
+effects = Array[ExtResource("1_lue2j")]([SubResource("Resource_k2ife"), SubResource("Resource_c5thb")])
+
+[resource]
+script = ExtResource("4_q8vr5")
+id = &"steady"
+name_key = &"card.steady.name"
+kind = 1
+lanes = Array[int]([1])
+targeting = 2
+effects = Array[ExtResource("1_lue2j")]([SubResource("Resource_71dd4"), SubResource("Resource_a3xfp")])
+upgrade = SubResource("Resource_6h8cd")

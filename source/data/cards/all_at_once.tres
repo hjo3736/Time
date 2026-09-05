@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_fa8lr"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_pgk6d"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_04aiy"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_w3k7e"]
+
+[sub_resource type="Resource" id="Resource_mklon"]
+script = ExtResource("2_pgk6d")
+amount = 14
+
+[sub_resource type="Resource" id="Resource_murfp"]
+script = ExtResource("2_pgk6d")
+amount = 19
+
+[sub_resource type="Resource" id="Resource_h75ll"]
+script = ExtResource("4_w3k7e")
+effects = Array[ExtResource("1_fa8lr")]([SubResource("Resource_murfp")])
+
+[resource]
+script = ExtResource("3_04aiy")
+id = &"all_at_once"
+name_key = &"card.all_at_once.name"
+rarity = 3
+lanes = Array[int]([0])
+cost_hours = 3
+targeting = 1
+effects = Array[ExtResource("1_fa8lr")]([SubResource("Resource_mklon")])
+upgrade = SubResource("Resource_h75ll")

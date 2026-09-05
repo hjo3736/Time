@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/events/event_choice.gd" id="1_547w2"]
+[ext_resource type="Script" path="res://source/scripts/events/event_outcome.gd" id="2_aoam6"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_spend_time.gd" id="3_mnnf5"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_memory.gd" id="4_ci0y6"]
+[ext_resource type="Script" path="res://source/scripts/events/event_data.gd" id="5_j7inm"]
+
+[sub_resource type="Resource" id="Resource_jjdf4"]
+script = ExtResource("3_mnnf5")
+hours = 2
+
+[sub_resource type="Resource" id="Resource_bgjsc"]
+script = ExtResource("4_ci0y6")
+memory_id = &"the-kettle"
+
+[sub_resource type="Resource" id="Resource_i8cqn"]
+script = ExtResource("1_547w2")
+label_key = &"event.a1_the_kettle.wait"
+outcomes = Array[ExtResource("2_aoam6")]([SubResource("Resource_jjdf4"), SubResource("Resource_bgjsc")])
+
+[sub_resource type="Resource" id="Resource_1x3at"]
+script = ExtResource("1_547w2")
+label_key = &"event.a1_the_kettle.leave"
+
+[resource]
+script = ExtResource("5_j7inm")
+id = &"a1_the_kettle"
+weight = 12
+title_key = &"event.a1_the_kettle.title"
+body_key = &"event.a1_the_kettle.body"
+choices = Array[ExtResource("1_547w2")]([SubResource("Resource_i8cqn"), SubResource("Resource_1x3at")])

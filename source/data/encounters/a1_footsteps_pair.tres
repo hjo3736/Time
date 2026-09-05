@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_nlvy2"]
+
+[resource]
+script = ExtResource("1_nlvy2")
+id = &"a1_footsteps_pair"
+weight = 6
+members = Array[StringName]([&"footsteps", &"footsteps"])
+link_pairs = true

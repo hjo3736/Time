@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_i7kgg"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_72xsu"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_apply_status.gd" id="3_07xxr"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_kc0i8"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="5_oehd7"]
+
+[sub_resource type="Resource" id="Resource_ondeb"]
+script = ExtResource("2_72xsu")
+amount = 5
+
+[sub_resource type="Resource" id="Resource_kgb07"]
+script = ExtResource("3_07xxr")
+status = &"weak"
+stacks = 1
+
+[sub_resource type="Resource" id="Resource_cn7n3"]
+script = ExtResource("2_72xsu")
+amount = 7
+
+[sub_resource type="Resource" id="Resource_lu805"]
+script = ExtResource("3_07xxr")
+status = &"weak"
+stacks = 1
+
+[sub_resource type="Resource" id="Resource_30p05"]
+script = ExtResource("5_oehd7")
+effects = Array[ExtResource("1_i7kgg")]([SubResource("Resource_cn7n3"), SubResource("Resource_lu805")])
+
+[resource]
+script = ExtResource("4_kc0i8")
+id = &"unmake"
+name_key = &"card.unmake.name"
+effects = Array[ExtResource("1_i7kgg")]([SubResource("Resource_ondeb"), SubResource("Resource_kgb07")])
+upgrade = SubResource("Resource_30p05")

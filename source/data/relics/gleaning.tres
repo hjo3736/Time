@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RelicGleaning" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_gleaning.gd" id="1_4xypy"]
+
+[resource]
+script = ExtResource("1_4xypy")
+id = &"gleaning"
+name_key = &"relic.gleaning.name"
+text_key = &"relic.gleaning.text"

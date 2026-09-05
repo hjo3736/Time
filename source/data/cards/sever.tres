@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_gp7sh"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_ucujv"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_apply_status.gd" id="3_8fta2"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_4gldw"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="5_d5jfm"]
+
+[sub_resource type="Resource" id="Resource_ugajc"]
+script = ExtResource("2_ucujv")
+amount = 9
+
+[sub_resource type="Resource" id="Resource_jyvc8"]
+script = ExtResource("3_8fta2")
+
+[sub_resource type="Resource" id="Resource_h1fr7"]
+script = ExtResource("2_ucujv")
+amount = 12
+
+[sub_resource type="Resource" id="Resource_fext0"]
+script = ExtResource("3_8fta2")
+
+[sub_resource type="Resource" id="Resource_x77oh"]
+script = ExtResource("5_d5jfm")
+effects = Array[ExtResource("1_gp7sh")]([SubResource("Resource_h1fr7"), SubResource("Resource_fext0")])
+
+[resource]
+script = ExtResource("4_4gldw")
+id = &"sever"
+name_key = &"card.sever.name"
+rarity = 2
+cost_hours = 2
+effects = Array[ExtResource("1_gp7sh")]([SubResource("Resource_ugajc"), SubResource("Resource_jyvc8")])
+upgrade = SubResource("Resource_x77oh")

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_4eoqu"]
+
+[resource]
+script = ExtResource("1_4eoqu")
+id = &"a1_lone_crumbling"
+weight = 7
+members = Array[StringName]([&"crumbling"])

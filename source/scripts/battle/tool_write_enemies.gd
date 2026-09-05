@@ -1,0 +1,135 @@
+extends SceneTree
+
+
+const OUT_DIR := "res://source/data/enemies"
+
+var _written := 0
+
+
+func attack(amount: int, times: int = 1) -> EnemyIntent:
+	return EnemyIntent.attack(amount, times)
+
+
+func block(amount: int) -> EnemyIntent:
+	return EnemyIntent.block(amount)
+
+
+func wait() -> EnemyIntent:
+	return EnemyIntent.wait()
+
+
+func inflict(status: StringName, stacks: int) -> EnemyIntent:
+	return EnemyIntent.inflict(status, stacks)
+
+
+func window(intent: EnemyIntent) -> EnemyIntent:
+	intent.is_break_window = true
+	return intent
+
+
+func enemy(
+	id: StringName,
+	hp_min: int,
+	hp_max: int,
+	intents: Array[EnemyIntent],
+	behavior: Script = null,
+	tier: EnemyData.Tier = EnemyData.Tier.NORMAL,
+) -> EnemyData:
+	var e := EnemyData.new()
+	e.id = id
+	e.name_key = StringName("enemy.%s.name" % id)
+	e.tier = tier
+	e.hp_min = hp_min
+	e.hp_max = hp_max
+	e.intents = intents
+	e.behavior_script = behavior
+	return e
+
+
+func write(e: EnemyData) -> void:
+	var problems := e.validate()
+	if not problems.is_empty():
+		print("  LINT  %s: %s" % [e.id, problems])
+	var err := ResourceSaver.save(e, "%s/%s.tres" % [OUT_DIR, e.id])
+	if err == OK:
+		_written += 1
+	var cycle := PackedStringArray()
+	for i in e.intents:
+		var text := ""
+		match i.kind:
+			EnemyIntent.Kind.ATTACK:
+				text = "공격 %d%s" % [i.amount, "" if i.times <= 1 else " x%d" % i.times]
+			EnemyIntent.Kind.BLOCK:
+				text = "방어 %d" % i.amount
+			EnemyIntent.Kind.STATUS:
+				text = "%s %d" % [i.status, i.stacks]
+			EnemyIntent.Kind.WAIT:
+				text = "대기"
+		cycle.append(("[%s]" % text) if i.is_break_window else text)
+	print("  %s  %-16s hp %3d-%-3d  %s" % [
+		"ok  " if err == OK else "FAIL", tr(e.name_key), e.hp_min, e.hp_max, " → ".join(cycle)])
+
+
+func _init() -> void:
+	TranslationServer.set_locale("ko")
+	DirAccess.make_dir_recursive_absolute(OUT_DIR)
+	print("writing enemies to %s\n" % OUT_DIR)
+
+	_teaching()
+	_askew()
+	_elites()
+	_boss()
+
+	print("\n%d enemies  ([ ] = 되풀이의 브레이크 윈도우)" % _written)
+	quit(0)
+
+
+func _teaching() -> void:
+	print("일반 — 기본")
+
+	write(enemy(&"afterimage", 20, 24,
+		[attack(5), attack(5), attack(9)] as Array[EnemyIntent]))
+
+	write(enemy(&"pacing", 26, 32,
+		[attack(6), block(8), attack(6)] as Array[EnemyIntent]))
+
+
+func _askew() -> void:
+	print("\n일반 — 어긋난 것들")
+
+	write(enemy(&"crumbling", 30, 36,
+		[attack(14)] as Array[EnemyIntent], BehaviorWithered))
+
+	write(enemy(&"echo", 16, 20,
+		[attack(6), window(attack(4))] as Array[EnemyIntent], BehaviorLooper))
+
+	write(enemy(&"late_one", 14, 18,
+		[attack(7), block(4)] as Array[EnemyIntent], BehaviorReversed))
+
+	write(enemy(&"stood_still", 28, 34,
+		[wait(), attack(11), wait(), attack(11)] as Array[EnemyIntent], BehaviorStilled))
+
+	write(enemy(&"footsteps", 18, 22,
+		[attack(4), attack(4), inflict(StatusRules.WEAK, 1)] as Array[EnemyIntent],
+		BehaviorOverlaid))
+
+
+func _elites() -> void:
+	print("\n엘리트")
+
+	write(enemy(&"long_standing", 58, 66,
+		[wait(), wait(), attack(18), block(10)] as Array[EnemyIntent],
+		BehaviorStilled, EnemyData.Tier.ELITE))
+
+	write(enemy(&"repeating_door", 34, 40,
+		[attack(12), window(attack(6)), window(attack(6))] as Array[EnemyIntent],
+		BehaviorLooper, EnemyData.Tier.ELITE))
+
+
+func _boss() -> void:
+	print("\n보스")
+
+	write(enemy(&"first_crack", 106, 118,
+		[attack(10), wait(), inflict(StatusRules.VULNERABLE, 2), attack(14), wait(), attack(20)]
+			as Array[EnemyIntent],
+		BehaviorStilled, EnemyData.Tier.BOSS))

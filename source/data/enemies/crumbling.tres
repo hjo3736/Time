@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/behaviors/behavior_withered.gd" id="1_wwecp"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_intent.gd" id="2_i6xaf"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_data.gd" id="3_ljasr"]
+
+[sub_resource type="Resource" id="Resource_0wequ"]
+script = ExtResource("2_i6xaf")
+amount = 14
+
+[resource]
+script = ExtResource("3_ljasr")
+id = &"crumbling"
+name_key = &"enemy.crumbling.name"
+hp_min = 30
+hp_max = 36
+intents = Array[ExtResource("2_i6xaf")]([SubResource("Resource_0wequ")])
+behavior_script = ExtResource("1_wwecp")

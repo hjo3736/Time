@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_tq710"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_block.gd" id="2_h43gt"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_apply_status.gd" id="3_s5vsl"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_lmf3a"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="5_p7ib8"]
+
+[sub_resource type="Resource" id="Resource_nsokf"]
+script = ExtResource("2_h43gt")
+amount = 6
+
+[sub_resource type="Resource" id="Resource_ki5k6"]
+script = ExtResource("3_s5vsl")
+status = &"weak"
+stacks = 1
+
+[sub_resource type="Resource" id="Resource_ijb2b"]
+script = ExtResource("2_h43gt")
+amount = 9
+
+[sub_resource type="Resource" id="Resource_4xdks"]
+script = ExtResource("3_s5vsl")
+status = &"weak"
+stacks = 1
+
+[sub_resource type="Resource" id="Resource_rg6d8"]
+script = ExtResource("5_p7ib8")
+effects = Array[ExtResource("1_tq710")]([SubResource("Resource_ijb2b"), SubResource("Resource_4xdks")])
+
+[resource]
+script = ExtResource("4_lmf3a")
+id = &"harden"
+name_key = &"card.harden.name"
+kind = 1
+rarity = 2
+targeting = 1
+effects = Array[ExtResource("1_tq710")]([SubResource("Resource_nsokf"), SubResource("Resource_ki5k6")])
+upgrade = SubResource("Resource_rg6d8")

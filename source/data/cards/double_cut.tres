@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_qhxcd"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_4gls2"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_8eoyb"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_38vkl"]
+
+[sub_resource type="Resource" id="Resource_1oyui"]
+script = ExtResource("2_4gls2")
+amount = 4
+times = 2
+
+[sub_resource type="Resource" id="Resource_4e1lo"]
+script = ExtResource("2_4gls2")
+amount = 5
+times = 2
+
+[sub_resource type="Resource" id="Resource_7atrc"]
+script = ExtResource("4_38vkl")
+effects = Array[ExtResource("1_qhxcd")]([SubResource("Resource_4e1lo")])
+
+[resource]
+script = ExtResource("3_8eoyb")
+id = &"double_cut"
+name_key = &"card.double_cut.name"
+lanes = Array[int]([0])
+effects = Array[ExtResource("1_qhxcd")]([SubResource("Resource_1oyui")])
+upgrade = SubResource("Resource_7atrc")

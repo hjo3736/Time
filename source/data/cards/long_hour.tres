@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_24aiv"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_scaling_block.gd" id="2_135i3"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_6pyo5"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_7ty0k"]
+
+[sub_resource type="Resource" id="Resource_uiak6"]
+script = ExtResource("2_135i3")
+base = 6
+
+[sub_resource type="Resource" id="Resource_ntjej"]
+script = ExtResource("2_135i3")
+base = 8
+
+[sub_resource type="Resource" id="Resource_8oc75"]
+script = ExtResource("4_7ty0k")
+effects = Array[ExtResource("1_24aiv")]([SubResource("Resource_ntjej")])
+
+[resource]
+script = ExtResource("3_6pyo5")
+id = &"long_hour"
+name_key = &"card.long_hour.name"
+kind = 1
+rarity = 2
+lanes = Array[int]([1])
+cost_hours = 2
+targeting = 2
+effects = Array[ExtResource("1_24aiv")]([SubResource("Resource_uiak6")])
+upgrade = SubResource("Resource_8oc75")

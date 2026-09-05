@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_cbbpo"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_u7uld"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_pbi7x"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_n8ocj"]
+
+[sub_resource type="Resource" id="Resource_egoat"]
+script = ExtResource("2_u7uld")
+amount = 5
+
+[sub_resource type="Resource" id="Resource_2mbmp"]
+script = ExtResource("2_u7uld")
+amount = 8
+
+[sub_resource type="Resource" id="Resource_5rftl"]
+script = ExtResource("4_n8ocj")
+effects = Array[ExtResource("1_cbbpo")]([SubResource("Resource_2mbmp")])
+
+[resource]
+script = ExtResource("3_pbi7x")
+id = &"disperse"
+name_key = &"card.disperse.name"
+lanes = Array[int]([0])
+cost_hours = 2
+targeting = 1
+effects = Array[ExtResource("1_cbbpo")]([SubResource("Resource_egoat")])
+upgrade = SubResource("Resource_5rftl")

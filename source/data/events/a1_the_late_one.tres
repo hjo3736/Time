@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/events/event_choice.gd" id="1_hun81"]
+[ext_resource type="Script" path="res://source/scripts/events/event_outcome.gd" id="2_ayuba"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_spend_time.gd" id="3_3rwwv"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_restored.gd" id="4_bkfb5"]
+[ext_resource type="Script" path="res://source/scripts/events/outcomes/outcome_memory.gd" id="5_fy4ot"]
+[ext_resource type="Script" path="res://source/scripts/events/event_data.gd" id="6_jvr0i"]
+
+[sub_resource type="Resource" id="Resource_77obk"]
+script = ExtResource("3_3rwwv")
+hours = 3
+
+[sub_resource type="Resource" id="Resource_vknwi"]
+script = ExtResource("4_bkfb5")
+hours = 4
+
+[sub_resource type="Resource" id="Resource_biyis"]
+script = ExtResource("5_fy4ot")
+memory_id = &"the-late-one"
+
+[sub_resource type="Resource" id="Resource_7km1m"]
+script = ExtResource("1_hun81")
+label_key = &"event.a1_the_late_one.wait"
+outcomes = Array[ExtResource("2_ayuba")]([SubResource("Resource_77obk"), SubResource("Resource_vknwi"), SubResource("Resource_biyis")])
+
+[sub_resource type="Resource" id="Resource_xi0u3"]
+script = ExtResource("1_hun81")
+label_key = &"event.a1_the_late_one.go"
+
+[resource]
+script = ExtResource("6_jvr0i")
+id = &"a1_the_late_one"
+weight = 12
+title_key = &"event.a1_the_late_one.title"
+body_key = &"event.a1_the_late_one.body"
+choices = Array[ExtResource("1_hun81")]([SubResource("Resource_7km1m"), SubResource("Resource_xi0u3")])

@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_7yenc"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_draw.gd" id="2_4oha3"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_mg7wo"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_u2vus"]
+
+[sub_resource type="Resource" id="Resource_vh2vg"]
+script = ExtResource("2_4oha3")
+count = 2
+
+[sub_resource type="Resource" id="Resource_lim8o"]
+script = ExtResource("2_4oha3")
+count = 3
+
+[sub_resource type="Resource" id="Resource_lostb"]
+script = ExtResource("4_u2vus")
+effects = Array[ExtResource("1_7yenc")]([SubResource("Resource_lim8o")])
+
+[resource]
+script = ExtResource("3_mg7wo")
+id = &"gather"
+name_key = &"card.gather.name"
+kind = 1
+targeting = 2
+effects = Array[ExtResource("1_7yenc")]([SubResource("Resource_vh2vg")])
+keywords = 1
+upgrade = SubResource("Resource_lostb")

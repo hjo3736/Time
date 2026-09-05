@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_41j8j"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_gnjx4"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_icpp4"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_6a6jw"]
+
+[sub_resource type="Resource" id="Resource_5udla"]
+script = ExtResource("2_gnjx4")
+amount = 4
+times = 4
+reroll_target_each_hit = true
+
+[sub_resource type="Resource" id="Resource_qad3o"]
+script = ExtResource("2_gnjx4")
+amount = 4
+times = 5
+reroll_target_each_hit = true
+
+[sub_resource type="Resource" id="Resource_yu6hq"]
+script = ExtResource("4_6a6jw")
+effects = Array[ExtResource("1_41j8j")]([SubResource("Resource_qad3o")])
+
+[resource]
+script = ExtResource("3_icpp4")
+id = &"flurry"
+name_key = &"card.flurry.name"
+rarity = 2
+lanes = Array[int]([0])
+cost_hours = 2
+targeting = 3
+effects = Array[ExtResource("1_41j8j")]([SubResource("Resource_5udla")])
+upgrade = SubResource("Resource_yu6hq")

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_dd73r"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_e7nm4"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_u43lw"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_la48k"]
+
+[sub_resource type="Resource" id="Resource_tlh4a"]
+script = ExtResource("2_e7nm4")
+
+[sub_resource type="Resource" id="Resource_yct2s"]
+script = ExtResource("2_e7nm4")
+amount = 9
+
+[sub_resource type="Resource" id="Resource_e2ckh"]
+script = ExtResource("4_la48k")
+effects = Array[ExtResource("1_dd73r")]([SubResource("Resource_yct2s")])
+
+[resource]
+script = ExtResource("3_u43lw")
+id = &"interrupt"
+name_key = &"card.interrupt.name"
+rarity = 0
+effects = Array[ExtResource("1_dd73r")]([SubResource("Resource_tlh4a")])
+upgrade = SubResource("Resource_e2ckh")

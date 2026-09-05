@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/behaviors/behavior_stilled.gd" id="1_2jsbk"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_intent.gd" id="2_k4q6o"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_data.gd" id="3_17ic4"]
+
+[sub_resource type="Resource" id="Resource_qc7lq"]
+script = ExtResource("2_k4q6o")
+kind = 3
+
+[sub_resource type="Resource" id="Resource_x8e8f"]
+script = ExtResource("2_k4q6o")
+amount = 11
+
+[sub_resource type="Resource" id="Resource_cpeff"]
+script = ExtResource("2_k4q6o")
+kind = 3
+
+[sub_resource type="Resource" id="Resource_cc4l3"]
+script = ExtResource("2_k4q6o")
+amount = 11
+
+[resource]
+script = ExtResource("3_17ic4")
+id = &"stood_still"
+name_key = &"enemy.stood_still.name"
+hp_min = 28
+hp_max = 34
+intents = Array[ExtResource("2_k4q6o")]([SubResource("Resource_qc7lq"), SubResource("Resource_x8e8f"), SubResource("Resource_cpeff"), SubResource("Resource_cc4l3")])
+behavior_script = ExtResource("1_2jsbk")

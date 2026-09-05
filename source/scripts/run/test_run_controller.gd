@@ -1,0 +1,194 @@
+extends SceneTree
+
+
+var _failures := 0
+var _b: Balance
+var _cards: CardDatabase
+var _enemies: EnemyDatabase
+var _encounters: EncounterTable
+var _relics: RelicDatabase
+
+
+func check(label: String, actual: Variant, expected: Variant) -> void:
+	if actual == expected:
+		print("  ok    %s = %s" % [label, actual])
+	else:
+		_failures += 1
+		print("  FAIL  %s = %s, expected %s" % [label, actual, expected])
+
+
+func controller(seed_value: int) -> RunController:
+	return RunController.new(_b, _cards, _enemies, _encounters, _relics, seed_value)
+
+
+func walk_to_kind(rc: RunController, kind: Room.Kind, budget: int = 60) -> bool:
+	for step in budget:
+		if rc.is_over():
+			return false
+
+		var here := rc.current_room()
+		if here != null and here.kind == kind and not here.is_spent():
+			return true
+
+		match rc.phase:
+			RunController.Phase.BATTLE:
+				_auto_fight(rc)
+			RunController.Phase.REWARD:
+				rc.skip_reward()
+			RunController.Phase.FIRE:
+				rc.leave_fire()
+			RunController.Phase.SHOP:
+				rc.leave_shop()
+			RunController.Phase.EXPLORING:
+				var target: Variant = _nearest(rc, kind)
+				if target == null:
+					return false
+				if not rc.move_to(target):
+					return false
+			_:
+				return false
+	return false
+
+
+func _nearest(rc: RunController, kind: Room.Kind) -> Variant:
+	var came := {rc.map.current: rc.map.current}
+	var queue := [rc.map.current]
+	while not queue.is_empty():
+		var at: Vector2i = queue.pop_front()
+		if rc.map.at(at).kind == kind and at != rc.map.current:
+			var node: Vector2i = at
+			while came[node] != rc.map.current:
+				node = came[node]
+			return node
+		for n in rc.map.neighbours(at):
+			if not came.has(n):
+				came[n] = at
+				queue.append(n)
+	return null
+
+
+func _auto_fight(rc: RunController) -> void:
+	var guard := 0
+	while rc.phase == RunController.Phase.BATTLE and guard < 200:
+		guard += 1
+		var played := false
+		for i in rc.battle.piles().hand.size():
+			var enemies := rc.battle.enemy_handles()
+			var target := enemies[0] if not enemies.is_empty() else -1
+			if rc.play_card(i, target):
+				played = true
+				break
+		if not played:
+			rc.end_turn()
+
+
+func _init() -> void:
+	TranslationServer.set_locale("en")
+	_b = Balance.default()
+	_cards = CardDatabase.new()
+	_cards.load_from()
+	_enemies = EnemyDatabase.new()
+	_enemies.load_from()
+	_encounters = EncounterTable.new()
+	_encounters.load_from()
+	_relics = RelicDatabase.new()
+	_relics.load_from()
+
+	print("\n-- a run starts on act one with a deck and a full clock --")
+	var rc := controller(1)
+	check("act", rc.run.act, 1)
+	check("exploring", rc.phase, RunController.Phase.EXPLORING)
+	check("starting deck", rc.run.deck.size(), _b.starting_deck.size())
+	check("full clock", rc.run.clock.remaining, _b.starting_remaining)
+	check("standing on the start", rc.map.current, Vector2i.ZERO)
+	check("the boss is already marked", rc.map.is_known(rc.map.boss_coord), true)
+	check("and priced", rc.minutes_to_boss() > 0, true)
+
+	print("\n-- walking into a fight starts one --")
+	var f := controller(2)
+	check("found a fight", walk_to_kind(f, Room.Kind.COMBAT), true)
+	check("in battle", f.phase, RunController.Phase.BATTLE)
+	check("with enemies", f.battle.enemy_handles().size() > 0, true)
+	check("cannot walk out mid-fight", f.move_to(f.map.reachable()[0]), false)
+
+	print("\n-- winning clears the room and offers a reward --")
+	_auto_fight(f)
+	check("reward on the table", f.phase, RunController.Phase.REWARD)
+	check("three cards", f.run.pending_reward().size(), _b.reward_card_choices)
+	check("room cleared", f.map.at(f.map.current).cleared, true)
+	check("some time came back", f.run.clock.restored > 0, true)
+
+	print("\n-- taking one adds it and returns to the floor --")
+	var deck_before := f.run.deck.size()
+	check("taken", f.take_reward(0), true)
+	check("deck grew", f.run.deck.size(), deck_before + 1)
+	check("exploring again", f.phase, RunController.Phase.EXPLORING)
+	check("walking back offers nothing", f.map.at(f.map.current).is_spent(), true)
+
+	print("\n-- a fire spends eight hours on exactly one thing --")
+	var fr := controller(3)
+	fr.run.damage(30)
+	check("reached a fire", walk_to_kind(fr, Room.Kind.FIRE), true)
+	check("at the fire", fr.phase, RunController.Phase.FIRE)
+	var hp_before := fr.run.hp
+	var clock_before := fr.run.clock.remaining
+	check("rested", fr.use_fire(RunState.FireAction.REST), true)
+	check("healed", fr.run.hp > hp_before, true)
+	check("cost eight hours", clock_before - fr.run.clock.remaining, _b.fire_cost)
+	check("back on the floor", fr.phase, RunController.Phase.EXPLORING)
+	check("and the fire is spent", fr.map.at(fr.map.current).cleared, true)
+
+	print("\n-- a fire walked past keeps --")
+	var skip := controller(4)
+	check("reached a fire", walk_to_kind(skip, Room.Kind.FIRE), true)
+	skip.leave_fire()
+	var fire_coord := skip.map.current
+	check("not cleared by leaving", skip.map.at(fire_coord).cleared, false)
+	check("still waiting later", skip.map.at(fire_coord).is_spent(), false)
+
+	print("\n-- the same seed plays the same run --")
+	var a := controller(777)
+	var b := controller(777)
+	check("same floor size", a.map.rooms.size(), b.map.rooms.size())
+	check("same boss", a.map.boss_coord, b.map.boss_coord)
+	var path_a := []
+	var path_b := []
+	for i in 6:
+		if a.phase == RunController.Phase.EXPLORING and not a.reachable().is_empty():
+			a.move_to(a.reachable()[0])
+			b.move_to(b.reachable()[0])
+			path_a.append(a.map.current)
+			path_b.append(b.map.current)
+	check("same walk", path_a, path_b)
+	check("same clock", a.run.clock.remaining, b.run.clock.remaining)
+
+	print("\n-- running out of time ends the run, whatever else was happening --")
+	var doomed := controller(5)
+	doomed.run.clock.advance(_b.starting_remaining - 30, RunClock.Source.TRAVEL)
+	check("half an hour left", doomed.run.clock.remaining, 30)
+	doomed.move_to(doomed.reachable()[0])
+	check("ended", doomed.phase, RunController.Phase.ENDED)
+	check("by the clock, not by damage", doomed.outcome, RunController.Outcome.RAN_OUT)
+	check("hp was never the problem", doomed.run.hp, _b.starting_max_hp)
+
+	print("\n-- opening the boss door finishes the act --")
+	var boss := controller(6)
+	boss.map.current = boss.map.neighbours(boss.map.boss_coord)[0]
+	check("at the door", boss.move_to(boss.map.boss_coord), true)
+	if boss.phase == RunController.Phase.BATTLE:
+		_auto_fight(boss)
+	check("act cleared", boss.phase, RunController.Phase.ACT_CLEARED)
+	check("no reward screen for a boss", boss.run.has_pending_reward(), false)
+	check("moving on", boss.advance_act(), true)
+	check("act two", boss.run.act, 2)
+	check("on a new floor", boss.map.current, Vector2i.ZERO)
+	check("with the clock carried over", boss.run.clock.remaining < _b.starting_remaining, true)
+
+	print("\n-- the ending reads both axes --")
+	var ending := boss.ending()
+	check("delivered is the pool", int(ending["delivered"]), boss.run.clock.restored)
+	check("kept is what went into the Warden", int(ending["kept"]), boss.run.total_kept)
+	check("and memories are counted", ending.has("memories"), true)
+
+	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
+	quit(1 if _failures > 0 else 0)

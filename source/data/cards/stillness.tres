@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_tagvd"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_block.gd" id="2_rrbt8"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_hf8ke"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_ightt"]
+
+[sub_resource type="Resource" id="Resource_i16qg"]
+script = ExtResource("2_rrbt8")
+amount = 10
+
+[sub_resource type="Resource" id="Resource_qla7b"]
+script = ExtResource("2_rrbt8")
+amount = 14
+
+[sub_resource type="Resource" id="Resource_impls"]
+script = ExtResource("4_ightt")
+effects = Array[ExtResource("1_tagvd")]([SubResource("Resource_qla7b")])
+
+[resource]
+script = ExtResource("3_hf8ke")
+id = &"stillness"
+name_key = &"card.stillness.name"
+kind = 1
+rarity = 2
+targeting = 2
+effects = Array[ExtResource("1_tagvd")]([SubResource("Resource_i16qg")])
+keywords = 1
+upgrade = SubResource("Resource_impls")

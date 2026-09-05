@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_siw8j"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="2_x2c2i"]
+
+[resource]
+script = ExtResource("2_x2c2i")
+id = &"drag"
+name_key = &"card.drag.name"
+kind = 3
+rarity = 4
+cost_hours = 0
+targeting = 2
+keywords = 16
+text_key = &"card.drag.text"

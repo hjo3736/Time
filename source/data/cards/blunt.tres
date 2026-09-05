@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_f81bn"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_apply_status.gd" id="2_xkiof"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_75uai"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_hj6gv"]
+
+[sub_resource type="Resource" id="Resource_dh4eq"]
+script = ExtResource("2_xkiof")
+status = &"weak"
+
+[sub_resource type="Resource" id="Resource_e3vvv"]
+script = ExtResource("2_xkiof")
+status = &"weak"
+stacks = 3
+
+[sub_resource type="Resource" id="Resource_bmw2o"]
+script = ExtResource("4_hj6gv")
+effects = Array[ExtResource("1_f81bn")]([SubResource("Resource_e3vvv")])
+
+[resource]
+script = ExtResource("3_75uai")
+id = &"blunt"
+name_key = &"card.blunt.name"
+kind = 1
+effects = Array[ExtResource("1_f81bn")]([SubResource("Resource_dh4eq")])
+upgrade = SubResource("Resource_bmw2o")

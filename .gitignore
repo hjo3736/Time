@@ -1,0 +1,15 @@
+# Godot 4 generated files
+.godot/
+.import/
+export.cfg
+export_presets.cfg
+
+# Godot exports
+build/
+*.translation
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

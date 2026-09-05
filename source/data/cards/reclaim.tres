@@ -1,0 +1,37 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_71w61"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_gx5rk"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_restore_time.gd" id="3_bn54m"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_ug0hw"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="5_3og08"]
+
+[sub_resource type="Resource" id="Resource_qdji7"]
+script = ExtResource("2_gx5rk")
+amount = 8
+
+[sub_resource type="Resource" id="Resource_70ugu"]
+script = ExtResource("3_bn54m")
+
+[sub_resource type="Resource" id="Resource_33gyi"]
+script = ExtResource("2_gx5rk")
+amount = 10
+
+[sub_resource type="Resource" id="Resource_bvfb5"]
+script = ExtResource("3_bn54m")
+hours = 3
+
+[sub_resource type="Resource" id="Resource_3xqmd"]
+script = ExtResource("5_3og08")
+effects = Array[ExtResource("1_71w61")]([SubResource("Resource_33gyi"), SubResource("Resource_bvfb5")])
+
+[resource]
+script = ExtResource("4_ug0hw")
+id = &"reclaim"
+name_key = &"card.reclaim.name"
+rarity = 3
+lanes = Array[int]([2])
+cost_hours = 2
+effects = Array[ExtResource("1_71w61")]([SubResource("Resource_qdji7"), SubResource("Resource_70ugu")])
+keywords = 1
+upgrade = SubResource("Resource_3xqmd")

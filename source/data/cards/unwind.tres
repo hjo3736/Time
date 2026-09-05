@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_j7vc0"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_refund_time.gd" id="2_cn2sl"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_6popa"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_n744h"]
+
+[sub_resource type="Resource" id="Resource_3djn1"]
+script = ExtResource("2_cn2sl")
+minutes = 240
+
+[sub_resource type="Resource" id="Resource_5le8l"]
+script = ExtResource("2_cn2sl")
+minutes = 300
+
+[sub_resource type="Resource" id="Resource_xc787"]
+script = ExtResource("4_n744h")
+effects = Array[ExtResource("1_j7vc0")]([SubResource("Resource_5le8l")])
+
+[resource]
+script = ExtResource("3_6popa")
+id = &"unwind"
+name_key = &"card.unwind.name"
+kind = 1
+rarity = 3
+lanes = Array[int]([2])
+cost_hours = 2
+targeting = 2
+effects = Array[ExtResource("1_j7vc0")]([SubResource("Resource_3djn1")])
+keywords = 1
+upgrade = SubResource("Resource_xc787")

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_ilker"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_scaling_damage.gd" id="2_asnw5"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_n8gq0"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_ahejg"]
+
+[sub_resource type="Resource" id="Resource_vke5j"]
+script = ExtResource("2_asnw5")
+
+[sub_resource type="Resource" id="Resource_xhhl6"]
+script = ExtResource("2_asnw5")
+per_card = 4
+
+[sub_resource type="Resource" id="Resource_swlul"]
+script = ExtResource("4_ahejg")
+effects = Array[ExtResource("1_ilker")]([SubResource("Resource_xhhl6")])
+
+[resource]
+script = ExtResource("3_n8gq0")
+id = &"momentum"
+name_key = &"card.momentum.name"
+rarity = 2
+lanes = Array[int]([1])
+effects = Array[ExtResource("1_ilker")]([SubResource("Resource_vke5j")])
+upgrade = SubResource("Resource_swlul")

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_x4pg6"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_qvqhj"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_apply_status.gd" id="3_dlerw"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_e4xrh"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="5_8uyhu"]
+
+[sub_resource type="Resource" id="Resource_7h2ao"]
+script = ExtResource("2_qvqhj")
+amount = 4
+
+[sub_resource type="Resource" id="Resource_ilwga"]
+script = ExtResource("3_dlerw")
+stacks = 1
+
+[sub_resource type="Resource" id="Resource_u3880"]
+script = ExtResource("2_qvqhj")
+
+[sub_resource type="Resource" id="Resource_63luy"]
+script = ExtResource("3_dlerw")
+stacks = 1
+
+[sub_resource type="Resource" id="Resource_8fbw4"]
+script = ExtResource("5_8uyhu")
+effects = Array[ExtResource("1_x4pg6")]([SubResource("Resource_u3880"), SubResource("Resource_63luy")])
+
+[resource]
+script = ExtResource("4_e4xrh")
+id = &"wear_down"
+name_key = &"card.wear_down.name"
+lanes = Array[int]([1])
+cost_hours = 2
+targeting = 1
+effects = Array[ExtResource("1_x4pg6")]([SubResource("Resource_7h2ao"), SubResource("Resource_ilwga")])
+upgrade = SubResource("Resource_8fbw4")
