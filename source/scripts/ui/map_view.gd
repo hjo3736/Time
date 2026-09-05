@@ -81,11 +81,7 @@ func _ready() -> void:
 	_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_viewport.add_child(_canvas)
 
-	_legend = UiTheme.label(
-		"휠  —  확대 · 축소
-빈 곳 드래그  —  지도 이동
-M  —  닫기 (다시 열면 현재 방으로)",
-		13, UiTheme.INK_DIM)
+	_legend = UiTheme.label("", 13, UiTheme.INK_DIM)
 	_legend.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	_legend.position = Vector2(10, -70)
 	_legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -110,8 +106,17 @@ func _process(_delta: float) -> void:
 		set_process(false)
 
 
+func _refresh_legend() -> void:
+	_legend.text = "\n".join([
+		tr("ui.map.legend_zoom"),
+		tr("ui.map.legend_pan"),
+		tr("ui.map.legend_close").format({"key": Keybinds.name_of(Keybinds.Action.MAP)}),
+	])
+
+
 func show_map(rc: RunController) -> void:
 	ChoiceView._clear(_canvas)
+	_refresh_legend()
 
 	var known := rc.map.known_rooms()
 	var min_x := 0

@@ -139,6 +139,9 @@ ui.map.boss_hint,보스 문까지 {n}칸 · {about}{span}{note},{n} rooms to the
 ui.map.about,약 ,about 
 ui.map.no_move_in_battle,  ·  전투 중에는 이동할 수 없다,  ·  no walking during a fight
 ui.map.here,여기,Here
+ui.map.legend_zoom,휠  —  확대 · 축소,Wheel  —  zoom
+ui.map.legend_pan,빈 곳 드래그  —  지도 이동,Drag empty space  —  pan
+ui.map.legend_close,{key}  —  닫기 (다시 열면 현재 방으로),{key}  —  close (reopens on the current room)
 ui.room.start,시작한 곳,Where it started
 ui.room.empty,빈 방,Empty room
 ui.room.combat,전투,Fight

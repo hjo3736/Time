@@ -15,6 +15,7 @@ var _column: VBoxContainer
 var _scroll: ScrollContainer
 
 var _heading: Label
+var _close: Button
 var _tabs: HBoxContainer
 var _body: VBoxContainer
 var _side: VBoxContainer
@@ -57,11 +58,11 @@ func _ready() -> void:
 	_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(_tabs)
 
-	var close := Button.new()
-	close.text = tr("ui.overlay.close")
-	close.custom_minimum_size = Vector2(140, 44)
-	close.pressed.connect(func() -> void: closed.emit())
-	top.add_child(close)
+	_close = Button.new()
+	_close.custom_minimum_size = Vector2(140, 44)
+	_close.pressed.connect(func() -> void: closed.emit())
+	top.add_child(_close)
+	relabel_chrome()
 
 	var middle := HBoxContainer.new()
 	middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -97,6 +98,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func heading(text: String) -> void:
 	_heading.text = text
+
+
+func relabel_chrome() -> void:
+	if _close != null:
+		_close.text = tr("ui.overlay.close")
 
 
 func body() -> VBoxContainer:

@@ -24,6 +24,7 @@ func _select(tab: int) -> void:
 
 
 func _rebuild() -> void:
+	relabel_chrome()
 	heading(tr("ui.settings.title"))
 	set_tabs(TAB_KEYS.map(func(k: String) -> String: return tr(k)), _tab, _select)
 	clear_body()

@@ -78,6 +78,7 @@ func _go() -> void:
 	await _language_reaches_a_running_game(boot)
 	await _out_of_reach_is_shown(boot)
 	await _prices_are_drawn_on_the_map(boot)
+	await _english_leaves_no_korean_behind(boot)
 
 	print("\n-- and the run can hand the title back --")
 	boot._game.title_requested.emit()
@@ -1440,3 +1441,174 @@ func _prices_are_drawn_on_the_map(boot: RootScreen) -> void:
 
 	g._close_map()
 	await process_frame
+
+
+func _has_hangul(text: String) -> bool:
+	for c in text:
+		var code := c.unicode_at(0)
+		if (code >= 0xAC00 and code <= 0xD7A3) or (code >= 0x3130 and code <= 0x318F):
+			return true
+	return false
+
+
+
+func _leaks_in(node: Node) -> Array:
+	var found := []
+	var walk := [node]
+	while not walk.is_empty():
+		var at: Node = walk.pop_back()
+		walk.append_array(at.get_children())
+		var text := ""
+		if at is Label:
+			text = (at as Label).text
+		elif at is Button:
+			text = (at as Button).text
+		elif at is RichTextLabel:
+			text = (at as RichTextLabel).get_parsed_text()
+		elif at is LineEdit:
+			text = (at as LineEdit).placeholder_text
+		if text == "한국어":
+			continue
+		if _has_hangul(text):
+			found.append("%s  %s" % [at.get_class(), text.replace("\n", " / ")])
+	return found
+
+
+func _sweep(where: String, node: Node, tally: Dictionary) -> void:
+	var leaks := _leaks_in(node)
+	tally["seen"] = int(tally["seen"]) + 1
+	if leaks.is_empty():
+		print("  ok    %s is fully translated" % where)
+		return
+	for leak in leaks:
+		print("     %s leaked  %s" % [where, leak])
+	tally["leaks"] = int(tally["leaks"]) + leaks.size()
+	_failures += 1
+
+
+func _english_leaves_no_korean_behind(boot: RootScreen) -> void:
+	print("\n-- under English no screen has Korean left anywhere in it --")
+	Settings.set_locale("en")
+	boot._on_language_changed()
+	boot.show_title()
+	await process_frame
+	var tally := {"seen": 0, "leaks": 0}
+
+	_sweep("the title", boot._title, tally)
+
+	boot._open_compendium()
+	await process_frame
+	for tab in [CompendiumView.Tab.CARDS, CompendiumView.Tab.ENEMIES, CompendiumView.Tab.RELICS]:
+		boot._compendium._select(tab)
+		await process_frame
+		_sweep("compendium tab %d" % tab, boot._compendium, tally)
+	boot._compendium._select(CompendiumView.Tab.CARDS)
+	boot._compendium.visible = false
+
+	boot._open_settings()
+	await process_frame
+	for tab in [SettingsView.Tab.SCREEN, SettingsView.Tab.KEYS]:
+		boot._settings._select(tab)
+		await process_frame
+		_sweep("settings tab %d" % tab, boot._settings, tally)
+	boot._settings._select(SettingsView.Tab.SCREEN)
+	boot._settings.visible = false
+
+	boot.begin(31)
+	await process_frame
+	var g: GameScreen = boot._game
+	_sweep("the hud", g._hud, tally)
+	_sweep("the top menu", g._menu, tally)
+	_sweep("the room", g._room, tally)
+
+	g._toggle_map()
+	await process_frame
+	_sweep("the map", g._map, tally)
+	g._close_map()
+
+	g._toggle_deck()
+	await process_frame
+	_sweep("the deck viewer", g._picker, tally)
+	g._close_picker()
+
+	g._toggle_pause()
+	await process_frame
+	_sweep("the pause menu", g._pause, tally)
+	g._toggle_pause()
+	await process_frame
+
+	await _sweep_a_fight(boot, tally)
+	await _sweep_a_room_kind(boot, Room.Kind.FIRE, "the fire", tally)
+	await _sweep_a_room_kind(boot, Room.Kind.SHOP, "the shop", tally)
+	await _sweep_a_room_kind(boot, Room.Kind.EVENT, "an event", tally)
+
+	check("every screen was actually visited", tally["seen"] >= 15, true)
+	check("and none of them leaked Korean", tally["leaks"], 0)
+	Settings.set_locale("ko")
+	boot._on_language_changed()
+	await process_frame
+
+
+func _sweep_a_fight(boot: RootScreen, tally: Dictionary) -> void:
+	boot.begin(2)
+	await process_frame
+	var g: GameScreen = boot._game
+	await _walk_into_a_fight(g)
+	if g.rc.phase != RunController.Phase.BATTLE:
+		print("     (seed 2 reached no fight, nothing swept)")
+		return
+	_sweep("the battle", g._battle, tally)
+
+	for handle in g.rc.battle.enemy_handles():
+		g.rc.battle.combatants[handle].hp = 0
+	g.rc.battle.end_turn()
+	g.refresh()
+	await process_frame
+	if g.rc.phase == RunController.Phase.REWARD:
+		_sweep("the reward", g._choice, tally)
+
+
+func _sweep_a_room_kind(boot: RootScreen, kind: int, where: String, tally: Dictionary) -> void:
+	for seed_value in [31, 3, 7, 11, 2, 5]:
+		boot.begin(seed_value)
+		await process_frame
+		var g: GameScreen = boot._game
+		if await _travel_to(g, kind):
+			_sweep(where, g._choice, tally)
+			return
+	check("%s was reached and swept" % where, false, true)
+
+
+func _travel_to(g: GameScreen, kind: int) -> bool:
+	for step in 120:
+		match g.rc.phase:
+			RunController.Phase.EXPLORING:
+				if g.rc.map.at(g.rc.map.current).kind == kind:
+					return true
+				var route := _route_to(g.rc, kind)
+				if route.is_empty():
+					return false
+				g._on_move(route[0])
+			RunController.Phase.BATTLE:
+				for handle in g.rc.battle.enemy_handles():
+					g.rc.battle.combatants[handle].hp = 0
+				g.rc.battle.end_turn()
+				g.refresh()
+			RunController.Phase.REWARD:
+				g._on_choice("skip")
+			RunController.Phase.FIRE:
+				if kind == Room.Kind.FIRE:
+					return true
+				g._on_choice("leave_fire")
+			RunController.Phase.SHOP:
+				if kind == Room.Kind.SHOP:
+					return true
+				g._on_choice("leave_shop")
+			RunController.Phase.EVENT:
+				if kind == Room.Kind.EVENT:
+					return true
+				g._on_choice(["event", g.rc.event.choices.size() - 1])
+			_:
+				return false
+		await process_frame
+	return false

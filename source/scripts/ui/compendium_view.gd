@@ -46,6 +46,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _rebuild() -> void:
+	relabel_chrome()
 	if _focus != null:
 		set_back(func() -> void:
 			_focus = null
