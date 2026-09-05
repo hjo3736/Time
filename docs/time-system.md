@@ -258,27 +258,33 @@ The elegant-sounding version breaks three ways:
 | Action | Cost | Notes |
 |--------|------|-------|
 | Battle turn | 3h (full allotment) | Flat, regardless of spend |
-| Room transition | 1-3h, per room | Backtracking included — see below |
+| Room transition | 1-3h, per corridor | Same both ways; backtracking included — see below |
 | Fire (rest) | 8h | Buys **one** of: heal / upgrade / convert |
 | Shop | 1h | Spends Restored; there is no gold |
 | Event | Variable | The event states its cost before you commit |
 
 ### The map is an Isaac floor, not a Spire lattice
 
-Rooms on a grid, walked room to room, freely in any direction. **Every room
-costs time to enter — one to three hours, decided when the floor is carved** —
-including walking back through rooms already cleared.
+Rooms on a grid, walked room to room, freely in any direction. **Every corridor
+between two rooms has a length — one to three hours, decided when the floor is
+carved** — and walking it costs that, in either direction, backtracking through
+cleared rooms included.
 
-**A room's price is known only once it has been surveyed**, meaning the player
-has stood in it or in one of its neighbours. Everything further out is quoted at
-the base rate (`room_transition_cost`, set to the true average), so the walk to
-the boss door is shown as an *estimate*, marked as one, and it moves as the fog
-lifts. The number of rooms to the boss is always exact; only the hours are a
-guess.
+The length belongs to the corridor, not to the rooms at its ends. That is what
+makes it symmetric: A to B and B to A read the same number off the same edge,
+because there is only one number. An earlier draft priced the *room being
+entered* instead, which made 62% of corridors cost different amounts depending
+on which side you stood on — the same doorway wearing two price tags.
+
+**A corridor's length is known once the player has stood at either end.**
+Everything further out is quoted at the base rate (`room_transition_cost`, set
+to the true average), so the walk to the boss door is shown as an *estimate*,
+marked as one, and it moves as the fog lifts. The number of rooms to the boss is
+always exact; only the hours are a guess.
 
 **This is what keeps the route from being solved arithmetic.** With a flat hour
 the cheapest path was the shortest path and there was nothing to weigh. With
-prices that differ, a two-room detour can be cheaper than a one-room push, and
+lengths that differ, a two-room detour can be cheaper than a one-room push, and
 the player cannot know that until they are close enough to see it. The plan is
 still worth making — it is just no longer guaranteed to survive.
 
@@ -535,7 +541,7 @@ with, not because they are right.
 | Conversion cap | 36h of Restored per fire (yields 18h; net +10h after the 8h fire) |
 | Combat rooms per act | 9 available, ~6 affordable |
 | Enemy scale | both x1.0 — enemies fight as authored |
-| Room transition | 1-3h per room, guessed at 1.5h until surveyed (~26-31% of a run) |
+| Room transition | 1-3h per corridor, same both ways, guessed at 1.5h until walked (~26-31% of a run) |
 | Threat step | every 48h **elapsed** (~14 steps per run) |
 
 The number to watch in the first playable build is **how much of a run's Restored

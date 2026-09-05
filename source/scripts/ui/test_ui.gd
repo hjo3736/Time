@@ -79,6 +79,7 @@ func _go() -> void:
 	await _out_of_reach_is_shown(boot)
 	await _prices_are_drawn_on_the_map(boot)
 	await _english_leaves_no_korean_behind(boot)
+	await _a_save_from_an_older_build(boot)
 
 	print("\n-- and the run can hand the title back --")
 	boot._game.title_requested.emit()
@@ -1407,32 +1408,42 @@ func _prices_are_drawn_on_the_map(boot: RootScreen) -> void:
 	for coord in g.rc.map.known_rooms():
 		by_coord[g._map._local_of(coord, origin)] = coord
 
-	var surveyed := 0
-	var priced_wrongly := 0
-	var far_leaked := 0
-	for child in canvas.get_children():
-		if not (child is Button) or not by_coord.has(child.position):
-			continue
-		var coord: Vector2i = by_coord[child.position]
-		var shown: String = (child as Button).text
-		if coord == g.rc.map.current:
-			continue
-		var span := RunClock.format_span(g.rc.map.priced_cost_at(coord))
-		if g.rc.map.is_surveyed(coord):
-			surveyed += 1
-			if not shown.ends_with("\n" + span):
-				priced_wrongly += 1
-		elif shown.contains("\n"):
-			far_leaked += 1
+	var walked_corridors := {}
+	for coord in g.rc.map.known_rooms():
+		for step in [Vector2i.RIGHT, Vector2i.DOWN]:
+			var next: Vector2i = coord + step
+			if not by_coord.values().has(next):
+				continue
+			if g.rc.map.walked_between(coord, next):
+				walked_corridors[[coord, next]] = RunClock.format_span(
+					g.rc.map.priced_cost_between(coord, next))
 
-	check("more than one room has been surveyed", surveyed > 1, true)
-	check("each shows the hours it will actually charge", priced_wrongly, 0)
-	check("and an unsurveyed room shows no price at all", far_leaked, 0)
+	var spans := []
+	for child in canvas.get_children():
+		if child is Label:
+			spans.append((child as Label).text)
+
+	check("some corridors have been walked", walked_corridors.size() > 1, true)
+	check("one number is drawn per walked corridor, and no more",
+		spans.size(), walked_corridors.size())
+	var unlabelled := 0
+	for key in walked_corridors:
+		if not spans.has(walked_corridors[key]):
+			unlabelled += 1
+	check("each shows the hours it will actually charge", unlabelled, 0)
+
+	var in_cells := 0
+	for child in canvas.get_children():
+		if child is Button and (child as Button).text.contains("\n"):
+			in_cells += 1
+	check("and no price is drawn inside a room any more", in_cells, 0)
 
 	var different := {}
 	for coord in g.rc.map.rooms:
-		different[g.rc.map.cost_at(coord)] = true
-	check("the floor does not price every room alike", different.size() > 1, true)
+		for next in g.rc.map.neighbours(coord):
+			different[g.rc.map.cost_between(coord, next)] = true
+	check("the floor does not make every corridor the same length",
+		different.size() > 1, true)
 
 	print("\n-- the walk to the boss is offered as an estimate, not a promise --")
 	check("it reads as a guess while unseen rooms lie on the path",
@@ -1612,3 +1623,25 @@ func _travel_to(g: GameScreen, kind: int) -> bool:
 				return false
 		await process_frame
 	return false
+
+
+func _a_save_from_an_older_build(boot: RootScreen) -> void:
+	print("\n-- a save this build cannot read sends you back to the title, not into a new run --")
+	boot.show_title()
+	await process_frame
+
+	var stale := FileAccess.open(SaveGame.path, FileAccess.WRITE)
+	stale.store_string(JSON.stringify({
+		"version": RunController.SAVE_VERSION - 1, "seed": 99, "act": 1}))
+	stale.close()
+
+	check("the file is there", SaveGame.has_save(), true)
+	boot.resume()
+	await process_frame
+	check("no run was started behind it", boot._game, null)
+	check("the title is still up", boot._title.visible, true)
+	check("and it stopped offering to continue",
+		boot._title._continue_item.visible, false)
+	SaveGame.clear()
+	boot.begin(2)
+	await process_frame

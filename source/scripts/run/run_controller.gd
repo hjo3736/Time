@@ -318,7 +318,7 @@ func to_dict() -> Dictionary:
 	return written
 
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 
 
 static func from_dict(

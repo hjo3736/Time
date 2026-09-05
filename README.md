@@ -16,7 +16,8 @@ Working title — rename freely.
 ## Core loop
 
 1. Walk an Isaac-style floor of rooms (combat / elite / event / shop / fire /
-   empty). Entering a room costs one to three hours, backtracking included.
+   empty). Each corridor between two rooms is one to three hours long, the same
+   walked either way, backtracking included.
 2. Fight turn-based single-screen battles by playing cards from a hand.
 3. Take a reward (new card, relic, reclaimed time) and shape the deck.
 4. Open the boss door when ready — its location is marked from the start.
@@ -111,7 +112,7 @@ working, which means more is possible.
 | 3 | Effect resolution | done — `BattleEffectContext`; status vocabulary still minimal |
 | 4 | Hand & pile UI | prototype done — click to play, intents shown, no art yet |
 | 5 | Enemy AI | done for act 1 — five behaviours, three normals, weighted encounters |
-| 6 | Run map | done — seeded Isaac floors, per-room 1-3h prices revealed by survey, typed-frontier fog, boss marked |
+| 6 | Run map | done — seeded Isaac floors, symmetric 1-3h corridors revealed by walking, typed-frontier fog, boss marked |
 | 7 | Rewards & shop | card picks, shop stock and removal done; relic sales wait on relics |
 | 8 | Relics | done — four relics; hooks reach the map and the clock, not just battle |
 | 9 | Save / resume | done — whole run incl. the fight in progress, JSON in `user://`; unlock ledger still to come |

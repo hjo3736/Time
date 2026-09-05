@@ -9,11 +9,21 @@ var kind := Kind.EMPTY
 
 var encounter_id := &""
 
-var cost := 0
+var exits := {}
 
 var visited := false
 
 var cleared := false
+
+
+func _written_exits() -> Array:
+	var out := []
+	var steps := exits.keys()
+	steps.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		return a.y < b.y if a.y != b.y else a.x < b.x)
+	for step in steps:
+		out.append([step.x, step.y, int(exits[step])])
+	return out
 
 
 func is_hostile() -> bool:
@@ -34,7 +44,7 @@ func to_dict() -> Dictionary:
 		"y": coord.y,
 		"kind": kind,
 		"encounter_id": String(encounter_id),
-		"cost": cost,
+		"exits": _written_exits(),
 		"visited": visited,
 		"cleared": cleared,
 	}
@@ -45,7 +55,9 @@ static func from_dict(data: Dictionary) -> Room:
 	out.coord = Vector2i(int(data.get("x", 0)), int(data.get("y", 0)))
 	out.kind = int(data.get("kind", Kind.EMPTY))
 	out.encounter_id = StringName(data.get("encounter_id", ""))
-	out.cost = int(data.get("cost", 0))
+	for entry in data.get("exits", []):
+		if entry.size() >= 3:
+			out.exits[Vector2i(int(entry[0]), int(entry[1]))] = int(entry[2])
 	out.visited = bool(data.get("visited", false))
 	out.cleared = bool(data.get("cleared", false))
 	return out

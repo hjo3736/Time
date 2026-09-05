@@ -111,7 +111,7 @@ func resume() -> void:
 	var loaded := SaveGame.load_run(_balance, _cards, _enemies, _encounters, _relics)
 	if loaded == null:
 		_title.set_continue_available(false)
-		begin(randi())
+		_title.visible = true
 		return
 	_show_game().adopt(loaded)
 

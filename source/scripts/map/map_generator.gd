@@ -36,8 +36,14 @@ static func _price(rooms: Dictionary, balance: Balance, rng: RandomNumberGenerat
 	order.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
 		return a.y < b.y if a.y != b.y else a.x < b.x)
 	for coord in order:
-		var drawn := mini(rng.randi_range(lo, hi), rng.randi_range(lo, hi))
-		rooms[coord].cost = drawn * Balance.MINUTES_PER_HOUR
+		for step in NEIGHBOURS:
+			var next: Vector2i = coord + step
+			if not rooms.has(next) or rooms[coord].exits.has(step):
+				continue
+			var drawn := mini(rng.randi_range(lo, hi), rng.randi_range(lo, hi))
+			var minutes := drawn * Balance.MINUTES_PER_HOUR
+			rooms[coord].exits[step] = minutes
+			rooms[next].exits[-step] = minutes
 
 
 static func _carve(target: int, rng: RandomNumberGenerator) -> Dictionary:

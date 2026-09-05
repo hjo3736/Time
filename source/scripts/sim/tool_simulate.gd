@@ -177,7 +177,7 @@ func _toward(rc: RunController, kind: Room.Kind) -> Variant:
 				best_cost = int(spent[at])
 			continue
 		for n in rc.map.neighbours(at):
-			var through := int(spent[at]) + rc.map.guessed_cost_at(n)
+			var through := int(spent[at]) + rc.map.guessed_cost_between(at, n)
 			if not spent.has(n) or through < int(spent[n]):
 				spent[n] = through
 				came[n] = at

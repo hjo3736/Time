@@ -59,27 +59,36 @@ func reachable() -> Array:
 	return neighbours(current)
 
 
-func cost_at(coord: Vector2i) -> int:
-	var room: Room = rooms.get(coord)
-	if room == null or room.cost <= 0:
+func cost_between(from: Vector2i, to: Vector2i) -> int:
+	var room: Room = rooms.get(from)
+	if room == null:
 		return _run.clock.balance.room_transition_cost
-	return room.cost
+	return int(room.exits.get(to - from, _run.clock.balance.room_transition_cost))
 
 
-func priced_cost_at(coord: Vector2i) -> int:
-	return _run.relic_room_cost(cost_at(coord))
+func priced_cost_between(from: Vector2i, to: Vector2i) -> int:
+	return _run.relic_room_cost(cost_between(from, to))
 
 
-func guessed_cost_at(coord: Vector2i) -> int:
-	if is_surveyed(coord):
-		return cost_at(coord)
+func priced_cost_to(coord: Vector2i) -> int:
+	return priced_cost_between(current, coord)
+
+
+func walked_between(from: Vector2i, to: Vector2i) -> bool:
+	return rooms.has(from) and rooms.has(to) \
+		and (rooms[from].visited or rooms[to].visited)
+
+
+func guessed_cost_between(from: Vector2i, to: Vector2i) -> int:
+	if walked_between(from, to):
+		return cost_between(from, to)
 	return _run.clock.balance.room_transition_cost
 
 
 func preview_move(coord: Vector2i = Vector2i.ZERO) -> Dictionary:
 	if not rooms.has(coord):
 		return _run.clock.project(_run.relic_room_cost(_run.clock.balance.room_transition_cost))
-	return _run.clock.project(priced_cost_at(coord))
+	return _run.clock.project(priced_cost_to(coord))
 
 
 func move_to(coord: Vector2i) -> bool:
@@ -88,8 +97,9 @@ func move_to(coord: Vector2i) -> bool:
 
 	_run.skip_reward()
 
+	var walked := cost_between(current, coord)
 	current = coord
-	_run.enter_room(StringName(str(coord)), cost_at(coord))
+	_run.enter_room(StringName(str(coord)), walked)
 
 	var room: Room = rooms[coord]
 	var first_time := not room.visited
@@ -158,10 +168,10 @@ func _walk_to_boss() -> Dictionary:
 			return int(best[a]) < int(best[b]))
 		var coord: Vector2i = queue.pop_front()
 		for next in neighbours(coord):
-			var through := int(best[coord]) + _run.relic_room_cost(guessed_cost_at(next))
+			var through := int(best[coord]) + _run.relic_room_cost(guessed_cost_between(coord, next))
 			if not best.has(next) or through < int(best[next]):
 				best[next] = through
-				guessed[next] = bool(guessed[coord]) or not is_surveyed(next)
+				guessed[next] = bool(guessed[coord]) or not walked_between(coord, next)
 				queue.append(next)
 	if not best.has(boss_coord):
 		return unreachable

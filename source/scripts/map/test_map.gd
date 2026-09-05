@@ -96,28 +96,38 @@ func _init() -> void:
 	check("but no dearer than the worst case",
 		ms.minutes_to_boss() <= ms.steps_to_boss() * _b.room_cost_max, true)
 
-	print("\n-- an unwalked room costs what the map guesses, not what it is --")
-	check("the far walk is an estimate", ms.boss_walk_is_guess(), true)
-	var unseen := 0
-	var surveyed := 0
-	for coord in ms.rooms:
-		if ms.is_surveyed(coord):
-			surveyed += 1
-		else:
-			unseen += 1
-			check("an unseen room is guessed at the base rate",
-				ms.guessed_cost_at(coord), _b.room_transition_cost)
-	check("most of the floor is still unseen", unseen > surveyed, true)
-
-	print("\n-- rooms are not all priced the same --")
+	print("\n-- a corridor costs the same walked either way --")
+	var pairs := 0
+	var lopsided := 0
 	var prices := {}
 	for coord in ms.rooms:
-		prices[ms.cost_at(coord)] = true
-		check("%s is a whole number of hours" % str(coord),
-			ms.cost_at(coord) % Balance.MINUTES_PER_HOUR, 0)
-		check("%s is inside the range" % str(coord),
-			ms.cost_at(coord) >= _b.room_cost_min and ms.cost_at(coord) <= _b.room_cost_max, true)
-	check("more than one price exists", prices.size() > 1, true)
+		for next in ms.neighbours(coord):
+			pairs += 1
+			if ms.cost_between(coord, next) != ms.cost_between(next, coord):
+				lopsided += 1
+			prices[ms.cost_between(coord, next)] = true
+			check("%s->%s is a whole number of hours" % [str(coord), str(next)],
+				ms.cost_between(coord, next) % Balance.MINUTES_PER_HOUR, 0)
+			check("%s->%s is inside the range" % [str(coord), str(next)],
+				ms.cost_between(coord, next) >= _b.room_cost_min
+				and ms.cost_between(coord, next) <= _b.room_cost_max, true)
+	check("there are corridors to check", pairs > 20, true)
+	check("not one of them disagrees with itself", lopsided, 0)
+	check("and they are not all the same length", prices.size() > 1, true)
+
+	print("\n-- an unwalked corridor costs what the map guesses, not what it is --")
+	check("the far walk is an estimate", ms.boss_walk_is_guess(), true)
+	var unwalked := 0
+	var walked := 0
+	for coord in ms.rooms:
+		for next in ms.neighbours(coord):
+			if ms.walked_between(coord, next):
+				walked += 1
+			else:
+				unwalked += 1
+				check("an unwalked corridor is guessed at the base rate",
+					ms.guessed_cost_between(coord, next), _b.room_transition_cost)
+	check("most of the floor is still unwalked", unwalked > walked, true)
 
 	print("\n-- the same seed builds the same floor --")
 	var a := floor_for(4242)
@@ -147,18 +157,21 @@ func _init() -> void:
 	check("boss is known before anyone walks", fog.is_known(fog.boss_coord), true)
 	check("without having been visited", fog.at(fog.boss_coord).visited, false)
 
-	print("\n-- walking is charged at the room's own price, backtracking included --")
+	print("\n-- walking back out costs exactly what walking in cost --")
 	var walk := state_for(11)
 	var start_remaining := walk._run.clock.remaining
 	var first: Vector2i = walk.neighbours(Vector2i.ZERO)[0]
+	var corridor := walk.cost_between(Vector2i.ZERO, first)
 	check("moved", walk.move_to(first), true)
-	check("charged that room", start_remaining - walk._run.clock.remaining, walk.cost_at(first))
+	check("charged the corridor", start_remaining - walk._run.clock.remaining, corridor)
 	check("standing there now", walk.current, first)
+	var mid := walk._run.clock.remaining
 	check("stepping back is legal", walk.move_to(Vector2i.ZERO), true)
-	check("and the start has its own price too", start_remaining - walk._run.clock.remaining,
-		walk.cost_at(first) + walk.cost_at(Vector2i.ZERO))
+	check("the way back cost the same", mid - walk._run.clock.remaining, corridor)
+	check("so the round trip is exactly twice", start_remaining - walk._run.clock.remaining,
+		corridor * 2)
 	check("logged as travel", walk._run.clock.spent_by_source()[RunClock.Source.TRAVEL],
-		walk.cost_at(first) + walk.cost_at(Vector2i.ZERO))
+		corridor * 2)
 
 	print("\n-- illegal moves change nothing --")
 	var before := walk._run.clock.remaining
@@ -195,8 +208,8 @@ func _init() -> void:
 	var was := preview._run.clock.remaining
 	preview.move_to(door)
 	check("the preview told the truth", preview._run.clock.remaining, projected["remaining"])
-	check("and it charged that door's own price",
-		was - int(projected["remaining"]), preview.cost_at(door))
+	check("and it charged that corridor",
+		was - int(projected["remaining"]), preview.cost_between(Vector2i.ZERO, door))
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)

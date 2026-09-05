@@ -7,9 +7,10 @@ signal closed
 
 const CELL := 58
 
-const GAP := 16
+const GAP := 46
 const STRIDE := CELL + GAP
 const LINK_WIDTH := 18
+const CHIP := Vector2(46, 19)
 
 const ZOOM_MIN := 0.4
 const ZOOM_MAX := 2.4
@@ -211,11 +212,9 @@ func _cell(rc: RunController, coord: Vector2i, min_x: int, min_y: int, adjacent:
 	button.custom_minimum_size = Vector2(CELL, CELL)
 	button.size = Vector2(CELL, CELL)
 	button.text = RoomLabels.short_of(room, here)
-	if not here and rc.map.is_surveyed(coord):
-		button.text += "\n" + RunClock.format_span(rc.map.priced_cost_at(coord))
 	button.tooltip_text = tr("ui.map.here") if here else (
 		"%s · %s" % [RoomLabels.name_of(room),
-			RoomLabels.price_of(room, rc.map.priced_cost_at(coord))] if adjacent else "")
+			RoomLabels.price_of(room, rc.map.priced_cost_to(coord))] if adjacent else "")
 	button.disabled = not (adjacent and walkable)
 	button.add_theme_font_size_override("font_size", UiTheme.size_for(14))
 
@@ -271,4 +270,29 @@ func _links(rc: RunController, known: Array, origin: Vector2i) -> Array:
 			bar.color = Color(UiTheme.GOLD, 0.75) if live else Color(UiTheme.INK_DIM, 0.35)
 			out.append(bar)
 
+			if not rc.map.walked_between(coord, next):
+				continue
+			var mid := (Vector2(here.x + CELL + GAP * 0.5, here.y + CELL * 0.5)
+				if step == Vector2i.RIGHT
+				else Vector2(here.x + CELL * 0.5, here.y + CELL + GAP * 0.5))
+			out.append(_span_chip(
+				RunClock.format_span(rc.map.priced_cost_between(coord, next)), mid, live))
+
 	return out
+
+
+func _span_chip(text: String, mid: Vector2, live: bool) -> Control:
+	var chip := UiTheme.label(text, 12, UiTheme.BONE if live else UiTheme.INK_DIM)
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	chip.size = Vector2(CHIP.x, CHIP.y)
+	chip.position = mid - CHIP * 0.5
+
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = Color(UiTheme.PANEL, 0.96)
+	plate.set_corner_radius_all(3)
+	plate.set_border_width_all(1)
+	plate.border_color = Color(UiTheme.GOLD, 0.7) if live else Color(UiTheme.INK_DIM, 0.45)
+	chip.add_theme_stylebox_override("normal", plate)
+	return chip

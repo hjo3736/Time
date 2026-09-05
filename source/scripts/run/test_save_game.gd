@@ -69,9 +69,10 @@ func _init() -> void:
 
 	var repriced := 0
 	for coord in walked.map.rooms:
-		if not back.map.rooms.has(coord) or back.map.cost_at(coord) != walked.map.cost_at(coord):
-			repriced += 1
-	check("every room kept the price it was carved with", repriced, 0)
+		for next in walked.map.neighbours(coord):
+			if back.map.cost_between(coord, next) != walked.map.cost_between(coord, next):
+				repriced += 1
+	check("every corridor kept the length it was carved with", repriced, 0)
 	check("and the walk to the boss still reads the same",
 		back.map.minutes_to_boss(), walked.map.minutes_to_boss())
 

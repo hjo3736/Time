@@ -109,7 +109,7 @@ func _door(rc: RunController, step: Vector2i, compass: String) -> Control:
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.text = "%s  ·  %s\n%s" % [
 		compass, RoomLabels.name_of(room),
-		RoomLabels.price_of(room, rc.map.priced_cost_at(target))]
+		RoomLabels.price_of(room, rc.map.priced_cost_to(target))]
 	button.add_theme_font_size_override("font_size", UiTheme.size_for(15))
 	button.pressed.connect(func() -> void: move_requested.emit(target))
 	return button
