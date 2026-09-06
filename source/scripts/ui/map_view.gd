@@ -7,10 +7,18 @@ signal closed
 
 const CELL := 58
 
-const GAP := 46
-const STRIDE := CELL + GAP
-const LINK_WIDTH := 18
-const CHIP := Vector2(46, 19)
+const UNIT := 46
+const APART := CELL + 26
+const RELAX_PASSES := 90
+const PULL := 0.28
+const SHOVE := 0.55
+const LINK_WIDTH := 5.0
+const BOW_MIN := 0.06
+const BOW_MAX := 0.16
+const BOW_STEPS := 7
+const BENDS_MIN := 2
+const BENDS_MAX := 4
+const BOW_LEAST := 11.0
 
 const ZOOM_MIN := 0.4
 const ZOOM_MAX := 2.4
@@ -23,6 +31,9 @@ var _hint: Label
 var _legend: Label
 var _zoom := ZOOM_DEFAULT
 var _panning := false
+var _places := {}
+var _extent := Vector2.ZERO
+var _lines: MapLinks
 
 var _centre_pending := false
 
@@ -84,7 +95,7 @@ func _ready() -> void:
 
 	_legend = UiTheme.label("", 13, UiTheme.INK_DIM)
 	_legend.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	_legend.position = Vector2(10, -70)
+	_legend.position = Vector2(10, -90)
 	_legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_viewport.add_child(_legend)
 
@@ -111,6 +122,7 @@ func _refresh_legend() -> void:
 	_legend.text = "\n".join([
 		tr("ui.map.legend_zoom"),
 		tr("ui.map.legend_pan"),
+		tr("ui.map.legend_length"),
 		tr("ui.map.legend_close").format({"key": Keybinds.name_of(Keybinds.Action.MAP)}),
 	])
 
@@ -118,24 +130,20 @@ func _refresh_legend() -> void:
 func show_map(rc: RunController) -> void:
 	ChoiceView._clear(_canvas)
 	_refresh_legend()
+	_layout(rc)
 
 	var known := rc.map.known_rooms()
-	var min_x := 0
-	var min_y := 0
-	for coord in known:
-		min_x = mini(min_x, coord.x)
-		min_y = mini(min_y, coord.y)
-
 	var walkable := rc.phase == RunController.Phase.EXPLORING
 	var reachable := rc.map.reachable()
-	var origin := Vector2i(min_x, min_y)
 
-	for node in _links(rc, known, origin):
-		_canvas.add_child(node)
+	_lines = MapLinks.new()
+	_lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_lines.size = _extent
+	_lines.segments = _corridors(rc, known)
+	_canvas.add_child(_lines)
 	for coord in known:
-		_canvas.add_child(_cell(rc, coord, min_x, min_y, reachable.has(coord), walkable))
+		_canvas.add_child(_cell(rc, coord, reachable.has(coord), walkable))
 
-	_canvas.set_meta("origin", Vector2i(min_x, min_y))
 	_canvas.set_meta("current", rc.map.current)
 	_canvas.scale = Vector2(_zoom, _zoom)
 
@@ -154,15 +162,83 @@ func centre_on_current() -> void:
 		_centre_pending = true
 		set_process(true)
 		return
-	var origin: Vector2i = _canvas.get_meta("origin")
 	var current: Vector2i = _canvas.get_meta("current")
-	var middle := _local_of(current, origin) + Vector2(CELL, CELL) * 0.5
 	_canvas.scale = Vector2(_zoom, _zoom)
-	_canvas.position = _viewport.size * 0.5 - middle * _zoom
+	_canvas.position = _viewport.size * 0.5 - _middle_of(current) * _zoom
 
 
-func _local_of(coord: Vector2i, origin: Vector2i) -> Vector2:
-	return Vector2((coord.x - origin.x) * STRIDE, (coord.y - origin.y) * STRIDE)
+func _layout(rc: RunController) -> void:
+	var coords := rc.map.rooms.keys()
+	coords.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		return a.y < b.y if a.y != b.y else a.x < b.x)
+
+	var places := {}
+	for coord in coords:
+		var sway := hash(coord) % 1000
+		places[coord] = Vector2(coord) * (CELL + UNIT * 1.6) + Vector2(
+			float(sway % 13) - 6.0, float((sway / 13) % 13) - 6.0)
+
+	var edges := []
+	var met := {}
+	for a in coords:
+		for b in rc.map.neighbours(a):
+			var key := [a, b] if (a.y < b.y or (a.y == b.y and a.x < b.x)) else [b, a]
+			if met.has(key):
+				continue
+			met[key] = true
+			edges.append([key[0], key[1],
+				float(CELL) + UNIT * _hours(rc, key[0], key[1])])
+
+	for pass_number in RELAX_PASSES:
+		_pull(edges, places)
+		_shove(coords, places)
+
+	var least := Vector2(INF, INF)
+	for coord in coords:
+		least = least.min(places[coord])
+	_places.clear()
+	_extent = Vector2.ZERO
+	for coord in coords:
+		_places[coord] = (places[coord] - least).round()
+		_extent = _extent.max(_places[coord] + Vector2(CELL, CELL))
+
+
+func _hours(rc: RunController, a: Vector2i, b: Vector2i) -> float:
+	return maxf(1.0, float(rc.map.guessed_priced_between(a, b)) / Balance.MINUTES_PER_HOUR)
+
+
+func _pull(edges: Array, places: Dictionary) -> void:
+	for edge in edges:
+		var a: Vector2i = edge[0]
+		var b: Vector2i = edge[1]
+		var want: float = edge[2]
+		var apart: Vector2 = places[b] - places[a]
+		var span := maxf(apart.length(), 0.01)
+		var shift := apart / span * (span - want) * 0.5 * PULL
+		places[a] += shift
+		places[b] -= shift
+
+
+func _shove(coords: Array, places: Dictionary) -> void:
+	for i in coords.size():
+		for j in range(i + 1, coords.size()):
+			var a: Vector2i = coords[i]
+			var b: Vector2i = coords[j]
+			var apart: Vector2 = places[b] - places[a]
+			var span := maxf(apart.length(), 0.01)
+			if span >= APART:
+				continue
+			var push := apart / span * (APART - span) * 0.5 * SHOVE
+			places[a] -= push
+			places[b] += push
+
+
+func _local_of(coord: Vector2i) -> Vector2:
+	return _places.get(coord, Vector2.ZERO)
+
+
+func _middle_of(coord: Vector2i) -> Vector2:
+	return _local_of(coord) + Vector2(CELL, CELL) * 0.5
 
 
 func _on_viewport_input(event: InputEvent) -> void:
@@ -203,12 +279,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func _cell(rc: RunController, coord: Vector2i, min_x: int, min_y: int, adjacent: bool, walkable: bool) -> Control:
+func _cell(rc: RunController, coord: Vector2i, adjacent: bool, walkable: bool) -> Control:
 	var room: Room = rc.map.at(coord)
 	var here := coord == rc.map.current
 
 	var button := Button.new()
-	button.position = _local_of(coord, Vector2i(min_x, min_y))
+	button.position = _local_of(coord)
 	button.custom_minimum_size = Vector2(CELL, CELL)
 	button.size = Vector2(CELL, CELL)
 	button.text = RoomLabels.short_of(room, here)
@@ -235,64 +311,82 @@ func _colour(room: Room, here: bool) -> Color:
 	if here:
 		return UiTheme.PANEL_HI
 	if room.is_spent():
-		return Color(UiTheme.PANEL, 0.45)
+		return UiTheme.PANEL.lerp(UiTheme.BG, 0.55)
 	match room.kind:
-		Room.Kind.BOSS: return Color(UiTheme.BLOOD, 0.55)
-		Room.Kind.FIRE: return Color(UiTheme.GOLD, 0.28)
-		Room.Kind.SHOP: return Color(UiTheme.GREEN, 0.32)
-		Room.Kind.COMBAT, Room.Kind.ELITE: return UiTheme.PANEL
-	return Color(UiTheme.PANEL, 0.7)
+		Room.Kind.BOSS: return UiTheme.PANEL.lerp(UiTheme.BLOOD, 0.55)
+		Room.Kind.FIRE: return UiTheme.PANEL.lerp(UiTheme.GOLD, 0.28)
+		Room.Kind.SHOP: return UiTheme.PANEL.lerp(UiTheme.GREEN, 0.32)
+	return UiTheme.PANEL
 
 
-func _links(rc: RunController, known: Array, origin: Vector2i) -> Array:
+func _corridors(rc: RunController, known: Array) -> Array:
 	var out := []
-	var seen := {}
+	var lit := {}
 	for coord in known:
-		seen[coord] = true
+		lit[coord] = true
 
+	var met := {}
 	for coord in known:
-		for step in [Vector2i.RIGHT, Vector2i.DOWN]:
-			var next: Vector2i = coord + step
-			if not seen.has(next):
+		for next in rc.map.neighbours(coord):
+			if not lit.has(next):
 				continue
-
-			var bar := ColorRect.new()
-			bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			var here := _local_of(coord, origin)
-			if step == Vector2i.RIGHT:
-				bar.position = Vector2(here.x + CELL, here.y + (CELL - LINK_WIDTH) * 0.5)
-				bar.size = Vector2(GAP, LINK_WIDTH)
-			else:
-				bar.position = Vector2(here.x + (CELL - LINK_WIDTH) * 0.5, here.y + CELL)
-				bar.size = Vector2(LINK_WIDTH, GAP)
+			var key := [coord, next] if (coord.y < next.y
+				or (coord.y == next.y and coord.x < next.x)) else [next, coord]
+			if met.has(key):
+				continue
+			met[key] = true
 
 			var live: bool = coord == rc.map.current or next == rc.map.current
-			bar.color = Color(UiTheme.GOLD, 0.75) if live else Color(UiTheme.INK_DIM, 0.35)
-			out.append(bar)
-
-			if not rc.map.walked_between(coord, next):
-				continue
-			var mid := (Vector2(here.x + CELL + GAP * 0.5, here.y + CELL * 0.5)
-				if step == Vector2i.RIGHT
-				else Vector2(here.x + CELL * 0.5, here.y + CELL + GAP * 0.5))
-			out.append(_span_chip(
-				RunClock.format_span(rc.map.priced_cost_between(coord, next)), mid, live))
+			var walked: bool = rc.map.walked_between(coord, next)
+			var from := _middle_of(key[0])
+			var to := _middle_of(key[1])
+			out.append({
+				"from": from,
+				"to": to,
+				"points": _wander(from, to, hash(key[0]) ^ hash(key[1])),
+				"shade": Color(UiTheme.GOLD, 0.8) if live else Color(UiTheme.INK_DIM,
+					0.5 if walked else 0.22),
+				"width": LINK_WIDTH if walked else LINK_WIDTH * 0.5,
+				"corridor": key,
+				"walked": walked,
+			})
 
 	return out
 
 
-func _span_chip(text: String, mid: Vector2, live: bool) -> Control:
-	var chip := UiTheme.label(text, 12, UiTheme.BONE if live else UiTheme.INK_DIM)
-	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	chip.size = Vector2(CHIP.x, CHIP.y)
-	chip.position = mid - CHIP * 0.5
+func _wander(from: Vector2, to: Vector2, salt: int) -> PackedVector2Array:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = salt
+	var span := to - from
+	var sideways := Vector2(-span.y, span.x).normalized()
+	var reach := span.length()
 
-	var plate := StyleBoxFlat.new()
-	plate.bg_color = Color(UiTheme.PANEL, 0.96)
-	plate.set_corner_radius_all(3)
-	plate.set_border_width_all(1)
-	plate.border_color = Color(UiTheme.GOLD, 0.7) if live else Color(UiTheme.INK_DIM, 0.45)
-	chip.add_theme_stylebox_override("normal", plate)
-	return chip
+	var knots: Array[Vector2] = [from]
+	var bends := rng.randi_range(BENDS_MIN, BENDS_MAX)
+	for i in bends:
+		var along := float(i + 1) / float(bends + 1) + rng.randf_range(-0.09, 0.09)
+		var swing := rng.randf_range(0.45, 1.0) * (1.0 if rng.randi() % 2 == 0 else -1.0)
+		var lean := maxf(BOW_LEAST, reach * rng.randf_range(BOW_MIN, BOW_MAX)) * swing
+		knots.append(from + span * along + sideways * lean)
+	knots.append(to)
+
+	var line := PackedVector2Array()
+	for i in range(knots.size() - 1):
+		var before: Vector2 = knots[maxi(i - 1, 0)]
+		var start: Vector2 = knots[i]
+		var end: Vector2 = knots[i + 1]
+		var after: Vector2 = knots[mini(i + 2, knots.size() - 1)]
+		for step in BOW_STEPS:
+			line.append(_through(before, start, end, after, float(step) / float(BOW_STEPS)))
+	line.append(to)
+	return line
+
+
+func _through(before: Vector2, start: Vector2, end: Vector2, after: Vector2,
+		t: float) -> Vector2:
+	var square := t * t
+	var cube := square * t
+	return 0.5 * (2.0 * start
+		+ (end - before) * t
+		+ (2.0 * before - 5.0 * start + 4.0 * end - after) * square
+		+ (after - 3.0 * end + 3.0 * start - before) * cube)

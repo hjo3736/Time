@@ -85,6 +85,10 @@ func guessed_cost_between(from: Vector2i, to: Vector2i) -> int:
 	return _run.clock.balance.room_transition_cost
 
 
+func guessed_priced_between(from: Vector2i, to: Vector2i) -> int:
+	return _run.relic_room_cost(guessed_cost_between(from, to))
+
+
 func preview_move(coord: Vector2i = Vector2i.ZERO) -> Dictionary:
 	if not rooms.has(coord):
 		return _run.clock.project(_run.relic_room_cost(_run.clock.balance.room_transition_cost))

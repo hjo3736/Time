@@ -722,34 +722,28 @@ func _go() -> void:
 	await process_frame
 	await process_frame
 	var known: Array = m.rc.map.known_rooms()
+	var segments: Array = m._map._lines.segments
 	var lit := 0
-	var dim := 0
-	var links := 0
-	for child in m._map._canvas.get_children():
-		if child is ColorRect:
-			links += 1
-			if (child as ColorRect).color.is_equal_approx(Color(UiTheme.GOLD, 0.75)):
-				lit += 1
-			else:
-				dim += 1
-	check("corridors were drawn", links > 0, true)
+	for piece in segments:
+		if Color(piece["shade"]).r > UiTheme.INK_DIM.r:
+			lit += 1
+	check("corridors were drawn", segments.size() > 0, true)
 	var expected := 0
 	for coord in known:
 		for way in [Vector2i.RIGHT, Vector2i.DOWN]:
 			if known.has(coord + way):
 				expected += 1
-	check("one per joined pair", links, expected)
+	check("one per joined pair", segments.size(), expected)
 	check("the ones out of the current room are lit",
 		lit, m.rc.map.neighbours(m.rc.map.current).filter(
 			func(c: Vector2i) -> bool: return known.has(c)).size())
 
-	var into_dark := 0
-	for coord in known:
-		for way in [Vector2i.RIGHT, Vector2i.DOWN]:
-			var n: Vector2i = coord + way
-			if m.rc.map.rooms.has(n) and not known.has(n):
-				into_dark += 1
-	check("none run off the frontier", links + into_dark >= links, true)
+	var off_map := 0
+	for piece in segments:
+		var pair: Array = piece["corridor"]
+		if not known.has(pair[0]) or not known.has(pair[1]):
+			off_map += 1
+	check("none run off the frontier", off_map, 0)
 	m._close_map()
 
 	print("\n-- the map opens centred on the Warden --")
@@ -758,9 +752,8 @@ func _go() -> void:
 	await process_frame
 	var canvas: Control = m._map._canvas
 	var port: Control = m._map._viewport
-	var origin: Vector2i = canvas.get_meta("origin")
 	var current: Vector2i = canvas.get_meta("current")
-	var middle := m._map._local_of(current, origin) + Vector2(MapView.CELL, MapView.CELL) * 0.5
+	var middle := m._map._middle_of(current)
 	var on_screen := canvas.position + middle * m._map._zoom
 	check("the current room sits in the middle",
 		on_screen.distance_to(port.size * 0.5) < 1.0, true)
@@ -1403,40 +1396,70 @@ func _prices_are_drawn_on_the_map(boot: RootScreen) -> void:
 	await process_frame
 
 	var canvas: Control = g._map._canvas
-	var origin: Vector2i = canvas.get_meta("origin")
-	var by_coord := {}
-	for coord in g.rc.map.known_rooms():
-		by_coord[g._map._local_of(coord, origin)] = coord
+	var by_hours := {}
+	var badly_scaled := 0
+	for piece in g._map._lines.segments:
+		var pair: Array = piece["corridor"]
+		var hours := roundi(float(g.rc.map.guessed_priced_between(pair[0], pair[1]))
+			/ Balance.MINUTES_PER_HOUR)
+		var drawn: float = (Vector2(piece["to"]) - Vector2(piece["from"])).length()
+		var want := float(MapView.CELL) + MapView.UNIT * hours
+		if absf(drawn - want) > want * 0.3:
+			badly_scaled += 1
+			print("     %s->%s wants %.0fpx for %dh, drawn %.0fpx"
+				% [str(pair[0]), str(pair[1]), want, hours, drawn])
+		by_hours[hours] = float(by_hours.get(hours, 0.0)) + drawn
+		by_hours[[hours]] = int(by_hours.get([hours], 0)) + 1
 
-	var walked_corridors := {}
-	for coord in g.rc.map.known_rooms():
-		for step in [Vector2i.RIGHT, Vector2i.DOWN]:
-			var next: Vector2i = coord + step
-			if not by_coord.values().has(next):
-				continue
-			if g.rc.map.walked_between(coord, next):
-				walked_corridors[[coord, next]] = RunClock.format_span(
-					g.rc.map.priced_cost_between(coord, next))
+	check("corridors of more than one length are on screen", by_hours.size() > 2, true)
+	check("each is drawn close to the length it claims", badly_scaled, 0)
 
-	var spans := []
+	var lengths := []
+	for key in by_hours:
+		if key is int:
+			lengths.append([key, float(by_hours[key]) / float(by_hours[[key]])])
+	lengths.sort_custom(func(a: Array, b: Array) -> bool: return int(a[0]) < int(b[0]))
+	var out_of_order := 0
+	for i in range(1, lengths.size()):
+		if float(lengths[i][1]) <= float(lengths[i - 1][1]):
+			out_of_order += 1
+	check("and a longer walk is always drawn longer", out_of_order, 0)
+
+	var wordy := 0
 	for child in canvas.get_children():
-		if child is Label:
-			spans.append((child as Label).text)
+		if child is Label or (child is Button and (child as Button).text.contains("\n")):
+			wordy += 1
+	check("no hours are spelled out on the map itself", wordy, 0)
 
-	check("some corridors have been walked", walked_corridors.size() > 1, true)
-	check("one number is drawn per walked corridor, and no more",
-		spans.size(), walked_corridors.size())
-	var unlabelled := 0
-	for key in walked_corridors:
-		if not spans.has(walked_corridors[key]):
-			unlabelled += 1
-	check("each shows the hours it will actually charge", unlabelled, 0)
-
-	var in_cells := 0
+	var uncovered := 0
 	for child in canvas.get_children():
-		if child is Button and (child as Button).text.contains("\n"):
-			in_cells += 1
-	check("and no price is drawn inside a room any more", in_cells, 0)
+		if child is Button and not Rect2(Vector2.ZERO, g._map._lines.size).encloses(
+				Rect2(child.position, child.size)):
+			uncovered += 1
+	check("the corridor canvas covers every room, so none of it is culled away",
+		uncovered, 0)
+
+	var see_through := 0
+	for child in canvas.get_children():
+		if not (child is Button):
+			continue
+		var skin := (child as Button).get_theme_stylebox("normal")
+		if skin is StyleBoxFlat and (skin as StyleBoxFlat).bg_color.a < 1.0:
+			see_through += 1
+	check("no room lets the trail show through it", see_through, 0)
+
+	var straight := 0
+	for piece in g._map._lines.segments:
+		var points := PackedVector2Array(piece["points"])
+		var from := Vector2(piece["from"])
+		var chord := Vector2(piece["to"]) - from
+		var strayed := 0.0
+		for p in points:
+			var along: float = clampf((p - from).dot(chord) / chord.length_squared(), 0.0, 1.0)
+			strayed = maxf(strayed, p.distance_to(from + chord * along))
+		if strayed < 6.0:
+			straight += 1
+	check("every corridor wanders rather than running straight", straight, 0)
 
 	var different := {}
 	for coord in g.rc.map.rooms:
