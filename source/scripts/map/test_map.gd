@@ -50,9 +50,7 @@ func _init() -> void:
 
 	print("\n-- a floor is one connected piece --")
 	var rooms := floor_for(1)
-	var want := (2 + _b.rooms_per_act_available
-		+ roundi(_b.rooms_per_act_available * 0.32)
-		+ _b.fires_per_act + _b.shops_per_act + _b.elites_per_act + _b.events_per_act)
+	var want := _b.rooms_in(1)
 	check("room count", rooms.size(), want)
 	var reached := 0
 	var seen := {Vector2i.ZERO: true}
@@ -70,12 +68,33 @@ func _init() -> void:
 	var tally := kinds(rooms)
 	check("one start", int(tally.get(Room.Kind.START, 0)), 1)
 	check("one boss", int(tally.get(Room.Kind.BOSS, 0)), 1)
-	check("fires", int(tally.get(Room.Kind.FIRE, 0)), _b.fires_per_act)
-	check("shops", int(tally.get(Room.Kind.SHOP, 0)), _b.shops_per_act)
-	check("elites", int(tally.get(Room.Kind.ELITE, 0)), _b.elites_per_act)
-	check("combat rooms", int(tally.get(Room.Kind.COMBAT, 0)), _b.rooms_per_act_available)
-	check("events", int(tally.get(Room.Kind.EVENT, 0)), _b.events_per_act)
-	check("and dead space between them", int(tally.get(Room.Kind.EMPTY, 0)) > 0, true)
+	check("fires", int(tally.get(Room.Kind.FIRE, 0)), _b.fires_in(1))
+	check("shops", int(tally.get(Room.Kind.SHOP, 0)), _b.shops_in(1))
+	check("elites", int(tally.get(Room.Kind.ELITE, 0)), _b.elites_in(1))
+	check("empty rooms only if the floor asked for them",
+		int(tally.get(Room.Kind.EMPTY, 0)), _b.empty_in(1))
+
+	print("\n-- fights and events share a fixed total, with fights guaranteed a floor --")
+	var short_of_min := 0
+	var short_of_events := 0
+	var wrong_total := 0
+	var splits := {}
+	for seed_value in 120:
+		var floor_rooms := floor_for(seed_value)
+		var counts := kinds(floor_rooms)
+		var fights := int(counts.get(Room.Kind.COMBAT, 0))
+		var events := int(counts.get(Room.Kind.EVENT, 0))
+		if fights + events != _b.content_in(1):
+			wrong_total += 1
+		if fights < _b.fights_min_in(1):
+			short_of_min += 1
+		if events < _b.events_min_in(1):
+			short_of_events += 1
+		splits[fights] = int(splits.get(fights, 0)) + 1
+	check("the total never moves", wrong_total, 0)
+	check("and the guaranteed fights are always there", short_of_min, 0)
+	check("so are the guaranteed events", short_of_events, 0)
+	check("but the split is not always the same", splits.size() > 1, true)
 
 	print("\n-- every combat room was given an encounter --")
 	var missing := 0
@@ -87,7 +106,56 @@ func _init() -> void:
 
 	print("\n-- more rooms exist than the budget can buy --")
 	check("available beats affordable",
-		int(tally.get(Room.Kind.COMBAT, 0)) > _b.rooms_per_act_affordable, true)
+		_b.fights_min_in(1) > _b.rooms_per_act_affordable, true)
+
+	print("\n-- elites go deep, stay apart, and are never dropped --")
+	var elites_found := 0
+	var wasted_room := 0
+	var crowded := 0
+	var settled_short := 0
+	for seed_value in 60:
+		var floor_rooms := floor_for(seed_value)
+		var reach_of := {}
+		var marked := []
+		var eligible := []
+		for coord in floor_rooms:
+			var room: Room = floor_rooms[coord]
+			if room.kind == Room.Kind.ELITE:
+				marked.append(coord)
+			var usable: bool = (room.kind == Room.Kind.COMBAT
+				or room.kind == Room.Kind.EMPTY or room.kind == Room.Kind.ELITE)
+			if usable and MapGenerator.neighbours_of(floor_rooms, coord).size() >= 2:
+				eligible.append(coord)
+		for coord in eligible:
+			reach_of[coord] = _walked_from(floor_rooms, coord)
+
+		elites_found += marked.size()
+		if marked.size() < _b.elites_in(1):
+			wasted_room += 1
+
+		var from_start := _walked_from(floor_rooms, Vector2i.ZERO)
+		for i in marked.size():
+			for j in range(i + 1, marked.size()):
+				if int(reach_of[marked[i]].get(marked[j], 0)) < _b.elite_min_travel_apart:
+					crowded += 1
+
+		var deep := eligible.filter(func(c: Vector2i) -> bool:
+			return int(from_start.get(c, 0)) >= _b.elite_min_travel_from_start)
+		var deep_pair := false
+		for i in deep.size():
+			for j in range(i + 1, deep.size()):
+				if int(reach_of[deep[i]].get(deep[j], 0)) >= _b.elite_min_travel_apart:
+					deep_pair = true
+		if not deep_pair:
+			continue
+		for coord in marked:
+			if int(from_start.get(coord, 0)) < _b.elite_min_travel_from_start:
+				settled_short += 1
+
+	check("every floor got its elites", elites_found, 60 * _b.elites_in(1))
+	check("none was dropped for want of a spot", wasted_room, 0)
+	check("no pair is closer to each other than the rule allows", crowded, 0)
+	check("and when a deep pair was available, both elites took it", settled_short, 0)
 
 	print("\n-- the boss is far away, which is what makes the decision cost --")
 	var ms := state_for(1)
@@ -213,3 +281,23 @@ func _init() -> void:
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
+
+
+func _walked_from_start(rooms: Dictionary) -> Dictionary:
+	return _walked_from(rooms, Vector2i.ZERO)
+
+
+func _walked_from(rooms: Dictionary, origin: Vector2i) -> Dictionary:
+	var best := {origin: 0}
+	var queue := [origin]
+	while not queue.is_empty():
+		queue.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+			return int(best[a]) < int(best[b]))
+		var at: Vector2i = queue.pop_front()
+		for n in MapGenerator.neighbours_of(rooms, at):
+			var through: int = int(best[at]) + int(
+				rooms[at].exits.get(n - at, _b.room_transition_cost))
+			if not best.has(n) or through < int(best[n]):
+				best[n] = through
+				queue.append(n)
+	return best

@@ -19,7 +19,7 @@ func _init() -> void:
 	print("\n-- shipped balance obeys its own invariants --")
 	var problems := _b.validate()
 	check("balance.tres problems", problems, PackedStringArray())
-	check("loaded from disk, not fallback", _b.starting_remaining, 336 * 60)
+	check("loaded from disk, not fallback", _b.starting_remaining, 30 * Balance.MINUTES_PER_DAY)
 
 	print("\n-- validate() catches the dead-conversion bug --")
 	var bad := Balance.new()
@@ -30,7 +30,9 @@ func _init() -> void:
 
 	print("\n-- validate() catches a floor with no choice in it --")
 	var flat := Balance.new()
-	flat.rooms_per_act_available = 10
+	flat.fights_and_events_per_act = [10, 10, 10]
+	flat.fights_min_per_act = [10, 10, 10]
+	flat.events_min_per_act = [0, 0, 0]
 	flat.rooms_per_act_affordable = 10
 	check("flagged", flat.validate()[0].contains("No room choice"), true)
 
@@ -38,7 +40,7 @@ func _init() -> void:
 	var c := RunClock.new(_b)
 	c.advance_turn()
 	c.advance_turn()
-	check("remaining", c.remaining, 336 * 60 - 360)
+	check("remaining", c.remaining, _b.starting_remaining - 360)
 	check("elapsed", c.elapsed, 360)
 	c.advance(-60, RunClock.Source.TRAVEL)
 	check("elapsed unchanged by negative", c.elapsed, 360)
@@ -54,15 +56,16 @@ func _init() -> void:
 	print("\n-- threat steps --")
 	var t := RunClock.new(_b)
 	check("level at 0h", t.threat_level(), 0)
-	t.advance(47 * 60, RunClock.Source.TRAVEL)
-	check("level at 47h", t.threat_level(), 0)
+	t.advance(_b.threat_step - 60, RunClock.Source.TRAVEL)
+	check("level one minute short of a step", t.threat_level(), 0)
 	check("minutes to next", t.minutes_to_next_threat(), 60)
 	var seen := []
 	t.threat_level_changed.connect(func(l: int) -> void: seen.append(l))
 	t.advance(60, RunClock.Source.TRAVEL)
-	check("level at 48h", t.threat_level(), 1)
+	check("level on the step", t.threat_level(), 1)
 	check("signal fired once", seen, [1])
-	check("progress label", t.threat_progress(), "Threat 1 / ~14")
+	check("progress label", t.threat_progress(),
+		"Threat 1 / ~%d" % _b.expected_threat_steps)
 
 	print("\n-- conversion must beat the fire it costs --")
 	var f := RunClock.new(_b)
@@ -72,7 +75,7 @@ func _init() -> void:
 	check("net after 8h fire", f.net_from_conversion(f.convertible_restored()), 10 * 60)
 	check("gained", f.convert(f.convertible_restored()), 18 * 60)
 	check("restored drained", f.restored, 0)
-	check("remaining raised", f.remaining, 336 * 60 + 18 * 60)
+	check("remaining raised", f.remaining, _b.starting_remaining + 18 * 60)
 
 	print("\n-- conversion is capped --")
 	var cap := RunClock.new(_b)
@@ -108,7 +111,7 @@ func _init() -> void:
 
 	print("\n-- projection matches the real thing --")
 	var p := RunClock.new(_b)
-	p.advance(47 * 60, RunClock.Source.TRAVEL)
+	p.advance(_b.threat_step - 60, RunClock.Source.TRAVEL)
 	var proj := p.project(2 * 60)
 	check("crosses threat", proj["crosses_threat"], true)
 	check("projected level", proj["threat_level"], 1)
@@ -122,7 +125,7 @@ func _init() -> void:
 	check("overspend refused", s.spend_restored(700), false)
 	check("spend ok", s.spend_restored(600), true)
 	check("restored gone", s.restored, 0)
-	check("remaining untouched", s.remaining, 336 * 60)
+	check("remaining untouched", s.remaining, _b.starting_remaining)
 
 	print("\n-- retuning Balance actually retunes the clock --")
 	var tuned := Balance.new()

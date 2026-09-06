@@ -320,13 +320,25 @@ floor becomes *which of these do I buy*.
 correct. That was wrong: Remaining already caps how much can be cleared, all on
 its own. The room-to-budget ratio is what creates the decision.)*
 
-Two things empty rooms **do** earn:
+Empty rooms were once carrying two jobs. **Corridors with real lengths have taken
+the first one over, and done it better:**
 
-- **Geometry starts to matter.** If every room pays out, the path between them is
-  irrelevant and the player just counts rooms. With dead space in between, two
-  good rooms side by side are worth more than two good rooms across the floor.
+- **Geometry starts to matter.** If every step between rooms costs the same, the
+  path is irrelevant and the player just counts rooms. Corridors of one to three
+  hours make two good rooms side by side worth more than two across the floor —
+  and they do it on a scale rather than as a coin flip, so *every* pair of rooms
+  is a different distance, not just the ones that happen to have dead space
+  between them.
 - **Wrong turns become possible.** A dead end made of rewards is not a dead end,
-  it is a prize pocket.
+  it is a prize pocket. This one never needed empty rooms: a dead-end fight is a
+  detour billed twice whatever is in it.
+
+So `empty_rooms_per_act` is **0**. The count is a dial, not a rule — the cost of
+setting it there is that nothing on the floor can be walked *past*. Every
+unvisited room is content, so the walk to the boss door is paid in health as well
+as hours, and a floor cannot be threaded. Measured, that took completion at the
+rushing end from 74% to 43%. Put a few empty rooms back if the floor needs
+breathing room.
 
 And **dead ends are billed twice**, in and out, discovered only by walking in.
 Reading a floor and routing it well becomes a real skill paid in the game's own

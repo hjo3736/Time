@@ -93,8 +93,8 @@ func spawn(
 	threat_level: int = 0,
 ) -> Array[Combatant]:
 	var out: Array[Combatant] = []
-	var hp_scale := balance.enemy_hp_scale * (1.0 + threat_level * balance.threat_hp_bonus_per_step)
-	var damage_scale := balance.enemy_damage_scale * (1.0 + threat_level * balance.threat_damage_bonus_per_step)
+	var hp_scale := balance.enemy_hp_scale * balance.threat_hp_multiplier(threat_level)
+	var damage_scale := balance.enemy_damage_scale * balance.threat_damage_multiplier(threat_level)
 
 	for member in encounter.members:
 		var data := enemies.get_enemy(member)

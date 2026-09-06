@@ -138,13 +138,17 @@ func _play(greed: float, seed_value: int) -> Dictionary:
 
 
 func _step(rc: RunController, policy: SimPolicy) -> bool:
-	var want := roundi(policy.greed * _b.rooms_per_act_available)
+	var fights := 0
 	var cleared := 0
 	var target_kinds: Array = []
 	for coord in rc.map.rooms:
 		var room: Room = rc.map.rooms[coord]
-		if room.kind == Room.Kind.COMBAT and room.cleared:
+		if room.kind != Room.Kind.COMBAT:
+			continue
+		fights += 1
+		if room.cleared:
 			cleared += 1
+	var want := roundi(policy.greed * fights)
 
 	if cleared < want:
 		target_kinds = [Room.Kind.FIRE, Room.Kind.SHOP, Room.Kind.COMBAT]
@@ -220,7 +224,9 @@ func _verdict(rows: Array) -> void:
 	var converted := 100.0 * float(high["converted"]) / maxf(1.0, float(high["restored_total"]))
 	print("  Restored converted       %.0f%%   (target: about half)" % converted)
 
-	var fires_total := _b.fires_per_act * _b.acts_per_run
+	var fires_total := 0
+	for act in range(1, _b.acts_per_run + 1):
+		fires_total += _b.fires_in(act)
 	var hp_supply := _b.starting_max_hp + fires_total * roundi(_b.starting_max_hp * _b.fire_heal_fraction)
 	var per_fight := float(high["hp_lost"]) / maxf(1.0, float(high["fights"]))
 	print("")

@@ -13,18 +13,21 @@ static func generate(
 	rng: RandomNumberGenerator,
 	act: int = 1,
 ) -> Dictionary:
-	var combat_rooms: int = balance.rooms_per_act_available
-	var empty_rooms: int = maxi(1, roundi(combat_rooms * 0.32))
-	var fires: int = balance.fires_per_act
-	var shops: int = balance.shops_per_act
-	var elites: int = balance.elites_per_act if not encounters.candidates(act, EnemyData.Tier.ELITE).is_empty() else 0
-	var events: int = balance.events_per_act
+	var content := balance.content_in(act)
+	var combat_rooms := rng.randi_range(balance.fights_min_in(act), balance.fights_max_in(act))
+	var empty_rooms := balance.empty_in(act)
+	var fires := balance.fires_in(act)
+	var shops := balance.shops_in(act)
+	var elites := balance.elites_in(act) if not encounters.candidates(act, EnemyData.Tier.ELITE).is_empty() else 0
+	var events := content - combat_rooms
 	var total := 2 + combat_rooms + empty_rooms + fires + shops + elites + events
 
 	var rooms := _carve(total, rng)
 	_price(rooms, balance, rng)
 	var distances := _distances(rooms, Vector2i.ZERO)
-	_assign(rooms, distances, combat_rooms, empty_rooms, fires, shops, elites, events, encounters, rng, act)
+	var travel := _travel(rooms, Vector2i.ZERO, balance)
+	_assign(rooms, distances, travel, combat_rooms, empty_rooms, fires, shops, elites, events,
+		balance, encounters, rng, act)
 
 	return rooms
 
@@ -97,6 +100,22 @@ static func neighbours_of(rooms: Dictionary, coord: Vector2i) -> Array:
 	return out
 
 
+static func _travel(rooms: Dictionary, from: Vector2i, balance: Balance) -> Dictionary:
+	var best := {from: 0}
+	var queue := [from]
+	while not queue.is_empty():
+		queue.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+			return int(best[a]) < int(best[b]))
+		var coord: Vector2i = queue.pop_front()
+		for next in neighbours_of(rooms, coord):
+			var walked: int = rooms[coord].exits.get(next - coord, balance.room_transition_cost)
+			var through := int(best[coord]) + walked
+			if not best.has(next) or through < int(best[next]):
+				best[next] = through
+				queue.append(next)
+	return best
+
+
 static func _distances(rooms: Dictionary, from: Vector2i) -> Dictionary:
 	var out := {from: 0}
 	var queue := [from]
@@ -112,12 +131,14 @@ static func _distances(rooms: Dictionary, from: Vector2i) -> Dictionary:
 static func _assign(
 	rooms: Dictionary,
 	distances: Dictionary,
+	travel: Dictionary,
 	combat_rooms: int,
 	empty_rooms: int,
 	fires: int,
 	shops: int,
 	elites: int,
 	events: int,
+	balance: Balance,
 	encounters: EncounterTable,
 	rng: RandomNumberGenerator,
 	act: int,
@@ -156,10 +177,40 @@ static func _assign(
 
 	var through := open.filter(func(c: Vector2i) -> bool:
 		return neighbours_of(rooms, c).size() >= 2)
+	through.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+		return int(travel.get(a, 0)) > int(travel.get(b, 0)))
+
+	var spacing := {}
+	for coord in through:
+		spacing[coord] = _travel(rooms, coord, balance)
+
+	var settled: Array[Vector2i] = []
 	for i in elites:
-		var coord: Variant = _take(through, open, rng)
+		var spread_out := through.filter(func(c: Vector2i) -> bool:
+			return _clear_of(spacing, settled, c, balance.elite_min_travel_apart))
+		var deep := spread_out.filter(func(c: Vector2i) -> bool:
+			return int(travel.get(c, 0)) >= balance.elite_min_travel_from_start)
+		var viable := deep.filter(func(c: Vector2i) -> bool:
+			return _leaves_room(deep, spacing, c, elites - i - 1,
+				balance.elite_min_travel_apart))
+
+		var coord: Variant = null
+		if not viable.is_empty():
+			coord = viable[rng.randi_range(0, viable.size() - 1)]
+		elif not deep.is_empty():
+			coord = deep[rng.randi_range(0, deep.size() - 1)]
+		elif not spread_out.is_empty():
+			coord = spread_out[0]
+		elif not through.is_empty():
+			coord = through[0]
+		else:
+			coord = _take(open, open, rng)
 		if coord == null:
 			continue
+
+		through.erase(coord)
+		open.erase(coord)
+		settled.append(coord)
 		rooms[coord].kind = Room.Kind.ELITE
 		var elite := encounters.pick(rng, act, EnemyData.Tier.ELITE)
 		if elite != null:
@@ -173,6 +224,31 @@ static func _assign(
 		var encounter := encounters.pick(rng, act, EnemyData.Tier.NORMAL)
 		if encounter != null:
 			room.encounter_id = encounter.id
+
+
+static func _leaves_room(pool: Array, spacing: Dictionary, chosen: Vector2i,
+		still_needed: int, apart: int) -> bool:
+	if still_needed <= 0:
+		return true
+	var taken: Array[Vector2i] = [chosen]
+	for other in pool:
+		if other == chosen:
+			continue
+		if not _clear_of(spacing, taken, other, apart):
+			continue
+		taken.append(other)
+		if taken.size() > still_needed:
+			return true
+	return false
+
+
+static func _clear_of(spacing: Dictionary, settled: Array, coord: Vector2i,
+		apart: int) -> bool:
+	for other in settled:
+		var reach: Dictionary = spacing[other]
+		if int(reach.get(coord, 0)) < apart:
+			return false
+	return true
 
 
 static func _take(preferred: Array, fallback: Array, rng: RandomNumberGenerator) -> Variant:

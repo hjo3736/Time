@@ -21,10 +21,10 @@ func _init() -> void:
 	check("starts full", s.hp, 70)
 	check("survives a hit", s.damage(30), false)
 	check("hp", s.hp, 40)
-	check("clock untouched by damage", s.clock.remaining, 336 * 60)
+	check("clock untouched by damage", s.clock.remaining, _b.starting_remaining)
 	check("lethal hit reported", s.damage(40), true)
 	check("hp floors at 0", s.hp, 0)
-	check("run clock still fine", s.clock.remaining, 336 * 60)
+	check("run clock still fine", s.clock.remaining, _b.starting_remaining)
 
 	print("\n-- a fire buys exactly one action --")
 	var f := RunState.new(_b)
@@ -72,7 +72,7 @@ func _init() -> void:
 
 	print("\n-- dying with a pocket full of time --")
 	var poor := RunState.new(_b)
-	poor.clock.advance(330 * 60, RunClock.Source.TRAVEL)
+	poor.clock.advance(_b.starting_remaining - 6 * 60, RunClock.Source.TRAVEL)
 	poor.defeat_askew(_b.conversion_cap)
 	check("remaining", poor.clock.remaining, 6 * 60)
 	check("restored on hand", poor.clock.restored, 36 * 60)

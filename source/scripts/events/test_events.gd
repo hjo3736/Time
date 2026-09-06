@@ -160,7 +160,8 @@ func _init() -> void:
 	for coord in rooms:
 		if rooms[coord].kind == Room.Kind.EVENT:
 			count += 1
-	check("as many as Balance asks for", count, _b.events_per_act)
+	check("inside the share Balance leaves for events",
+		count <= _b.content_in(1) - _b.fights_min_in(1), true)
 
 	print("\n-- every string an event needs exists in both languages --")
 	var missing := []

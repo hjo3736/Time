@@ -6,7 +6,7 @@ const MINUTES_PER_HOUR := 60
 const MINUTES_PER_DAY := 1440
 
 
-@export var starting_remaining := 336 * MINUTES_PER_HOUR
+@export var starting_remaining := 30 * MINUTES_PER_DAY
 
 @export var starting_max_hp := 70
 
@@ -24,16 +24,17 @@ const MINUTES_PER_DAY := 1440
 @export var shop_cost := 1 * MINUTES_PER_HOUR
 
 
-@export var threat_step := 48 * MINUTES_PER_HOUR
+@export var threat_step := 1 * MINUTES_PER_DAY
 
-@export var expected_threat_steps := 14
+@export var expected_threat_steps := 30
 
 @export_range(0.3, 2.0) var enemy_hp_scale := 1.0
 
 @export_range(0.3, 2.0) var enemy_damage_scale := 1.0
 
-@export var threat_hp_bonus_per_step := 0.08
-@export var threat_damage_bonus_per_step := 0.06
+@export var threat_hp_bonus_total := 1.0
+@export var threat_damage_bonus_total := 1.0
+@export_range(1.0, 4.0) var threat_curve := 2.0
 
 @export var encounter_history_length := 2
 
@@ -67,14 +68,23 @@ const MINUTES_PER_DAY := 1440
 @export var starting_deck: Array[StringName] = []
 
 
-@export var rooms_per_act_available := 19
+@export var fights_and_events_per_act: Array[int] = [14, 19, 24]
+
+@export var fights_min_per_act: Array[int] = [10, 12, 15]
+
+@export var events_min_per_act: Array[int] = [2, 3, 3]
+
+@export var empty_rooms_per_act: Array[int] = [0, 0, 0]
 @export var rooms_per_act_affordable := 8
 
-@export var fires_per_act := 2
-@export var shops_per_act := 1
+@export var fires_per_act: Array[int] = [2, 3, 4]
+@export var shops_per_act: Array[int] = [1, 2, 2]
 
-@export var elites_per_act := 2
-@export var events_per_act := 3
+@export var elite_min_travel_from_start := 10 * MINUTES_PER_HOUR
+
+@export var elite_min_travel_apart := 5 * MINUTES_PER_HOUR
+
+@export var elites_per_act: Array[int] = [2, 2, 3]
 
 
 @export var clock_start_minute := 8 * MINUTES_PER_HOUR
@@ -88,8 +98,72 @@ static func default() -> Balance:
 	return Balance.new()
 
 
+func content_in(act: int) -> int:
+	return _per_act(fights_and_events_per_act, act)
+
+
+func fights_min_in(act: int) -> int:
+	return clampi(_per_act(fights_min_per_act, act), 0,
+		content_in(act) - events_min_in(act))
+
+
+func events_min_in(act: int) -> int:
+	return clampi(_per_act(events_min_per_act, act), 0, content_in(act))
+
+
+func fights_max_in(act: int) -> int:
+	return maxi(fights_min_in(act), content_in(act) - events_min_in(act))
+
+
+func empty_in(act: int) -> int:
+	return _per_act(empty_rooms_per_act, act)
+
+
+func fires_in(act: int) -> int:
+	return _per_act(fires_per_act, act)
+
+
+func shops_in(act: int) -> int:
+	return _per_act(shops_per_act, act)
+
+
+func elites_in(act: int) -> int:
+	return _per_act(elites_per_act, act)
+
+
+func rooms_in(act: int) -> int:
+	return (2 + content_in(act) + empty_in(act)
+		+ fires_in(act) + shops_in(act) + elites_in(act))
+
+
+func _per_act(values: Array[int], act: int) -> int:
+	if values.is_empty():
+		return 0
+	return values[clampi(act - 1, 0, values.size() - 1)]
+
+
+func threat_hp_multiplier(level: int) -> float:
+	return 1.0 + threat_hp_bonus_total * _threat_shape(level)
+
+
+func threat_damage_multiplier(level: int) -> float:
+	return 1.0 + threat_damage_bonus_total * _threat_shape(level)
+
+
+func _threat_shape(level: int) -> float:
+	var span := maxi(1, expected_threat_steps)
+	return pow(clampf(float(level) / float(span), 0.0, 1.0), threat_curve)
+
+
 func validate() -> PackedStringArray:
 	var problems := PackedStringArray()
+
+	if threat_curve < 1.0:
+		problems.append("threat_curve below 1.0 front-loads the ramp instead of back-loading it.")
+	if expected_threat_steps != starting_remaining / threat_step:
+		problems.append(
+			"expected_threat_steps is %d but the budget holds %d; the curve reads it, not just the HUD."
+			% [expected_threat_steps, starting_remaining / threat_step])
 
 	if not is_equal_approx(enemy_hp_scale, 1.0):
 		problems.append("enemy_hp_scale is %.2f; author the hp on the enemies instead."
@@ -105,11 +179,33 @@ func validate() -> PackedStringArray:
 			% [conversion_cap, best_yield, fire_cost]
 		)
 
-	if rooms_per_act_available <= rooms_per_act_affordable:
-		problems.append(
-			"No room choice: %d available vs %d affordable. Available must exceed affordable or the budget just buys the whole act."
-			% [rooms_per_act_available, rooms_per_act_affordable]
-		)
+	for named in [
+		["fights_and_events_per_act", fights_and_events_per_act],
+		["fights_min_per_act", fights_min_per_act],
+		["events_min_per_act", events_min_per_act],
+		["empty_rooms_per_act", empty_rooms_per_act],
+		["fires_per_act", fires_per_act],
+		["shops_per_act", shops_per_act],
+		["elites_per_act", elites_per_act],
+	]:
+		var counts: Array = named[1]
+		if counts.size() < acts_per_run:
+			problems.append("%s lists %d acts but the run has %d; the last entry would be reused."
+				% [named[0], counts.size(), acts_per_run])
+		for value in counts:
+			if int(value) < 0:
+				problems.append("%s holds a negative count." % named[0])
+
+	for act in range(1, acts_per_run + 1):
+		var promised := _per_act(fights_min_per_act, act) + _per_act(events_min_per_act, act)
+		if promised > content_in(act):
+			problems.append(
+				"Act %d promises %d fights and events out of %d rooms; they do not both fit."
+				% [act, promised, content_in(act)])
+		if fights_min_in(act) <= rooms_per_act_affordable:
+			problems.append(
+				"No room choice in act %d: %d fights guaranteed vs %d affordable. The guarantee must exceed affordable or the budget just buys the whole act."
+				% [act, fights_min_in(act), rooms_per_act_affordable])
 
 	for pair in [
 		["starting_remaining", starting_remaining],
@@ -124,6 +220,11 @@ func validate() -> PackedStringArray:
 
 	if room_transition_cost < 0:
 		problems.append("room_transition_cost must not be negative.")
+
+	if elite_min_travel_from_start <= 0:
+		problems.append("elite_min_travel_from_start must be positive; otherwise the rule does nothing.")
+	if elite_min_travel_apart <= 0:
+		problems.append("elite_min_travel_apart must be positive; otherwise the rule does nothing.")
 
 	if room_cost_min <= 0:
 		problems.append("room_cost_min must be positive.")

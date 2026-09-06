@@ -100,7 +100,7 @@ func _init() -> void:
 	check("tougher", late[0].max_hp > base[0].max_hp, true)
 	check("hits harder", late[0].outgoing_multiplier > base[0].outgoing_multiplier, true)
 	check("hp scaled by the balance value", late[0].max_hp,
-		roundi(base[0].max_hp * (1.0 + 5 * _b.threat_hp_bonus_per_step)))
+		roundi(base[0].max_hp * _b.threat_hp_multiplier(5)))
 	check("worth more time too", late[0].restored_value,
 		late[0].max_hp * _b.restored_minutes_per_hp)
 
@@ -122,7 +122,7 @@ func _init() -> void:
 		hits.append(70 - bt.warden().hp)
 	check("threat 10 hurts more than threat 0", hits[1] > hits[0], true)
 	check("scaled by the balance values", hits[1], roundi(6 * _b.enemy_damage_scale
-		* (1.0 + 10 * _b.threat_damage_bonus_per_step)))
+		* _b.threat_damage_multiplier(10)))
 
 	print("\n-- link_pairs binds twins for 겹침 --")
 	var overlaid := EncounterData.new()
