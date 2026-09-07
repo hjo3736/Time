@@ -119,7 +119,7 @@ func _init() -> void:
 		var group2 := _table.spawn(_table.get_encounter(&"a1_lone_pacing"), _enemies, _b, rng(2), level)
 		var bt := BattleState.new(run, cards, group2, rng(2))
 		bt.end_turn()
-		hits.append(70 - bt.warden().hp)
+		hits.append(_b.starting_max_hp - bt.warden().hp)
 	check("threat 10 hurts more than threat 0", hits[1] > hits[0], true)
 	check("scaled by the balance values", hits[1], roundi(6 * _b.enemy_damage_scale
 		* _b.threat_damage_multiplier(10)))

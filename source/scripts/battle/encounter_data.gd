@@ -2,6 +2,9 @@ class_name EncounterData
 extends Resource
 
 
+enum When { ANY, MORNING, DAY, EVENING, NIGHT }
+
+
 @export var id := &""
 @export var act := 1
 @export var tier := EnemyData.Tier.NORMAL
@@ -11,6 +14,8 @@ extends Resource
 @export var members: Array[StringName] = []
 
 @export var opening_only := false
+
+@export var appears := When.ANY
 
 @export var link_pairs := false
 

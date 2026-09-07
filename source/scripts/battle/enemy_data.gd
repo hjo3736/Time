@@ -12,6 +12,10 @@ enum Tier { NORMAL, ELITE, BOSS }
 @export var hp_max := 26
 
 @export var intents: Array[EnemyIntent] = []
+@export var morning_intents: Array[EnemyIntent] = []
+@export var day_intents: Array[EnemyIntent] = []
+@export var evening_intents: Array[EnemyIntent] = []
+@export var night_intents: Array[EnemyIntent] = []
 
 @export var behavior_script: Script = null
 
@@ -25,6 +29,10 @@ func spawn(balance: Balance, rng: RandomNumberGenerator) -> Combatant:
 	c.hp = c.max_hp
 	c.restored_value = roundi(c.max_hp * balance.restored_minutes_per_hp * restored_multiplier)
 	c.intents = intents.duplicate()
+	c.morning_intents = morning_intents.duplicate()
+	c.day_intents = day_intents.duplicate()
+	c.evening_intents = evening_intents.duplicate()
+	c.night_intents = night_intents.duplicate()
 	if behavior_script != null:
 		c.behavior = behavior_script.new()
 	return c

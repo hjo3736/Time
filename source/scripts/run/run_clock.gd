@@ -7,6 +7,7 @@ signal threat_level_changed(new_level: int)
 signal warden_expired
 
 enum Source { TURN, TRAVEL, FIRE, SHOP, EVENT }
+enum Daytime { MORNING, DAY, EVENING, NIGHT }
 
 var balance: Balance:
 	get:
@@ -109,10 +110,6 @@ func conversion_yield(restored_minutes: int) -> int:
 	return restored_minutes / _balance.conversion_rate
 
 
-func net_from_conversion(restored_minutes: int) -> int:
-	return conversion_yield(restored_minutes) - _balance.fire_cost
-
-
 func convert(restored_minutes: int) -> int:
 	var taken := clampi(restored_minutes, 0, convertible_restored())
 	taken -= taken % conversion_unit()
@@ -159,15 +156,65 @@ func spent_by_source() -> Dictionary:
 	return _spent.duplicate()
 
 
+func minute_of_day() -> int:
+	return (_balance.clock_start_minute + _elapsed) % Balance.MINUTES_PER_DAY
+
+
+func daytime() -> int:
+	var now := minute_of_day()
+	if now < _balance.morning_starts_minute:
+		return Daytime.NIGHT
+	if now < _balance.day_starts_minute:
+		return Daytime.MORNING
+	if now < _balance.evening_starts_minute:
+		return Daytime.DAY
+	if now < _balance.night_starts_minute:
+		return Daytime.EVENING
+	return Daytime.NIGHT
+
+
+func is_night() -> bool:
+	return daytime() == Daytime.NIGHT
+
+
+func minutes_until_sky_turns() -> int:
+	var now := minute_of_day()
+	for turn in [_balance.morning_starts_minute, _balance.day_starts_minute,
+			_balance.evening_starts_minute, _balance.night_starts_minute]:
+		if now < int(turn):
+			return int(turn) - now
+	return Balance.MINUTES_PER_DAY - now + _balance.morning_starts_minute
+	return Balance.MINUTES_PER_DAY - now + _balance.morning_starts_minute
+
+
+func date_at(minutes_from_start: int) -> Dictionary:
+	var total: int = _balance.clock_start_minute + maxi(0, minutes_from_start)
+	var days_in := total / Balance.MINUTES_PER_DAY
+	var minute := total % Balance.MINUTES_PER_DAY
+
+	var day: int = _balance.start_day - 1 + days_in
+	var month: int = _balance.start_month - 1 + day / _balance.days_per_month
+	day = day % _balance.days_per_month
+	var year: int = _balance.start_year + month / _balance.months_per_year
+	month = month % _balance.months_per_year
+
+	return {
+		"year": year, "month": month + 1, "day": day + 1,
+		"hour": minute / Balance.MINUTES_PER_HOUR,
+		"minute": minute % Balance.MINUTES_PER_HOUR,
+	}
+
+
+func format_date_of(marks: Dictionary) -> String:
+	return TranslationServer.translate("time.date").format(marks)
+
+
 func format_clock() -> String:
-	var total := _balance.clock_start_minute + _elapsed
-	var day := total / Balance.MINUTES_PER_DAY + 1
-	var minute_of_day := total % Balance.MINUTES_PER_DAY
-	return "Day %d - %02d:%02d" % [
-		day,
-		minute_of_day / Balance.MINUTES_PER_HOUR,
-		minute_of_day % Balance.MINUTES_PER_HOUR,
-	]
+	return format_date_of(date_at(_elapsed))
+
+
+func format_deadline() -> String:
+	return format_date_of(date_at(_elapsed + _remaining))
 
 
 static func format_span(minutes: int) -> String:

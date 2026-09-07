@@ -31,6 +31,12 @@ func strikes(n: int = 10) -> RunState:
 	return run
 
 
+func rng(seed_value: int) -> RandomNumberGenerator:
+	var r := RandomNumberGenerator.new()
+	r.seed = seed_value
+	return r
+
+
 func battle(run: RunState, enemies: Array[Combatant]) -> BattleState:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
@@ -92,12 +98,12 @@ func _init() -> void:
 	var stilled := enemy(99, [EnemyIntent.wait(), EnemyIntent.wait(), EnemyIntent.attack(10)] as Array[EnemyIntent], stilled_behavior)
 	var sb := battle(strikes(), [stilled])
 	sb.end_turn()
-	check("no damage on the first wait", sb.warden().hp, 70)
+	check("no damage on the first wait", sb.warden().hp, _b.starting_max_hp)
 	check("charge 1", stilled_behavior.charge(), 1)
 	sb.end_turn()
 	check("charge 2", stilled_behavior.charge(), 2)
 	sb.end_turn()
-	check("10 became 18", sb.warden().hp, 70 - 18)
+	check("10 became 18", sb.warden().hp, _b.starting_max_hp - 18)
 	check("charge reset after acting", stilled_behavior.charge(), 0)
 
 	print("\n-- 노화: it opens hard and falls apart --")
@@ -106,11 +112,11 @@ func _init() -> void:
 	var withered := enemy(99, [EnemyIntent.attack(20)] as Array[EnemyIntent], withered_behavior)
 	var wb := battle(strikes(), [withered])
 	wb.end_turn()
-	check("first exchange hurts", wb.warden().hp, 50)
+	check("first exchange hurts", wb.warden().hp, _b.starting_max_hp - 20)
 	wb.end_turn()
-	check("weaker", wb.warden().hp, 50 - 15)
+	check("weaker", wb.warden().hp, _b.starting_max_hp - 35)
 	wb.end_turn()
-	check("weaker still", wb.warden().hp, 35 - 10)
+	check("weaker still", wb.warden().hp, _b.starting_max_hp - 45)
 
 	print("\n-- 겹침: damage lands on the twin, one turn late --")
 	var a := enemy(30, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorOverlaid.new())
@@ -149,7 +155,70 @@ func _init() -> void:
 	hit(nb, 1)
 	check("takes damage", plain.hp, 14)
 	nb.end_turn()
-	check("hits back", nb.warden().hp, 65)
+	check("hits back", nb.warden().hp, _b.starting_max_hp - 5)
+
+	_the_sky_changes_the_pattern()
+	_the_pattern_is_fixed_at_the_turn_it_started()
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
+
+func _the_sky_changes_the_pattern() -> void:
+	print("\n-- an enemy that fights differently after dark --")
+	var enemies := EnemyDatabase.new()
+	enemies.load_from()
+	var data := enemies.get_enemy(&"afterimage")
+	check("it was authored with a night pattern", data.night_intents.is_empty(), false)
+
+	var c := data.spawn(_b, rng(1))
+	c.sky = RunClock.Daytime.DAY
+	check("by day it opens as written", c.current_intent().amount, data.intents[0].amount)
+	c.sky = RunClock.Daytime.NIGHT
+	check("by night it opens differently",
+		c.current_intent().amount, data.night_intents[0].amount)
+	check("and the two are not the same",
+		data.intents[0].amount != data.night_intents[0].amount, true)
+	for unwritten in [RunClock.Daytime.MORNING, RunClock.Daytime.DAY,
+			RunClock.Daytime.EVENING]:
+		c.sky = unwritten
+		check("phase %d has no list of its own, so it falls back" % unwritten,
+			c.current_intent().amount, data.intents[0].amount)
+
+	var four := data.spawn(_b, rng(1))
+	four.morning_intents = [EnemyIntent.attack(1)] as Array[EnemyIntent]
+	four.day_intents = [EnemyIntent.attack(2)] as Array[EnemyIntent]
+	four.evening_intents = [EnemyIntent.attack(3)] as Array[EnemyIntent]
+	four.night_intents = [EnemyIntent.attack(4)] as Array[EnemyIntent]
+	var read := []
+	for sky in [RunClock.Daytime.MORNING, RunClock.Daytime.DAY,
+			RunClock.Daytime.EVENING, RunClock.Daytime.NIGHT]:
+		four.sky = sky
+		read.append(four.current_intent().amount)
+	check("all four phases can be written apart", read, [1, 2, 3, 4])
+
+	var plain := enemies.get_enemy(&"echo").spawn(_b, rng(1))
+	plain.sky = RunClock.Daytime.NIGHT
+	check("an enemy with no night pattern keeps its day one",
+		plain.current_intent().amount, enemies.get_enemy(&"echo").intents[0].amount)
+
+
+func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
+	print("\n-- the sky turning mid-turn does not change the pattern until the next one --")
+	var b := Balance.default()
+	var enemies := EnemyDatabase.new()
+	enemies.load_from()
+	var cards := CardDatabase.new()
+	cards.load_from()
+
+	var run := RunState.new(b, 1)
+	run.clock.advance(run.clock.minutes_until_sky_turns() - b.turn_cost, RunClock.Source.TRAVEL)
+	var opened_under := run.clock.daytime()
+
+	var group: Array[Combatant] = [enemies.get_enemy(&"afterimage").spawn(b, rng(2))]
+	var bt := BattleState.new(run, cards, group, rng(2))
+	var enemy: Combatant = bt.combatants[1]
+	check("the fight opens under the sky the run is under", enemy.sky, opened_under)
+
+	bt.end_turn()
+	check("a turn passed and the sky turned", run.clock.daytime() != opened_under, true)
+	check("and only now does the enemy read the new sky", enemy.sky, run.clock.daytime())

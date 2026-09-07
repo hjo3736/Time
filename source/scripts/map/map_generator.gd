@@ -156,9 +156,7 @@ static func _assign(
 
 	var boss_coord: Vector2i = dead_ends[0] if not dead_ends.is_empty() else open[0]
 	rooms[boss_coord].kind = Room.Kind.BOSS
-	var boss_encounter := encounters.pick(rng, act, EnemyData.Tier.BOSS)
-	if boss_encounter != null:
-		rooms[boss_coord].encounter_id = boss_encounter.id
+	_stock(rooms[boss_coord], encounters, rng, act, EnemyData.Tier.BOSS)
 	open.erase(boss_coord)
 	dead_ends.erase(boss_coord)
 
@@ -212,18 +210,14 @@ static func _assign(
 		open.erase(coord)
 		settled.append(coord)
 		rooms[coord].kind = Room.Kind.ELITE
-		var elite := encounters.pick(rng, act, EnemyData.Tier.ELITE)
-		if elite != null:
-			rooms[coord].encounter_id = elite.id
+		_stock(rooms[coord], encounters, rng, act, EnemyData.Tier.ELITE)
 
 	var order := open.duplicate()
 	_shuffle(order, rng)
 	for i in mini(combat_rooms, order.size()):
 		var room: Room = rooms[order[i]]
 		room.kind = Room.Kind.COMBAT
-		var encounter := encounters.pick(rng, act, EnemyData.Tier.NORMAL)
-		if encounter != null:
-			room.encounter_id = encounter.id
+		_stock(room, encounters, rng, act, EnemyData.Tier.NORMAL)
 
 
 static func _leaves_room(pool: Array, spacing: Dictionary, chosen: Vector2i,
@@ -249,6 +243,22 @@ static func _clear_of(spacing: Dictionary, settled: Array, coord: Vector2i,
 		if int(reach.get(coord, 0)) < apart:
 			return false
 	return true
+
+
+static func _stock(room: Room, encounters: EncounterTable, rng: RandomNumberGenerator,
+		act: int, tier: EnemyData.Tier) -> void:
+	var by_day := encounters.pick(rng, act, tier, false, RunClock.Daytime.DAY)
+	if by_day != null:
+		room.encounter_id = by_day.id
+	var by_morning := encounters.pick(rng, act, tier, false, RunClock.Daytime.MORNING)
+	if by_morning != null:
+		room.morning_encounter_id = by_morning.id
+	var by_evening := encounters.pick(rng, act, tier, false, RunClock.Daytime.EVENING)
+	if by_evening != null:
+		room.evening_encounter_id = by_evening.id
+	var by_night := encounters.pick(rng, act, tier, false, RunClock.Daytime.NIGHT)
+	if by_night != null:
+		room.night_encounter_id = by_night.id
 
 
 static func _take(preferred: Array, fallback: Array, rng: RandomNumberGenerator) -> Variant:

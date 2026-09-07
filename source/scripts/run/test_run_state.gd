@@ -18,22 +18,26 @@ func _init() -> void:
 
 	print("\n-- damage does not end the run, only the fight --")
 	var s := RunState.new(_b)
-	check("starts full", s.hp, 70)
+	check("starts full", s.hp, _b.starting_max_hp)
 	check("survives a hit", s.damage(30), false)
-	check("hp", s.hp, 40)
+	check("hp", s.hp, _b.starting_max_hp - 30)
 	check("clock untouched by damage", s.clock.remaining, _b.starting_remaining)
-	check("lethal hit reported", s.damage(40), true)
+	check("lethal hit reported", s.damage(_b.starting_max_hp), true)
 	check("hp floors at 0", s.hp, 0)
 	check("run clock still fine", s.clock.remaining, _b.starting_remaining)
 
 	print("\n-- a fire buys exactly one action --")
 	var f := RunState.new(_b)
 	f.damage(40)
+	var hurt_to := f.hp
 	var before := f.clock.remaining
 	check("rest works", f.use_fire(RunState.FireAction.REST), true)
-	check("healed by the balance fraction", f.hp, 30 + f.fire_heal_amount())
-	check("charged 8h once", before - f.clock.remaining, 480)
-	check("logged as fire", f.clock.spent_by_source()[RunClock.Source.FIRE], 480)
+	check("healed by the balance fraction", f.hp, hurt_to + f.fire_heal_amount())
+	check("charged what resting costs", before - f.clock.remaining, _b.fire_rest_cost)
+	check("logged as fire", f.clock.spent_by_source()[RunClock.Source.FIRE], _b.fire_rest_cost)
+	check("sharpening costs less than resting", _b.fire_upgrade_cost < _b.fire_rest_cost, true)
+	check("and keeping the time costs nothing",
+		f.fire_cost_of(RunState.FireAction.CONVERT), 0)
 
 	print("\n-- a fire refuses actions that would do nothing --")
 	var n := RunState.new(_b)
@@ -50,7 +54,7 @@ func _init() -> void:
 	var odd_before := odd.clock.remaining
 	check("an hour of restored converts to nothing, so it is refused",
 		odd.use_fire(RunState.FireAction.CONVERT), false)
-	check("the 8h fire was not charged", odd.clock.remaining, odd_before)
+	check("no fire time was charged", odd.clock.remaining, odd_before)
 	check("and the hour is still on hand", odd.clock.restored, 60)
 
 	print("\n-- upgrading marks one card --")
@@ -67,17 +71,21 @@ func _init() -> void:
 	var start := c.clock.remaining
 	check("convert ok", c.use_fire(RunState.FireAction.CONVERT), true)
 	check("kept ledger in restored-minutes", c.total_kept, 36 * 60)
-	check("gained 18h, paid 8h, net +10h", c.clock.remaining - start, 10 * 60)
+	check("gained 18h and paid no fire for it", c.clock.remaining - start, 18 * 60)
+	check("and no fire time was logged", c.clock.spent_by_source()[RunClock.Source.FIRE], 0)
 	check("delivered is what is left", c.delivered(), 0)
 
 	print("\n-- dying with a pocket full of time --")
 	var poor := RunState.new(_b)
-	poor.clock.advance(_b.starting_remaining - 6 * 60, RunClock.Source.TRAVEL)
+	var left := _b.fire_rest_cost - 60
+	poor.clock.advance(_b.starting_remaining - left, RunClock.Source.TRAVEL)
 	poor.defeat_askew(_b.conversion_cap)
-	check("remaining", poor.clock.remaining, 6 * 60)
+	check("remaining", poor.clock.remaining, left)
 	check("restored on hand", poor.clock.restored, 36 * 60)
-	check("cannot afford the fire", poor.can_use_fire(), false)
-	check("so conversion is refused", poor.use_fire(RunState.FireAction.CONVERT), false)
+	check("cannot afford to rest", poor.can_use_fire(RunState.FireAction.REST), false)
+	check("resting is refused", poor.use_fire(RunState.FireAction.REST), false)
+	check("but keeping the time still works", poor.use_fire(RunState.FireAction.CONVERT), true)
+	check("and it went into the clock", poor.clock.remaining, left + 18 * 60)
 
 	print("\n-- memories are the second ending axis, and dedupe --")
 	var m := RunState.new(_b)

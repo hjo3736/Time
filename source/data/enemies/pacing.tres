@@ -16,6 +16,15 @@ amount = 8
 script = ExtResource("1_xrwq8")
 amount = 6
 
+[sub_resource type="Resource" id="Resource_dn1ot"]
+script = ExtResource("1_xrwq8")
+kind = 1
+amount = 12
+
+[sub_resource type="Resource" id="Resource_frou4"]
+script = ExtResource("1_xrwq8")
+amount = 11
+
 [resource]
 script = ExtResource("2_gipbp")
 id = &"pacing"
@@ -23,3 +32,4 @@ name_key = &"enemy.pacing.name"
 hp_min = 26
 hp_max = 32
 intents = Array[ExtResource("1_xrwq8")]([SubResource("Resource_pwgcl"), SubResource("Resource_symy0"), SubResource("Resource_g3x34")])
+night_intents = Array[ExtResource("1_xrwq8")]([SubResource("Resource_dn1ot"), SubResource("Resource_frou4")])

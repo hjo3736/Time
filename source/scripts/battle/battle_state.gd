@@ -6,6 +6,7 @@ signal phase_changed(phase: Phase)
 signal turn_started(turn: int)
 signal card_played(deck_index: int)
 signal combatant_damaged(handle: int, amount: int)
+signal combatant_blocked(handle: int, absorbed: int)
 signal battle_ended(victory: bool)
 
 enum Phase { PLAYER_TURN, ENEMY_TURN, VICTORY, DEFEAT }
@@ -55,10 +56,17 @@ func _init(run: RunState, cards: CardDatabase, enemies: Array[Combatant],
 
 	_piles = BattlePiles.new(run.deck.size(), rng)
 
+	follow_the_sky()
 	for relic in run.relic_defs():
 		relic.on_battle_start(run, self)
 
 	begin_turn()
+
+
+func follow_the_sky() -> void:
+	var now := _run.clock.daytime()
+	for c in combatants:
+		c.sky = now
 
 
 func piles() -> BattlePiles:
@@ -96,6 +104,7 @@ func begin_turn() -> void:
 	if is_over():
 		return
 	turn += 1
+	follow_the_sky()
 	phase = Phase.PLAYER_TURN
 	turn_budget = _run.relic_turn_budget(_balance.turn_cost)
 	turn_budget_max = turn_budget
@@ -225,9 +234,12 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 	if target.behavior != null:
 		incoming = target.behavior.absorbs(self, handle, offered)
 		target.behavior.on_absorbed(self, handle, offered - incoming)
+	var shielded := mini(incoming, target.block)
 	var dealt := target.take_damage(incoming)
 	if target.behavior != null and dealt > 0:
 		target.behavior.on_damaged(self, handle, dealt)
+	if shielded > 0:
+		combatant_blocked.emit(handle, shielded)
 	if dealt > 0:
 		combatant_damaged.emit(handle, dealt)
 	if handle != WARDEN and not target.is_alive():
@@ -280,6 +292,7 @@ static func from_dict(data: Dictionary, run: RunState, cards: CardDatabase) -> B
 	out.cards_played_this_turn = int(data.get("cards_played_this_turn", 0))
 	out._hand_size = int(data.get("hand_size", 5))
 	out.phase = int(data.get("phase", Phase.PLAYER_TURN))
+	out.follow_the_sky()
 	return out
 
 

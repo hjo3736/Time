@@ -23,7 +23,7 @@ func _init() -> void:
 
 	print("\n-- validate() catches the dead-conversion bug --")
 	var bad := Balance.new()
-	bad.conversion_cap = 12 * 60
+	bad.conversion_cap = 1
 	var bad_problems := bad.validate()
 	check("flagged", bad_problems.size(), 1)
 	check("names the right field", bad_problems[0].contains("conversion_cap"), true)
@@ -72,7 +72,6 @@ func _init() -> void:
 	f.restore(_b.conversion_cap)
 	check("convertible", f.convertible_restored(), 36 * 60)
 	check("yield", f.conversion_yield(f.convertible_restored()), 18 * 60)
-	check("net after 8h fire", f.net_from_conversion(f.convertible_restored()), 10 * 60)
 	check("gained", f.convert(f.convertible_restored()), 18 * 60)
 	check("restored drained", f.restored, 0)
 	check("remaining raised", f.remaining, _b.starting_remaining + 18 * 60)
@@ -140,21 +139,60 @@ func _init() -> void:
 	print("\n-- ledger and round-trip --")
 	var l := RunClock.new(_b)
 	l.advance_turn()
-	l.advance(_b.fire_cost, RunClock.Source.FIRE)
+	l.advance(_b.fire_rest_cost, RunClock.Source.FIRE)
 	l.restore(360)
 	check("turn total", l.spent_by_source()[RunClock.Source.TURN], 180)
-	check("fire total", l.spent_by_source()[RunClock.Source.FIRE], 480)
+	check("fire total", l.spent_by_source()[RunClock.Source.FIRE], _b.fire_rest_cost)
 	var back := RunClock.from_dict(l.to_dict(), _b)
 	check("remaining survives", back.remaining, l.remaining)
 	check("elapsed survives", back.elapsed, l.elapsed)
 	check("restored survives", back.restored, l.restored)
-	check("ledger survives", back.spent_by_source()[RunClock.Source.FIRE], 480)
+	check("ledger survives", back.spent_by_source()[RunClock.Source.FIRE], _b.fire_rest_cost)
 
 	print("\n-- formatting --")
 	var d := RunClock.new(_b)
 	d.advance(30 * 60 + 45, RunClock.Source.TRAVEL)
-	check("clock", d.format_clock(), "Day 2 - 14:45")
+	check("the calendar reads the elapsed time", d.format_clock(),
+		d.format_date_of(d.date_at(30 * 60 + 45)))
+	var marks := d.date_at(30 * 60 + 45)
+	check("a day and a half in, it is the second day", marks["day"], _b.start_day + 1)
+	check("at the right hour", marks["hour"], 14)
+	check("and the deadline is the budget away",
+		d.format_deadline(), d.format_date_of(d.date_at(d.elapsed + d.remaining)))
 	check("span is hours, never days or minutes", RunClock.format_span(336 * 60), TranslationServer.translate("time.hours").format({"n": 336}))
+
+	_daytime_checks(_b)
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
+
+
+func _daytime_checks(b: Balance) -> void:
+	print("\n-- the sky turns on schedule and the run starts in daylight --")
+	var dawn := RunClock.new(b)
+	check("the run opens in daylight", dawn.is_night(), false)
+	check("and knows how long that lasts", dawn.minutes_until_sky_turns(),
+		b.night_falls_minute - b.clock_start_minute)
+
+	var evening := RunClock.new(b)
+	evening.advance(b.night_falls_minute - b.clock_start_minute, RunClock.Source.TRAVEL)
+	check("the moment night falls it is night", evening.is_night(), true)
+
+	var midnight := RunClock.new(b)
+	midnight.advance(Balance.MINUTES_PER_DAY - b.clock_start_minute, RunClock.Source.TRAVEL)
+	check("past midnight it is still night", midnight.is_night(), true)
+
+	var morning := RunClock.new(b)
+	morning.advance(Balance.MINUTES_PER_DAY - b.clock_start_minute + b.day_breaks_minute,
+		RunClock.Source.TRAVEL)
+	check("and dawn brings the day back", morning.is_night(), false)
+
+	var turns := 0
+	var walk := RunClock.new(b)
+	var was := walk.is_night()
+	for hour in 24 * 3:
+		walk.advance(60, RunClock.Source.TRAVEL)
+		if walk.is_night() != was:
+			turns += 1
+			was = walk.is_night()
+	check("three days hold three dawns and three dusks", turns, 6)

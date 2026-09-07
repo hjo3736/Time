@@ -149,7 +149,7 @@ func _start_battle(room: Room) -> void:
 		data = _encounters.pick(_rng, run.act, EnemyData.Tier.NORMAL, true)
 		_opened_with_teaching_fight = true
 	if data == null:
-		data = _encounters.get_encounter(room.encounter_id)
+		data = _encounters.get_encounter(room.encounter_for(run.clock.daytime()))
 	if data == null:
 		map.clear_current()
 		_room_resolved(room)
@@ -318,7 +318,7 @@ func to_dict() -> Dictionary:
 	return written
 
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 
 
 static func from_dict(

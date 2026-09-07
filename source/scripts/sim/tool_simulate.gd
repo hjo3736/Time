@@ -140,20 +140,17 @@ func _play(greed: float, seed_value: int) -> Dictionary:
 func _step(rc: RunController, policy: SimPolicy) -> bool:
 	var fights := 0
 	var cleared := 0
-	var target_kinds: Array = []
 	for coord in rc.map.rooms:
 		var room: Room = rc.map.rooms[coord]
-		if room.kind != Room.Kind.COMBAT:
+		if room.kind != Room.Kind.COMBAT or not rc.map.is_known(coord):
 			continue
 		fights += 1
 		if room.cleared:
 			cleared += 1
 	var want := roundi(policy.greed * fights)
 
-	if cleared < want:
-		target_kinds = [Room.Kind.FIRE, Room.Kind.SHOP, Room.Kind.COMBAT]
-	else:
-		target_kinds = [Room.Kind.BOSS]
+	var target_kinds: Array = [Room.Kind.FIRE, Room.Kind.SHOP, Room.Kind.COMBAT] \
+		if cleared < want else [Room.Kind.BOSS]
 
 	for kind in target_kinds:
 		var step: Variant = _toward(rc, kind)
@@ -161,7 +158,18 @@ func _step(rc: RunController, policy: SimPolicy) -> bool:
 			return rc.move_to(step)
 
 	var to_boss: Variant = _toward(rc, Room.Kind.BOSS)
-	return rc.move_to(to_boss) if to_boss != null else false
+	if to_boss != null:
+		return rc.move_to(to_boss)
+
+	var onward: Variant = _into_the_dark(rc)
+	if onward != null:
+		return rc.move_to(onward)
+
+	for kind in [Room.Kind.COMBAT, Room.Kind.FIRE, Room.Kind.SHOP, Room.Kind.EVENT]:
+		var step: Variant = _toward(rc, kind)
+		if step != null:
+			return rc.move_to(step)
+	return false
 
 
 func _toward(rc: RunController, kind: Room.Kind) -> Variant:
@@ -181,6 +189,8 @@ func _toward(rc: RunController, kind: Room.Kind) -> Variant:
 				best_cost = int(spent[at])
 			continue
 		for n in rc.map.neighbours(at):
+			if not rc.map.is_known(n):
+				continue
 			var through := int(spent[at]) + rc.map.guessed_cost_between(at, n)
 			if not spent.has(n) or through < int(spent[n]):
 				spent[n] = through
@@ -188,8 +198,55 @@ func _toward(rc: RunController, kind: Room.Kind) -> Variant:
 				queue.append(n)
 	if best == null:
 		return null
-	var node: Vector2i = best
-	while came[node] != rc.map.current:
+	return _first_step(came, rc.map.current, best)
+
+
+func _into_the_dark(rc: RunController) -> Variant:
+	var came := {rc.map.current: rc.map.current}
+	var spent := {rc.map.current: 0}
+	var queue := [rc.map.current]
+	var best: Variant = null
+	var best_cost := 0
+	while not queue.is_empty():
+		queue.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
+			return int(spent[a]) < int(spent[b]))
+		var at: Vector2i = queue.pop_front()
+		if at != rc.map.current and _touches_dark(rc, at):
+			var worth := int(spent[at]) + _pull_of_boss(rc, at)
+			if best == null or worth < best_cost:
+				best = at
+				best_cost = worth
+			continue
+		for n in rc.map.neighbours(at):
+			if not rc.map.is_known(n):
+				continue
+			var through := int(spent[at]) + rc.map.guessed_cost_between(at, n)
+			if not spent.has(n) or through < int(spent[n]):
+				spent[n] = through
+				came[n] = at
+				queue.append(n)
+	if best == null:
+		return null
+	return _first_step(came, rc.map.current, best)
+
+
+func _pull_of_boss(rc: RunController, coord: Vector2i) -> int:
+	if not rc.map.is_known(rc.map.boss_coord):
+		return 0
+	var away: Vector2i = rc.map.boss_coord - coord
+	return (absi(away.x) + absi(away.y)) * _b.room_transition_cost
+
+
+func _touches_dark(rc: RunController, coord: Vector2i) -> bool:
+	for n in rc.map.neighbours(coord):
+		if not rc.map.is_known(n):
+			return true
+	return false
+
+
+func _first_step(came: Dictionary, from: Vector2i, to: Vector2i) -> Vector2i:
+	var node: Vector2i = to
+	while came[node] != from:
 		node = came[node]
 	return node
 

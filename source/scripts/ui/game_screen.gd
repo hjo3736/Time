@@ -203,18 +203,21 @@ func _show_fire() -> void:
 	var run := rc.run
 	var convertible := run.clock.convertible_restored()
 	var gain := run.clock.conversion_yield(convertible)
+	var rest_span := RunClock.format_span(run.fire_cost_of(RunState.FireAction.REST))
+	var upgrade_span := RunClock.format_span(run.fire_cost_of(RunState.FireAction.UPGRADE))
 	var options := [
 		{
 			"label": tr("ui.fire.rest"),
-			"detail": tr("ui.fire.rest_detail").format({"n": run.fire_heal_amount()}),
+			"detail": tr("ui.fire.rest_detail").format(
+				{"span": rest_span, "n": run.fire_heal_amount()}),
 			"id": ["fire", RunState.FireAction.REST],
-			"disabled": run.hp >= run.max_hp,
+			"disabled": run.hp >= run.max_hp or not run.can_use_fire(RunState.FireAction.REST),
 		},
 		{
 			"label": tr("ui.fire.upgrade"),
-			"detail": tr("ui.fire.upgrade_detail"),
+			"detail": tr("ui.fire.upgrade_detail").format({"span": upgrade_span}),
 			"id": ["fire", RunState.FireAction.UPGRADE],
-			"disabled": run.deck.is_empty(),
+			"disabled": run.deck.is_empty() or not run.can_use_fire(RunState.FireAction.UPGRADE),
 		},
 		{
 			"label": tr("ui.fire.convert"),

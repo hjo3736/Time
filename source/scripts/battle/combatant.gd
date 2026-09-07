@@ -12,7 +12,13 @@ var statuses: Dictionary = {}
 var restored_value := 0
 
 var intents: Array[EnemyIntent] = []
+var morning_intents: Array[EnemyIntent] = []
+var day_intents: Array[EnemyIntent] = []
+var evening_intents: Array[EnemyIntent] = []
+var night_intents: Array[EnemyIntent] = []
 var intent_index := 0
+
+var sky := RunClock.Daytime.DAY
 
 var behavior: EnemyBehavior = null
 
@@ -50,14 +56,32 @@ func take_damage(amount: int) -> int:
 
 
 func current_intent() -> EnemyIntent:
-	if intents.is_empty():
+	var list := active_intents()
+	if list.is_empty():
 		return null
-	return intents[posmod(intent_index, intents.size())]
+	return list[posmod(intent_index, list.size())]
 
 
 func advance_intent() -> void:
-	if not intents.is_empty():
+	if not active_intents().is_empty():
 		intent_index += 1
+
+
+func active_intents() -> Array[EnemyIntent]:
+	match sky:
+		RunClock.Daytime.MORNING:
+			if not morning_intents.is_empty():
+				return morning_intents
+		RunClock.Daytime.DAY:
+			if not day_intents.is_empty():
+				return day_intents
+		RunClock.Daytime.EVENING:
+			if not evening_intents.is_empty():
+				return evening_intents
+		RunClock.Daytime.NIGHT:
+			if not night_intents.is_empty():
+				return night_intents
+	return intents
 
 
 func to_dict() -> Dictionary:
@@ -69,6 +93,10 @@ func to_dict() -> Dictionary:
 		"statuses": _statuses_out(),
 		"restored_value": restored_value,
 		"intents": intents.map(func(i: EnemyIntent) -> Dictionary: return i.to_dict()),
+		"morning_intents": morning_intents.map(func(i: EnemyIntent) -> Dictionary: return i.to_dict()),
+		"day_intents": day_intents.map(func(i: EnemyIntent) -> Dictionary: return i.to_dict()),
+		"evening_intents": evening_intents.map(func(i: EnemyIntent) -> Dictionary: return i.to_dict()),
+		"night_intents": night_intents.map(func(i: EnemyIntent) -> Dictionary: return i.to_dict()),
 		"intent_index": intent_index,
 		"link": link,
 		"outgoing_multiplier": outgoing_multiplier,
@@ -105,6 +133,14 @@ static func from_dict(data: Dictionary) -> Combatant:
 	var written: Array = data.get("intents", [])
 	for entry in written:
 		out.intents.append(EnemyIntent.from_dict(entry))
+	for entry in data.get("morning_intents", []):
+		out.morning_intents.append(EnemyIntent.from_dict(entry))
+	for entry in data.get("day_intents", []):
+		out.day_intents.append(EnemyIntent.from_dict(entry))
+	for entry in data.get("evening_intents", []):
+		out.evening_intents.append(EnemyIntent.from_dict(entry))
+	for entry in data.get("night_intents", []):
+		out.night_intents.append(EnemyIntent.from_dict(entry))
 
 	var path: String = data.get("behavior_script", "")
 	if path != "" and ResourceLoader.exists(path):

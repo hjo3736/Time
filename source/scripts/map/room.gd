@@ -8,6 +8,9 @@ var coord := Vector2i.ZERO
 var kind := Kind.EMPTY
 
 var encounter_id := &""
+var morning_encounter_id := &""
+var evening_encounter_id := &""
+var night_encounter_id := &""
 
 var exits := {}
 
@@ -24,6 +27,18 @@ func _written_exits() -> Array:
 	for step in steps:
 		out.append([step.x, step.y, int(exits[step])])
 	return out
+
+
+func encounter_for(sky: int) -> StringName:
+	var chosen := &""
+	match sky:
+		RunClock.Daytime.MORNING:
+			chosen = morning_encounter_id
+		RunClock.Daytime.EVENING:
+			chosen = evening_encounter_id
+		RunClock.Daytime.NIGHT:
+			chosen = night_encounter_id
+	return chosen if chosen != &"" else encounter_id
 
 
 func is_hostile() -> bool:
@@ -44,6 +59,9 @@ func to_dict() -> Dictionary:
 		"y": coord.y,
 		"kind": kind,
 		"encounter_id": String(encounter_id),
+		"morning_encounter_id": String(morning_encounter_id),
+		"evening_encounter_id": String(evening_encounter_id),
+		"night_encounter_id": String(night_encounter_id),
 		"exits": _written_exits(),
 		"visited": visited,
 		"cleared": cleared,
@@ -55,6 +73,9 @@ static func from_dict(data: Dictionary) -> Room:
 	out.coord = Vector2i(int(data.get("x", 0)), int(data.get("y", 0)))
 	out.kind = int(data.get("kind", Kind.EMPTY))
 	out.encounter_id = StringName(data.get("encounter_id", ""))
+	out.morning_encounter_id = StringName(data.get("morning_encounter_id", ""))
+	out.evening_encounter_id = StringName(data.get("evening_encounter_id", ""))
+	out.night_encounter_id = StringName(data.get("night_encounter_id", ""))
 	for entry in data.get("exits", []):
 		if entry.size() >= 3:
 			out.exits[Vector2i(int(entry[0]), int(entry[1]))] = int(entry[2])

@@ -60,6 +60,12 @@ help.reroll,타격마다 대상을 다시 고른다.,Re-rolls its target for eve
 help.refund,이번 턴에만 돌아온다. 남은 시간과 흐른 시간은 건드리지 않는다.,Returns to this turn only — it never touches Remaining or Elapsed.
 help.exhaust_reason,코스트보다 많은 시간을 돌려주는 카드는 소멸이 없으면 무한히 돈다.,Without Exhaust a card that returns more time than it costs would loop forever.
 time.hours,{n}시간,{n}h
+time.date,{year}년 {month}월 {day}일 {hour}시,{year}.{month}.{day} — {hour}h
+time.deadline,모래가 다하는 날 · {date},Sand runs out · {date}
+time.sky_day,낮,Day
+time.sky_morning,아침,Morning
+time.sky_evening,저녁,Evening
+time.sky_night,밤,Night
 effect.grows_per_card,이번 턴에 낸 카드마다 +{n},+{n} for each card played this turn
 effect.grows_per_turn,턴이 지날 때마다 +{n},+{n} for each turn elapsed
 effect.per_hour_damage,쓴 시간 1시간마다 {amount}의 피해를 줍니다.,Deal {amount} damage for each hour spent.
@@ -101,6 +107,7 @@ enemy.repeating_door.name,되풀이하는 문,The Repeating Door
 enemy.first_crack.name,첫 균열,The First Crack
 ui.hud.remaining,남은 시간,Remaining
 ui.hud.now,지금,Now
+ui.hud.sky,하늘,Sky
 ui.hud.hp,체력,Health
 ui.hud.restored,회복한 시간,Restored
 ui.hud.threat,위협,Threat
@@ -197,13 +204,13 @@ ui.reward.title,무엇을 회수했는가,What was recovered
 ui.reward.body,한 장만 가져갈 수 있다. 이 방을 떠나면 나머지는 사라진다.,Only one can be taken. Leave the room and the rest are gone.
 ui.reward.skip,받지 않는다,Take none
 ui.fire.title,모닥불,Fire
-ui.fire.body,여덟 시간이 든다. 그 시간으로 할 수 있는 것은 하나뿐이다.,It costs eight hours. That time buys one thing.
+ui.fire.body,그 시간으로 할 수 있는 것은 하나뿐이다.,That time buys one thing.
 ui.fire.rest,쉰다,Rest
-ui.fire.rest_detail,체력 {n} 회복,Recover {n} health
+ui.fire.rest_detail,{span} · 체력 {n} 회복,{span} · Recover {n} health
 ui.fire.upgrade,카드를 벼린다,Sharpen a card
-ui.fire.upgrade_detail,어떤 카드를 벼릴지 고른다,Choose which card to sharpen
+ui.fire.upgrade_detail,{span} · 어떤 카드를 벼릴지 고른다,{span} · Choose which card to sharpen
 ui.fire.convert,가져간다,Keep it
-ui.fire.convert_detail,회복한 시간 {a} → 남은 시간 {b},Restored {a} → Remaining {b}
+ui.fire.convert_detail,시간이 들지 않는다 · 회복한 시간 {a} → 남은 시간 {b},Costs no time · Restored {a} → Remaining {b}
 ui.fire.leave,그냥 지나간다,Walk past
 ui.fire.leave_detail,모닥불은 그대로 남는다,The fire stays lit
 ui.shop.title,상점,Shop

@@ -8,7 +8,7 @@ const MINUTES_PER_DAY := 1440
 
 @export var starting_remaining := 30 * MINUTES_PER_DAY
 
-@export var starting_max_hp := 70
+@export var starting_max_hp := 80
 
 
 @export var turn_cost := 3 * MINUTES_PER_HOUR
@@ -19,7 +19,9 @@ const MINUTES_PER_DAY := 1440
 
 @export var room_cost_max := 3 * MINUTES_PER_HOUR
 
-@export var fire_cost := 8 * MINUTES_PER_HOUR
+@export var fire_rest_cost := 4 * MINUTES_PER_HOUR
+
+@export var fire_upgrade_cost := 2 * MINUTES_PER_HOUR
 
 @export var shop_cost := 1 * MINUTES_PER_HOUR
 
@@ -47,7 +49,7 @@ const MINUTES_PER_DAY := 1440
 
 @export var conversion_cap := 36 * MINUTES_PER_HOUR
 
-@export_range(0.0, 1.0) var fire_heal_fraction := 0.3
+@export_range(0.0, 1.0) var fire_heal_fraction := 0.2
 
 
 @export var reward_weight_common := 60
@@ -87,7 +89,22 @@ const MINUTES_PER_DAY := 1440
 @export var elites_per_act: Array[int] = [2, 2, 3]
 
 
+@export var boss_marked_on_map := false
+
+
 @export var clock_start_minute := 8 * MINUTES_PER_HOUR
+
+@export var start_year := 1487
+@export var start_month := 3
+@export var start_day := 1
+
+@export var days_per_month := 30
+@export var months_per_year := 12
+
+@export var morning_starts_minute := 5 * MINUTES_PER_HOUR
+@export var day_starts_minute := 8 * MINUTES_PER_HOUR
+@export var evening_starts_minute := 17 * MINUTES_PER_HOUR
+@export var night_starts_minute := 20 * MINUTES_PER_HOUR
 
 
 static func default() -> Balance:
@@ -172,11 +189,13 @@ func validate() -> PackedStringArray:
 	if conversion_rate < 1:
 		problems.append("conversion_rate must be at least 1.")
 
-	var best_yield := conversion_cap / maxi(1, conversion_rate)
-	if best_yield <= fire_cost:
+	if fire_upgrade_cost < 0:
+		problems.append("fire_upgrade_cost must not be negative.")
+
+	if conversion_cap < conversion_rate:
 		problems.append(
-			"Conversion is a net loss: a full %dm conversion yields %dm against a %dm fire. Raise conversion_cap above fire_cost * conversion_rate."
-			% [conversion_cap, best_yield, fire_cost]
+			"Conversion is dead: a %dm cap at %d:1 rounds down to nothing. Raise conversion_cap above conversion_rate."
+			% [conversion_cap, conversion_rate]
 		)
 
 	for named in [
@@ -211,12 +230,25 @@ func validate() -> PackedStringArray:
 		["starting_remaining", starting_remaining],
 		["starting_max_hp", starting_max_hp],
 		["turn_cost", turn_cost],
-		["fire_cost", fire_cost],
+		["fire_rest_cost", fire_rest_cost],
 		["threat_step", threat_step],
 		["expected_threat_steps", expected_threat_steps],
 	]:
 		if int(pair[1]) <= 0:
 			problems.append("%s must be positive." % pair[0])
+
+	var turns := [morning_starts_minute, day_starts_minute, evening_starts_minute,
+		night_starts_minute]
+	for i in range(1, turns.size()):
+		if int(turns[i]) <= int(turns[i - 1]):
+			problems.append(
+				"The sky must turn in order inside one day: %s." % str(turns))
+			break
+	if night_starts_minute >= MINUTES_PER_DAY:
+		problems.append("night_starts_minute must fall inside the day it belongs to.")
+	for pair in [["days_per_month", days_per_month], ["months_per_year", months_per_year]]:
+		if int(pair[1]) < 1:
+			problems.append("%s must be at least 1." % pair[0])
 
 	if room_transition_cost < 0:
 		problems.append("room_transition_cost must not be negative.")

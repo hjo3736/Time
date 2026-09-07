@@ -88,7 +88,7 @@ func _init() -> void:
 	guard.play_card(hand_index_of(guard, &"brace"))
 	check("block gained", guard.warden().block, 5)
 	guard.end_turn()
-	check("only 3 got through", guard.warden().hp, 70 - 3)
+	check("only 3 got through", guard.warden().hp, _b.starting_max_hp - 3)
 	check("block cleared for the new turn", guard.warden().block, 0)
 
 	print("\n-- vulnerable is applied in one place and multiplies once --")
@@ -125,7 +125,7 @@ func _init() -> void:
 
 	print("\n-- the Warden falling ends the fight and reaches the run --")
 	var doomed_run := run_with_deck([&"brace", &"brace", &"brace", &"brace", &"brace"])
-	doomed_run.damage(65)
+	doomed_run.damage(_b.starting_max_hp - 5)
 	var doomed := battle(doomed_run, [dummy(50, [EnemyIntent.attack(20)])])
 	check("carried hp in", doomed.warden().hp, 5)
 	doomed.end_turn()
@@ -138,13 +138,13 @@ func _init() -> void:
 	var hurt := battle(hurt_run, [dummy(60, [EnemyIntent.attack(9)])])
 	hurt.end_turn()
 	check("still fighting", hurt.phase, BattleState.Phase.PLAYER_TURN)
-	check("run hp untouched mid-fight", hurt_run.hp, 70)
+	check("run hp untouched mid-fight", hurt_run.hp, _b.starting_max_hp)
 	while hurt.combatants[1].is_alive() and hurt.turn < 30:
 		var idx := hand_index_of(hurt, &"interrupt")
 		if idx < 0 or not hurt.play_card(idx, 1):
 			hurt.end_turn()
 	check("won", hurt.phase, BattleState.Phase.VICTORY)
-	check("run hp now reflects the fight", hurt_run.hp < 70, true)
+	check("run hp now reflects the fight", hurt_run.hp < _b.starting_max_hp, true)
 
 	print("\n-- running out of time mid-fight ends the run --")
 	var last_run := RunState.new(_b, 1)

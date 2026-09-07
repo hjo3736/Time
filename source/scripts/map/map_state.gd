@@ -45,7 +45,9 @@ func is_surveyed(coord: Vector2i) -> bool:
 func is_known(coord: Vector2i) -> bool:
 	if not rooms.has(coord):
 		return false
-	return coord == boss_coord or is_surveyed(coord)
+	if coord == boss_coord and _run.clock.balance.boss_marked_on_map:
+		return true
+	return is_surveyed(coord)
 
 
 func known_rooms() -> Array:

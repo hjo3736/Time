@@ -46,13 +46,31 @@ func get_encounter(id: StringName) -> EncounterData:
 	return _by_id.get(id)
 
 
-func candidates(act: int, tier: EnemyData.Tier, opening: bool = false) -> Array[EncounterData]:
+func candidates(act: int, tier: EnemyData.Tier, opening: bool = false,
+		sky: int = -1) -> Array[EncounterData]:
 	return _all.filter(func(e: EncounterData) -> bool:
-		return e.act == act and e.tier == tier and e.opening_only == opening)
+		return (e.act == act and e.tier == tier and e.opening_only == opening
+			and _shows_under(e, sky)))
 
 
-func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: bool = false) -> EncounterData:
-	var pool := candidates(act, tier, opening)
+func _shows_under(e: EncounterData, sky: int) -> bool:
+	if sky < 0 or e.appears == EncounterData.When.ANY:
+		return true
+	match sky:
+		RunClock.Daytime.MORNING:
+			return e.appears == EncounterData.When.MORNING
+		RunClock.Daytime.EVENING:
+			return e.appears == EncounterData.When.EVENING
+		RunClock.Daytime.NIGHT:
+			return e.appears == EncounterData.When.NIGHT
+	return e.appears == EncounterData.When.DAY
+
+
+func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: bool = false,
+		sky: int = -1) -> EncounterData:
+	var pool := candidates(act, tier, opening, sky)
+	if pool.is_empty() and sky >= 0:
+		pool = candidates(act, tier, opening)
 	if pool.is_empty():
 		return null
 

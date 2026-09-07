@@ -96,12 +96,21 @@ func fire_heal_amount() -> int:
 	return maxi(1, roundi(_max_hp * _balance.fire_heal_fraction))
 
 
-func can_use_fire() -> bool:
-	return _clock.can_afford(_balance.fire_cost)
+func fire_cost_of(action: FireAction) -> int:
+	match action:
+		FireAction.REST:
+			return _balance.fire_rest_cost
+		FireAction.UPGRADE:
+			return _balance.fire_upgrade_cost
+	return 0
+
+
+func can_use_fire(action: FireAction = FireAction.REST) -> bool:
+	return _clock.can_afford(fire_cost_of(action))
 
 
 func use_fire(action: FireAction, argument: int = 0) -> bool:
-	if not can_use_fire():
+	if not can_use_fire(action):
 		return false
 
 	match action:
@@ -115,7 +124,7 @@ func use_fire(action: FireAction, argument: int = 0) -> bool:
 			if _clock.convertible_restored() <= 0:
 				return false
 
-	_clock.advance(_balance.fire_cost, RunClock.Source.FIRE)
+	_clock.advance(fire_cost_of(action), RunClock.Source.FIRE)
 
 	match action:
 		FireAction.REST:

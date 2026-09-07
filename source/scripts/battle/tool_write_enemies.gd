@@ -34,6 +34,7 @@ func enemy(
 	intents: Array[EnemyIntent],
 	behavior: Script = null,
 	tier: EnemyData.Tier = EnemyData.Tier.NORMAL,
+	by_night: Array[EnemyIntent] = [] as Array[EnemyIntent],
 ) -> EnemyData:
 	var e := EnemyData.new()
 	e.id = id
@@ -42,6 +43,7 @@ func enemy(
 	e.hp_min = hp_min
 	e.hp_max = hp_max
 	e.intents = intents
+	e.night_intents = by_night
 	e.behavior_script = behavior
 	return e
 
@@ -88,10 +90,14 @@ func _teaching() -> void:
 	print("일반 — 기본")
 
 	write(enemy(&"afterimage", 20, 24,
-		[attack(5), attack(5), attack(9)] as Array[EnemyIntent]))
+		[attack(5), attack(5), attack(9)] as Array[EnemyIntent],
+		null, EnemyData.Tier.NORMAL,
+		[attack(3), attack(3), attack(3), attack(12)] as Array[EnemyIntent]))
 
 	write(enemy(&"pacing", 26, 32,
-		[attack(6), block(8), attack(6)] as Array[EnemyIntent]))
+		[attack(6), block(8), attack(6)] as Array[EnemyIntent],
+		null, EnemyData.Tier.NORMAL,
+		[block(12), attack(11)] as Array[EnemyIntent]))
 
 
 func _askew() -> void:

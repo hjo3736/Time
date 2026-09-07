@@ -101,7 +101,8 @@ func _init() -> void:
 	check("starting deck", rc.run.deck.size(), _b.starting_deck.size())
 	check("full clock", rc.run.clock.remaining, _b.starting_remaining)
 	check("standing on the start", rc.map.current, Vector2i.ZERO)
-	check("the boss is already marked", rc.map.is_known(rc.map.boss_coord), true)
+	check("the boss door follows the dial",
+		rc.map.is_known(rc.map.boss_coord), _b.boss_marked_on_map)
 	check("and priced", rc.minutes_to_boss() > 0, true)
 
 	print("\n-- walking into a fight starts one --")
@@ -126,21 +127,29 @@ func _init() -> void:
 	check("walking back offers nothing", f.map.at(f.map.current).is_spent(), true)
 
 	print("\n-- a fire spends eight hours on exactly one thing --")
-	var fr := controller(3)
-	fr.run.damage(30)
-	check("reached a fire", walk_to_kind(fr, Room.Kind.FIRE), true)
+	var fr := _walk_until(Room.Kind.FIRE, 30)
+	check("reached a fire", fr != null, true)
+	if fr == null:
+		print("FAILURES (%d failures)" % maxi(1, _failures))
+		quit(1)
+		return
 	check("at the fire", fr.phase, RunController.Phase.FIRE)
 	var hp_before := fr.run.hp
 	var clock_before := fr.run.clock.remaining
 	check("rested", fr.use_fire(RunState.FireAction.REST), true)
 	check("healed", fr.run.hp > hp_before, true)
-	check("cost eight hours", clock_before - fr.run.clock.remaining, _b.fire_cost)
+	check("cost what resting costs", clock_before - fr.run.clock.remaining,
+		fr.run.fire_cost_of(RunState.FireAction.REST))
 	check("back on the floor", fr.phase, RunController.Phase.EXPLORING)
 	check("and the fire is spent", fr.map.at(fr.map.current).cleared, true)
 
 	print("\n-- a fire walked past keeps --")
-	var skip := controller(4)
-	check("reached a fire", walk_to_kind(skip, Room.Kind.FIRE), true)
+	var skip := _walk_until(Room.Kind.FIRE, 0)
+	check("reached a fire to walk past", skip != null, true)
+	if skip == null:
+		print("FAILURES (%d failures)" % maxi(1, _failures))
+		quit(1)
+		return
 	skip.leave_fire()
 	var fire_coord := skip.map.current
 	check("not cleared by leaving", skip.map.at(fire_coord).cleared, false)
@@ -192,3 +201,13 @@ func _init() -> void:
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
+
+
+func _walk_until(kind: Room.Kind, hurt_by: int) -> RunController:
+	for seed_value in [3, 5, 7, 11, 13, 17, 19, 23, 29, 31]:
+		var rc := controller(seed_value)
+		if hurt_by > 0:
+			rc.run.damage(hurt_by)
+		if walk_to_kind(rc, kind):
+			return rc
+	return null

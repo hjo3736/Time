@@ -221,9 +221,23 @@ func _init() -> void:
 			far += 1
 	check("most of the floor is still dark", far > 0, true)
 
-	print("\n-- the boss is marked from the first moment --")
-	check("boss is known before anyone walks", fog.is_known(fog.boss_coord), true)
+	print("\n-- whether the boss door is marked is a dial, and it is obeyed both ways --")
+	check("the shipped setting is followed",
+		fog.is_known(fog.boss_coord), _b.boss_marked_on_map)
 	check("without having been visited", fog.at(fog.boss_coord).visited, false)
+
+	var shown := Balance.default().duplicate()
+	shown.boss_marked_on_map = true
+	var lit := MapState.new(RunState.new(shown, 7), floor_for(7))
+	check("marked, it is known from the first moment",
+		lit.is_known(lit.boss_coord), true)
+
+	var hidden := Balance.default().duplicate()
+	hidden.boss_marked_on_map = false
+	var dark := MapState.new(RunState.new(hidden, 7), floor_for(7))
+	check("unmarked, it stays dark until walked near",
+		dark.is_known(dark.boss_coord), false)
+	check("and the walk to it is a guess either way", dark.boss_walk_is_guess(), true)
 
 	print("\n-- walking back out costs exactly what walking in cost --")
 	var walk := state_for(11)
@@ -279,6 +293,8 @@ func _init() -> void:
 	check("and it charged that corridor",
 		was - int(projected["remaining"]), preview.cost_between(Vector2i.ZERO, door))
 
+	_rooms_are_stocked_for_both_skies()
+
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
 
@@ -301,3 +317,39 @@ func _walked_from(rooms: Dictionary, origin: Vector2i) -> Dictionary:
 				best[n] = through
 				queue.append(n)
 	return best
+
+
+func _rooms_are_stocked_for_both_skies() -> void:
+	print("\n-- every hostile room is stocked for daylight and for darkness --")
+	var hostile := 0
+	var missing_day := 0
+	var missing_night := 0
+	var differs := 0
+	for seed_value in 40:
+		var rooms := floor_for(seed_value)
+		for coord in rooms:
+			var room: Room = rooms[coord]
+			if not room.is_hostile():
+				continue
+			hostile += 1
+			if _encounters.get_encounter(room.encounter_for(false)) == null:
+				missing_day += 1
+			if _encounters.get_encounter(room.encounter_for(true)) == null:
+				missing_night += 1
+			if room.encounter_for(true) != room.encounter_for(false):
+				differs += 1
+
+	check("there are hostile rooms to check", hostile > 100, true)
+	check("each has a fight for the day", missing_day, 0)
+	check("and one for the night", missing_night, 0)
+	check("and the two are often not the same", differs > hostile / 4, true)
+
+	print("\n-- the same seed stocks the same fights, whichever way you walk --")
+	var a := floor_for(99)
+	var b := floor_for(99)
+	var drifted := 0
+	for coord in a:
+		if a[coord].encounter_for(false) != b[coord].encounter_for(false) \
+				or a[coord].encounter_for(true) != b[coord].encounter_for(true):
+			drifted += 1
+	check("nothing drifted", drifted, 0)

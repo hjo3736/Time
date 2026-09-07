@@ -187,14 +187,13 @@ func projected_need(rc: RunController, balance: Balance) -> int:
 
 func at_fire(rc: RunController, balance: Balance) -> void:
 	var run := rc.run
-	var short_on_time := run.clock.remaining < projected_need(rc, balance)
 	var hurt := run.hp < roundi(run.max_hp * 0.6)
 
-	if short_on_time and run.clock.convertible_restored() >= balance.conversion_rate * 2:
-		if rc.use_fire(RunState.FireAction.CONVERT):
-			return
 	if hurt and rc.use_fire(RunState.FireAction.REST):
 		return
+	if run.clock.convertible_restored() >= balance.conversion_rate:
+		if rc.use_fire(RunState.FireAction.CONVERT):
+			return
 	if rc.use_fire(RunState.FireAction.UPGRADE, _best_deck_index(run)):
 		return
 	rc.leave_fire()

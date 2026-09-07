@@ -32,6 +32,13 @@ var _cards: Array[CardNode] = []
 
 var _preview_target := -1
 
+var _punch: Punch
+var _watching: BattleState = null
+var _landed := 0
+var _warden_node: Control
+var _warden_slot: Control
+var _enemy_slot: Control
+
 
 func _ready() -> void:
 	_stage = Control.new()
@@ -45,6 +52,19 @@ func _ready() -> void:
 	_hand_layer.offset_top = -250
 	_hand_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_hand_layer)
+
+	_warden_slot = Control.new()
+	_warden_slot.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_warden_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage.add_child(_warden_slot)
+
+	_enemy_slot = Control.new()
+	_enemy_slot.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_enemy_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stage.add_child(_enemy_slot)
+
+	_punch = Punch.new()
+	add_child(_punch)
 
 	_build_orb()
 	_build_end_turn()
@@ -149,6 +169,7 @@ func show_battle(rc: RunController) -> void:
 	_rc = rc
 	if rc.battle == null:
 		return
+	_watch(rc.battle)
 
 	_orb_value.text = "%d/%d" % [
 		rc.battle.turn_budget / Balance.MINUTES_PER_HOUR,
@@ -165,12 +186,14 @@ func show_battle(rc: RunController) -> void:
 
 
 func _rebuild_stage(rc: RunController) -> void:
-	ChoiceView._clear(_stage)
+	ChoiceView._clear(_warden_slot)
+	ChoiceView._clear(_enemy_slot)
 
 	var warden := _warden_panel(rc)
 	warden.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT)
 	warden.position = Vector2(40, -60)
-	_stage.add_child(warden)
+	_warden_slot.add_child(warden)
+	_warden_node = warden
 
 	_enemy_panels.clear()
 	var handles := rc.battle.enemy_handles()
@@ -179,7 +202,7 @@ func _rebuild_stage(rc: RunController) -> void:
 	row.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
 	row.position = Vector2(-40, -70)
 	row.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_stage.add_child(row)
+	_enemy_slot.add_child(row)
 	for handle in handles:
 		var panel := _enemy_panel(rc, handle)
 		row.add_child(panel)
@@ -485,3 +508,64 @@ func _intent_colour(rc: RunController, handle: int, enemy: Combatant) -> Color:
 	if shown < raw:
 		return UiTheme.GREEN
 	return UiTheme.BLOOD
+
+
+func _watch(battle: BattleState) -> void:
+	if _watching == battle:
+		return
+	if _watching != null and _watching.combatant_damaged.is_connected(_on_damaged):
+		_watching.combatant_damaged.disconnect(_on_damaged)
+		_watching.combatant_blocked.disconnect(_on_blocked)
+	_watching = battle
+	battle.combatant_damaged.connect(_on_damaged)
+	battle.combatant_blocked.connect(_on_blocked)
+
+
+func _on_damaged(handle: int, amount: int) -> void:
+	if amount <= 0 or _punch == null:
+		return
+	var panel := _panel_for(handle)
+	if panel == null:
+		return
+
+	var waited := float(_landed) * Punch.STAGGER
+	_landed += 1
+	get_tree().create_timer(Punch.STAGGER * 2.0).timeout.connect(
+		func() -> void: _landed = maxi(0, _landed - 1))
+
+	var hurt := handle == BattleState.WARDEN
+	var tint := UiTheme.BLOOD if hurt else UiTheme.BONE
+	var where := Rect2(panel.global_position - global_position, panel.size)
+	_punch.land(where, amount, tint, waited)
+	_punch.shake(_slot_for(handle), minf(4.0 + float(amount) * 0.7, 18.0), waited)
+
+
+func _panel_for(handle: int) -> Control:
+	if handle == BattleState.WARDEN:
+		return _warden_node
+	for entry in _enemy_panels:
+		if int(entry["handle"]) == handle:
+			return entry["node"]
+	return null
+
+
+
+func _on_blocked(handle: int, absorbed: int) -> void:
+	if absorbed <= 0 or _punch == null:
+		return
+	var panel := _panel_for(handle)
+	if panel == null:
+		return
+
+	var waited := float(_landed) * Punch.STAGGER
+	_landed += 1
+	get_tree().create_timer(Punch.STAGGER * 2.0).timeout.connect(
+		func() -> void: _landed = maxi(0, _landed - 1))
+
+	var where := Rect2(panel.global_position - global_position, panel.size)
+	_punch.turn_aside(where, absorbed, waited)
+	_punch.shake(_slot_for(handle), Punch.GUARD_SHAKE, waited)
+
+
+func _slot_for(handle: int) -> Control:
+	return _warden_slot if handle == BattleState.WARDEN else _enemy_slot

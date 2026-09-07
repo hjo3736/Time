@@ -77,6 +77,8 @@ func _go() -> void:
 	await _events_are_drawn(boot)
 	await _language_reaches_a_running_game(boot)
 	await _out_of_reach_is_shown(boot)
+	await _the_clock_runs_as_you_spend(boot)
+	_the_string_table_is_well_formed()
 	await _prices_are_drawn_on_the_map(boot)
 	await _english_leaves_no_korean_behind(boot)
 	await _a_save_from_an_older_build(boot)
@@ -662,8 +664,8 @@ func _go() -> void:
 	d._on_picked(chosen)
 	check("the chosen card was the one sharpened",
 		int(d.rc.run.deck[chosen].get("upgrades", 0)), before_upgrades + 1)
-	check("and the fire was paid for", _b_of(d).starting_remaining - d.rc.run.clock.remaining,
-		_b_of(d).fire_cost)
+	check("and sharpening was paid for", _b_of(d).starting_remaining - d.rc.run.clock.remaining,
+		_b_of(d).fire_upgrade_cost)
 	check("picker closed", d._picker.visible, false)
 
 	print("\n-- an already-sharpened card cannot be picked again --")
@@ -1314,7 +1316,7 @@ func _language_reaches_a_running_game(boot: RootScreen) -> void:
 	boot.begin(2)
 	await process_frame
 	var korean: String = boot._game._hud.get_child(0).get_child(0).get_child(0).text
-	check("the hud is in Korean", korean, tr("ui.hud.remaining"))
+	check("the hud is in Korean", korean, tr("ui.hud.now"))
 
 	Settings.set_locale("en")
 	boot._on_language_changed()
@@ -1322,7 +1324,7 @@ func _language_reaches_a_running_game(boot: RootScreen) -> void:
 	check("the run survived the rebuild", boot._game.rc != null, true)
 	check("and it is the same run", boot._game.rc.run.seed, 2)
 	var english: String = boot._game._hud.get_child(0).get_child(0).get_child(0).text
-	check("the hud followed", english, "Remaining")
+	check("the hud followed", english, "Now")
 	check("which is not what it said before", english != korean, true)
 	check("and the top menu followed too", boot._game._menu._map_button.text, "Map")
 
@@ -1668,3 +1670,77 @@ func _a_save_from_an_older_build(boot: RootScreen) -> void:
 	SaveGame.clear()
 	boot.begin(2)
 	await process_frame
+
+
+func _the_clock_runs_as_you_spend(boot: RootScreen) -> void:
+	print("\n-- the clock shows time going as cards are played, not all at the end --")
+	boot.begin(2)
+	await process_frame
+	var g: GameScreen = boot._game
+	await _walk_into_a_fight(g)
+	if g.rc.phase != RunController.Phase.BATTLE:
+		print("     (seed 2 reached no fight, nothing checked)")
+		return
+
+	var hud: Hud = g._hud
+	var clock := g.rc.run.clock
+	check("nothing is spent before a card is played", hud.spent_so_far(g.rc), 0)
+	check("so the display matches the clock", hud.shown_target(g.rc), clock.remaining)
+
+	var budget_was := g.rc.battle.turn_budget
+	var played := -1
+	for i in g.rc.battle.piles().hand.size():
+		if g.rc.battle.play_card(i, g.rc.battle.enemy_handles()[0]):
+			played = i
+			break
+	check("a card went down", played >= 0, true)
+	if played < 0:
+		return
+	g.refresh()
+	await process_frame
+
+	var cost := budget_was - g.rc.battle.turn_budget
+	check("the card cost something", cost > 0, true)
+	check("that cost now reads as spent", hud.spent_so_far(g.rc), cost)
+	check("and the clock shows it gone before the turn ends",
+		hud.shown_target(g.rc), clock.remaining - cost)
+	check("while the real clock has not moved yet",
+		g.rc.run.clock.remaining, clock.remaining)
+
+	var before_end := clock.remaining
+	g._on_end_turn()
+	await process_frame
+	check("ending the turn charges the whole turn once",
+		before_end - g.rc.run.clock.remaining, _b_of(g).turn_cost)
+	check("and the display lands on the real clock",
+		hud.shown_target(g.rc), g.rc.run.clock.remaining)
+
+
+func _the_string_table_is_well_formed() -> void:
+	print("\n-- every row in strings.csv is exactly three columns --")
+	var file := FileAccess.open("res://source/data/localization/strings.csv", FileAccess.READ)
+	if file == null:
+		check("strings.csv opens", false, true)
+		return
+	var ragged := []
+	var seen := {}
+	var repeated := []
+	var rows := 0
+	while not file.eof_reached():
+		var row := file.get_csv_line()
+		if row.size() == 1 and row[0] == "":
+			continue
+		rows += 1
+		if row.size() != 3:
+			ragged.append("%s has %d columns" % [row[0], row.size()])
+		if seen.has(row[0]):
+			repeated.append(row[0])
+		seen[row[0]] = true
+	file.close()
+	for bad in ragged:
+		print("     ragged  %s" % bad)
+	for twice in repeated:
+		print("     twice   %s" % twice)
+	check("the table has rows", rows > 100, true)
+	check("none is ragged, so no comma split a value", ragged.size(), 0)
+	check("and no key is written twice", repeated.size(), 0)
