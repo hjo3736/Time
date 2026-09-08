@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_yeqlo"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_damage.gd" id="2_dom0c"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_mr2sg"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_gc68v"]
+
+[sub_resource type="Resource" id="Resource_4gov5"]
+script = ExtResource("2_dom0c")
+text_key = &"effect.take"
+
+[sub_resource type="Resource" id="Resource_oqrrt"]
+script = ExtResource("2_dom0c")
+amount = 9
+text_key = &"effect.take"
+
+[sub_resource type="Resource" id="Resource_8q0cq"]
+script = ExtResource("4_gc68v")
+effects = Array[ExtResource("1_yeqlo")]([SubResource("Resource_oqrrt")])
+
+[resource]
+script = ExtResource("3_mr2sg")
+id = &"take"
+name_key = &"card.take.name"
+rarity = 0
+effects = Array[ExtResource("1_yeqlo")]([SubResource("Resource_4gov5")])
+upgrade = SubResource("Resource_8q0cq")

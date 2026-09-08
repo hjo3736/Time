@@ -155,44 +155,87 @@ func _init() -> void:
 	check("the calendar reads the elapsed time", d.format_clock(),
 		d.format_date_of(d.date_at(30 * 60 + 45)))
 	var marks := d.date_at(30 * 60 + 45)
-	check("a day and a half in, it is the second day", marks["day"], _b.start_day + 1)
-	check("at the right hour", marks["hour"], 14)
+	check("a day and a half in, one day has turned",
+		marks["day"], int(RunClock.date_from_seed(0)["day"]) + 1)
+	check("at the right hour", marks["hour"],
+		(int(RunClock.date_from_seed(0)["hour"]) + 30) % 24)
 	check("and the deadline is the budget away",
 		d.format_deadline(), d.format_date_of(d.date_at(d.elapsed + d.remaining)))
 	check("span is hours, never days or minutes", RunClock.format_span(336 * 60), TranslationServer.translate("time.hours").format({"n": 336}))
 
 	_daytime_checks(_b)
 
+	_the_seed_is_the_date(_b)
+
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
 
-
 func _daytime_checks(b: Balance) -> void:
-	print("\n-- the sky turns on schedule and the run starts in daylight --")
-	var dawn := RunClock.new(b)
-	check("the run opens in daylight", dawn.is_night(), false)
-	check("and knows how long that lasts", dawn.minutes_until_sky_turns(),
-		b.night_falls_minute - b.clock_start_minute)
+	print("\n-- the day is cut into four, and the cuts are where the balance says --")
+	var turns := [b.morning_starts_minute, b.day_starts_minute,
+		b.evening_starts_minute, b.night_starts_minute]
+	var want := [RunClock.Daytime.MORNING, RunClock.Daytime.DAY,
+		RunClock.Daytime.EVENING, RunClock.Daytime.NIGHT]
+	for i in turns.size():
+		var at_turn := RunClock.new(b, -1, RunClock.seed_from_date(0, 0, 0, 0))
+		at_turn.advance(int(turns[i]), RunClock.Source.TRAVEL)
+		check("on the stroke it is phase %d" % want[i], at_turn.daytime(), want[i])
+		var moment_before := RunClock.new(b, -1, RunClock.seed_from_date(0, 0, 0, 0))
+		moment_before.advance(int(turns[i]) - 1, RunClock.Source.TRAVEL)
+		check("and a minute earlier it is not", moment_before.daytime() != want[i], true)
 
-	var evening := RunClock.new(b)
-	evening.advance(b.night_falls_minute - b.clock_start_minute, RunClock.Source.TRAVEL)
-	check("the moment night falls it is night", evening.is_night(), true)
-
-	var midnight := RunClock.new(b)
-	midnight.advance(Balance.MINUTES_PER_DAY - b.clock_start_minute, RunClock.Source.TRAVEL)
-	check("past midnight it is still night", midnight.is_night(), true)
-
-	var morning := RunClock.new(b)
-	morning.advance(Balance.MINUTES_PER_DAY - b.clock_start_minute + b.day_breaks_minute,
-		RunClock.Source.TRAVEL)
-	check("and dawn brings the day back", morning.is_night(), false)
-
-	var turns := 0
-	var walk := RunClock.new(b)
-	var was := walk.is_night()
-	for hour in 24 * 3:
+	print("\n-- the four add up to one whole day --")
+	var counted := {}
+	var walk := RunClock.new(b, -1, RunClock.seed_from_date(0, 0, 0, 0))
+	for hour in 24:
+		counted[walk.daytime()] = int(counted.get(walk.daytime(), 0)) + 1
 		walk.advance(60, RunClock.Source.TRAVEL)
-		if walk.is_night() != was:
-			turns += 1
-			was = walk.is_night()
-	check("three days hold three dawns and three dusks", turns, 6)
+	var total := 0
+	for sky in counted:
+		total += int(counted[sky])
+	check("every hour belongs to some phase", total, 24)
+	check("all four phases appear", counted.size(), 4)
+
+	print("\n-- the opening hour comes from the seed, not from a dial --")
+	for hour in [0, 6, 13, 23]:
+		var opened := RunClock.new(b, -1, RunClock.seed_from_date(1, 2, 3, hour))
+		check("a seed set to %02d opens at %02d" % [hour, hour],
+			opened.date_at(0)["hour"], hour)
+	var wrapped := RunClock.new(b, -1, RunClock.seed_from_date(1, 2, 3, 99))
+	check("an hour past the end of a day is refused, not wrapped",
+		wrapped.date_at(0)["hour"], 23)
+
+
+func _the_seed_is_the_date(b: Balance) -> void:
+	print("\n-- the seed and the opening moment are the same number --")
+	check("a date packs into a seed", RunClock.seed_from_date(1487, 3, 1, 8),
+		1487 * 1000000 + 3 * 10000 + 1 * 100 + 8)
+	var back := RunClock.date_from_seed(RunClock.seed_from_date(1487, 3, 1, 8))
+	check("and unpacks unchanged",
+		[back["year"], back["month"], back["day"], back["hour"]], [1487, 3, 1, 8])
+
+	print("\n-- the lower world's calendar takes any two digits --")
+	var wild := RunClock.seed_from_date(9999, 47, 88, 21)
+	var read := RunClock.date_from_seed(wild)
+	check("month 47 survives", read["month"], 47)
+	check("day 88 survives", read["day"], 88)
+	var clock := RunClock.new(b, -1, wild)
+	var opened := clock.date_at(0)
+	check("nothing was quietly normalised",
+		[opened["year"], opened["month"], opened["day"], opened["hour"]], [9999, 47, 88, 21])
+
+	print("\n-- and it rolls over at a hundred, not at thirty --")
+	var late := RunClock.new(b, -1, RunClock.seed_from_date(5, 9, 99, 0))
+	var tomorrow := late.date_at(Balance.MINUTES_PER_DAY)
+	check("day 99 becomes day 0 of the next month",
+		[tomorrow["month"], tomorrow["day"]], [10, 0])
+	var year_end := RunClock.new(b, -1, RunClock.seed_from_date(5, 99, 99, 0))
+	var over := year_end.date_at(Balance.MINUTES_PER_DAY)
+	check("and month 99 rolls the year", [over["year"], over["month"], over["day"]], [6, 0, 0])
+
+	print("\n-- the year stops at four digits --")
+	check("a wider year is clamped, not wrapped",
+		RunClock.date_from_seed(RunClock.seed_from_date(RunClock.YEAR_LIMIT + 500, 0, 0, 0))["year"],
+		RunClock.YEAR_LIMIT)
+	check("and the widest date there is still fits an integer",
+		RunClock.seed_from_date(RunClock.YEAR_LIMIT, 99, 99, 23) < 9223372036854775807, true)

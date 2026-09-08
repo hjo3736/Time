@@ -2,18 +2,18 @@ class_name StatusRules
 extends RefCounted
 
 
-const VULNERABLE := &"vulnerable"
+const SOFTENED := &"softened"
 
-const WEAK := &"weak"
+const BLUNTED := &"blunted"
 
-const DURATIONS := [VULNERABLE, WEAK]
+const DURATIONS := [SOFTENED, BLUNTED]
 
 
 static func modified_damage(attacker: Combatant, target: Combatant, amount: int) -> int:
 	var out := float(amount)
-	if attacker != null and attacker.status(WEAK) > 0:
+	if attacker != null and attacker.status(BLUNTED) > 0:
 		out *= 0.75
-	if target != null and target.status(VULNERABLE) > 0:
+	if target != null and target.status(SOFTENED) > 0:
 		out *= 1.5
 	return floori(out)
 

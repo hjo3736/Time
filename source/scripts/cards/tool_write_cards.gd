@@ -12,11 +12,13 @@ const KW := CardData.Keyword
 var _written := 0
 
 
-func dmg(amount: int, times: int = 1, reroll: bool = false) -> EffectDamage:
+func dmg(amount: int, times: int = 1, reroll: bool = false,
+		text_key: StringName = &"") -> EffectDamage:
 	var e := EffectDamage.new()
 	e.amount = amount
 	e.times = times
 	e.reroll_target_each_hit = reroll
+	e.text_key = text_key
 	return e
 
 
@@ -143,8 +145,9 @@ func _init() -> void:
 func _starters() -> void:
 	print("시작 카드")
 	write(upgrade(
-		card(&"interrupt", K.ATTACK, R.STARTER, 1, T.SINGLE_ENEMY, [dmg(6)]),
-		[dmg(9)]))
+		card(&"take", K.ATTACK, R.STARTER, 1, T.SINGLE_ENEMY,
+			[dmg(6, 1, false, &"effect.take")]),
+		[dmg(9, 1, false, &"effect.take")]))
 	write(upgrade(
 		card(&"brace", K.SKILL, R.STARTER, 1, T.SELF, [blk(5)]),
 		[blk(8)]))
@@ -153,14 +156,14 @@ func _starters() -> void:
 func _core() -> void:
 	print("\n공용")
 	write(upgrade(
-		card(&"unravel", K.SKILL, R.COMMON, 1, T.SINGLE_ENEMY, [status(StatusRules.VULNERABLE, 2)]),
-		[status(StatusRules.VULNERABLE, 3)]))
+		card(&"soften", K.SKILL, R.COMMON, 1, T.SINGLE_ENEMY, [status(StatusRules.SOFTENED, 2)]),
+		[status(StatusRules.SOFTENED, 3)]))
 	write(upgrade(
-		card(&"blunt", K.SKILL, R.COMMON, 1, T.SINGLE_ENEMY, [status(StatusRules.WEAK, 2)]),
-		[status(StatusRules.WEAK, 3)]))
+		card(&"blunt", K.SKILL, R.COMMON, 1, T.SINGLE_ENEMY, [status(StatusRules.BLUNTED, 2)]),
+		[status(StatusRules.BLUNTED, 3)]))
 	write(upgrade(
-		card(&"unmake", K.ATTACK, R.COMMON, 1, T.SINGLE_ENEMY, [dmg(5), status(StatusRules.WEAK, 1)]),
-		[dmg(7), status(StatusRules.WEAK, 1)]))
+		card(&"unmake", K.ATTACK, R.COMMON, 1, T.SINGLE_ENEMY, [dmg(5), status(StatusRules.BLUNTED, 1)]),
+		[dmg(7), status(StatusRules.BLUNTED, 1)]))
 	write(upgrade(
 		card(&"bulwark", K.SKILL, R.COMMON, 2, T.SELF, [blk(12)]),
 		[blk(16)]))
@@ -169,12 +172,12 @@ func _core() -> void:
 		[draw(3)]))
 	write(upgrade(
 		card(&"sever", K.ATTACK, R.UNCOMMON, 2, T.SINGLE_ENEMY,
-			[dmg(9), status(StatusRules.VULNERABLE, 2)]),
-		[dmg(12), status(StatusRules.VULNERABLE, 2)]))
+			[dmg(9), status(StatusRules.SOFTENED, 2)]),
+		[dmg(12), status(StatusRules.SOFTENED, 2)]))
 	write(upgrade(
 		card(&"harden", K.SKILL, R.UNCOMMON, 1, T.ALL_ENEMIES,
-			[blk(6), status(StatusRules.WEAK, 1)]),
-		[blk(9), status(StatusRules.WEAK, 1)]))
+			[blk(6), status(StatusRules.BLUNTED, 1)]),
+		[blk(9), status(StatusRules.BLUNTED, 1)]))
 	write(upgrade(
 		card(&"stillness", K.SKILL, R.UNCOMMON, 1, T.SELF, [blk(10)], [], KW.EXHAUST),
 		[blk(14)]))
@@ -216,8 +219,8 @@ func _engine() -> void:
 		[blk(6), draw(1)]))
 	write(upgrade(
 		card(&"wear_down", K.ATTACK, R.COMMON, 2, T.ALL_ENEMIES,
-			[dmg(4), status(StatusRules.VULNERABLE, 1)], [L.ENGINE]),
-		[dmg(6), status(StatusRules.VULNERABLE, 1)]))
+			[dmg(4), status(StatusRules.SOFTENED, 1)], [L.ENGINE]),
+		[dmg(6), status(StatusRules.SOFTENED, 1)]))
 	write(upgrade(
 		card(&"momentum", K.ATTACK, R.UNCOMMON, 1, T.SINGLE_ENEMY,
 			[grow_dmg(4, 3)], [L.ENGINE]),
@@ -228,8 +231,8 @@ func _engine() -> void:
 		[grow_blk(8, 0, 3)]))
 	write(upgrade(
 		card(&"unspool", K.SKILL, R.UNCOMMON, 2, T.ALL_ENEMIES,
-			[status(StatusRules.VULNERABLE, 2)], [L.ENGINE]),
-		[status(StatusRules.VULNERABLE, 3)]))
+			[status(StatusRules.SOFTENED, 2)], [L.ENGINE]),
+		[status(StatusRules.SOFTENED, 3)]))
 	write(upgrade(
 		card(&"regather", K.SKILL, R.RARE, 2, T.SELF, [blk(8), draw(2)], [L.ENGINE], KW.EXHAUST),
 		[], CardUpgrade.INHERIT, 0, KW.EXHAUST))

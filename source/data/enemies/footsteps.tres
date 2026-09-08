@@ -15,7 +15,7 @@ amount = 4
 [sub_resource type="Resource" id="Resource_tfdb5"]
 script = ExtResource("2_skkuy")
 kind = 2
-status = &"weak"
+status = &"blunted"
 stacks = 1
 
 [resource]

@@ -50,7 +50,7 @@ func _init() -> void:
 	_cards.load_from()
 
 	print("\n-- a fight opens with a hand and a full budget --")
-	var run := run_with_deck([&"interrupt", &"interrupt", &"brace", &"brace", &"interrupt", &"brace"])
+	var run := run_with_deck([&"take", &"take", &"brace", &"brace", &"take", &"brace"])
 	var bt := battle(run, [dummy(30, [EnemyIntent.attack(5)])])
 	check("turn", bt.turn, 1)
 	check("phase", bt.phase, BattleState.Phase.PLAYER_TURN)
@@ -59,7 +59,7 @@ func _init() -> void:
 	check("budget is the turn allotment", bt.turn_budget, 180)
 
 	print("\n-- playing a card spends the budget and moves the card --")
-	var i := hand_index_of(bt, &"interrupt")
+	var i := hand_index_of(bt, &"take")
 	check("played", bt.play_card(i, 1), true)
 	check("budget", bt.turn_budget, 120)
 	check("hand shrank", bt.piles().hand.size(), 4)
@@ -91,12 +91,12 @@ func _init() -> void:
 	check("only 3 got through", guard.warden().hp, _b.starting_max_hp - 3)
 	check("block cleared for the new turn", guard.warden().block, 0)
 
-	print("\n-- vulnerable is applied in one place and multiplies once --")
-	var vuln := battle(run_with_deck([&"unravel", &"interrupt", &"interrupt", &"interrupt", &"interrupt"]),
+	print("\n-- softened is applied in one place and multiplies once --")
+	var vuln := battle(run_with_deck([&"soften", &"take", &"take", &"take", &"take"]),
 		[dummy(40, [EnemyIntent.wait()])])
-	vuln.play_card(hand_index_of(vuln, &"unravel"), 1)
-	check("stacks", vuln.combatants[1].status(StatusRules.VULNERABLE), 2)
-	vuln.play_card(hand_index_of(vuln, &"interrupt"), 1)
+	vuln.play_card(hand_index_of(vuln, &"soften"), 1)
+	check("stacks", vuln.combatants[1].status(StatusRules.SOFTENED), 2)
+	vuln.play_card(hand_index_of(vuln, &"take"), 1)
 	check("6 became 9", vuln.combatants[1].hp, 31)
 
 	print("\n-- exhaust leaves the fight, discard does not --")
@@ -110,17 +110,17 @@ func _init() -> void:
 	check("net +1h after paying 1h", ex.turn_budget - budget_before, 60)
 
 	print("\n-- killing the last enemy ends it and pays Restored --")
-	var kill := battle(run_with_deck([&"interrupt", &"interrupt", &"interrupt", &"interrupt", &"interrupt"]),
+	var kill := battle(run_with_deck([&"take", &"take", &"take", &"take", &"take"]),
 		[dummy(6, [EnemyIntent.wait()], 420)])
 	check("restored starts empty", kill._run.clock.restored, 0)
-	kill.play_card(hand_index_of(kill, &"interrupt"), 1)
+	kill.play_card(hand_index_of(kill, &"take"), 1)
 	check("victory", kill.phase, BattleState.Phase.VICTORY)
 	check("paid from the enemy, not the blow", kill._run.clock.restored, 420)
 
 	print("\n-- overkill pays exactly the same --")
-	var over := battle(run_with_deck([&"interrupt", &"interrupt", &"interrupt", &"interrupt", &"interrupt"]),
+	var over := battle(run_with_deck([&"take", &"take", &"take", &"take", &"take"]),
 		[dummy(1, [EnemyIntent.wait()], 420)])
-	over.play_card(hand_index_of(over, &"interrupt"), 1)
+	over.play_card(hand_index_of(over, &"take"), 1)
 	check("same payout", over._run.clock.restored, 420)
 
 	print("\n-- the Warden falling ends the fight and reaches the run --")
@@ -134,13 +134,13 @@ func _init() -> void:
 	check("run agrees", doomed_run.is_defeated(), true)
 
 	print("\n-- damage taken in a fight is written back on victory --")
-	var hurt_run := run_with_deck([&"interrupt", &"interrupt", &"interrupt", &"interrupt", &"interrupt"])
+	var hurt_run := run_with_deck([&"take", &"take", &"take", &"take", &"take"])
 	var hurt := battle(hurt_run, [dummy(60, [EnemyIntent.attack(9)])])
 	hurt.end_turn()
 	check("still fighting", hurt.phase, BattleState.Phase.PLAYER_TURN)
 	check("run hp untouched mid-fight", hurt_run.hp, _b.starting_max_hp)
 	while hurt.combatants[1].is_alive() and hurt.turn < 30:
-		var idx := hand_index_of(hurt, &"interrupt")
+		var idx := hand_index_of(hurt, &"take")
 		if idx < 0 or not hurt.play_card(idx, 1):
 			hurt.end_turn()
 	check("won", hurt.phase, BattleState.Phase.VICTORY)
@@ -168,7 +168,7 @@ func _init() -> void:
 	print("\n-- the same seed deals the same fight --")
 	var seen := []
 	for attempt in 2:
-		var r := run_with_deck([&"interrupt", &"brace", &"disperse", &"unravel", &"scatter", &"held_breath"])
+		var r := run_with_deck([&"take", &"brace", &"disperse", &"soften", &"scatter", &"held_breath"])
 		var bs := battle(r, [dummy(99, [EnemyIntent.wait()])], 99)
 		seen.append(bs.piles().hand.map(func(x: int) -> String: return String(bs.card_at(bs.piles().hand.find(x)).id)))
 	check("identical openings", seen[0], seen[1])

@@ -5,17 +5,18 @@
 
 [sub_resource type="Resource" id="Resource_02vsm"]
 script = ExtResource("1_i88dg")
+kind = 1
+amount = 6
 
 [sub_resource type="Resource" id="Resource_4kkyl"]
 script = ExtResource("1_i88dg")
 
 [sub_resource type="Resource" id="Resource_4cgkq"]
 script = ExtResource("1_i88dg")
-amount = 9
 
 [sub_resource type="Resource" id="Resource_4ydj0"]
 script = ExtResource("1_i88dg")
-amount = 3
+amount = 9
 
 [sub_resource type="Resource" id="Resource_kwwu2"]
 script = ExtResource("1_i88dg")
@@ -27,6 +28,14 @@ amount = 3
 
 [sub_resource type="Resource" id="Resource_1rsen"]
 script = ExtResource("1_i88dg")
+amount = 3
+
+[sub_resource type="Resource" id="Resource_60hwv"]
+script = ExtResource("1_i88dg")
+amount = 3
+
+[sub_resource type="Resource" id="Resource_lra1q"]
+script = ExtResource("1_i88dg")
 amount = 12
 
 [resource]
@@ -34,5 +43,7 @@ script = ExtResource("2_g1wo1")
 id = &"afterimage"
 name_key = &"enemy.afterimage.name"
 hp_max = 24
-intents = Array[ExtResource("1_i88dg")]([SubResource("Resource_02vsm"), SubResource("Resource_4kkyl"), SubResource("Resource_4cgkq")])
-night_intents = Array[ExtResource("1_i88dg")]([SubResource("Resource_4ydj0"), SubResource("Resource_kwwu2"), SubResource("Resource_ad2b8"), SubResource("Resource_1rsen")])
+intents = Array[ExtResource("1_i88dg")]([SubResource("Resource_4kkyl"), SubResource("Resource_4cgkq"), SubResource("Resource_4ydj0")])
+morning_intents = Array[ExtResource("1_i88dg")]([SubResource("Resource_kwwu2")])
+evening_intents = Array[ExtResource("1_i88dg")]([SubResource("Resource_02vsm")])
+night_intents = Array[ExtResource("1_i88dg")]([SubResource("Resource_ad2b8"), SubResource("Resource_1rsen"), SubResource("Resource_60hwv"), SubResource("Resource_lra1q")])

@@ -20,8 +20,8 @@ func damage(amount: int) -> EffectDamage:
 
 func strike() -> CardData:
 	var c := CardData.new()
-	c.id = &"interrupt"
-	c.name_key = &"card.interrupt.name"
+	c.id = &"take"
+	c.name_key = &"card.take.name"
 	c.kind = CardData.Kind.ATTACK
 	c.rarity = CardData.Rarity.STARTER
 	c.cost_hours = 1
@@ -55,7 +55,7 @@ func _init() -> void:
 	up.effects = [damage(9)]
 	base.upgrade = up
 	var plus := base.upgraded()
-	check("name", plus.display_name(), "Interrupt+")
+	check("name", plus.display_name(), "Take+")
 	check("upgraded text", plus.rules_text(), "Deal 9 damage.")
 	check("base untouched", base.rules_text(), "Deal 6 damage.")
 	check("level recorded", plus.upgrade_level, 1)
@@ -66,7 +66,7 @@ func _init() -> void:
 	print("\n-- upgrade inherits what it does not override --")
 	check("cost inherited", plus.cost_hours, 1)
 	check("targeting inherited", plus.targeting, CardTargeting.Mode.SINGLE_ENEMY)
-	check("id inherited", plus.id, &"interrupt")
+	check("id inherited", plus.id, &"take")
 	check("class inherited", plus.class_id, &"warden")
 
 	print("\n-- upgrade can change cost, targeting and keywords --")

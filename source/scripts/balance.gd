@@ -92,14 +92,8 @@ const MINUTES_PER_DAY := 1440
 @export var boss_marked_on_map := false
 
 
-@export var clock_start_minute := 8 * MINUTES_PER_HOUR
-
-@export var start_year := 1487
-@export var start_month := 3
-@export var start_day := 1
-
-@export var days_per_month := 30
-@export var months_per_year := 12
+@export var days_per_month := 100
+@export var months_per_year := 100
 
 @export var morning_starts_minute := 5 * MINUTES_PER_HOUR
 @export var day_starts_minute := 8 * MINUTES_PER_HOUR

@@ -61,7 +61,7 @@ var _relic_defs: Array[Relic] = []
 
 func _init(p_balance: Balance = null, p_seed: int = 0) -> void:
 	_balance = p_balance if p_balance != null else Balance.default()
-	_clock = RunClock.new(_balance)
+	_clock = RunClock.new(_balance, -1, p_seed)
 	_max_hp = _balance.starting_max_hp
 	_hp = _max_hp
 	seed = p_seed

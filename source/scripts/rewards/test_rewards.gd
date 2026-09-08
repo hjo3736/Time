@@ -73,9 +73,9 @@ func _init() -> void:
 	check("and nothing outside the pool", ids(only_rare), ["regather"])
 
 	print("\n-- unlocks gate the pool --")
-	var gated := CardReward.offer(_cards, _b, rng(8), &"warden", [&"sweep_missing", &"unravel", &"scatter"])
+	var gated := CardReward.offer(_cards, _b, rng(8), &"warden", [&"sweep_missing", &"soften", &"scatter"])
 	for id in ids(gated):
-		check("offered %s is unlocked" % id, ["unravel", "scatter"].has(id), true)
+		check("offered %s is unlocked" % id, ["soften", "scatter"].has(id), true)
 
 	print("\n-- shops price by rarity, in Restored --")
 	var run := rich_run(100 * 60)
@@ -110,7 +110,7 @@ func _init() -> void:
 
 	print("\n-- removal is one per shop and climbs across the run --")
 	var trim := rich_run(200 * 60)
-	trim.add_card(&"interrupt")
+	trim.add_card(&"take")
 	trim.add_card(&"brace")
 	var s1 := Shop.new(_cards, _b, rng(3))
 	check("first price", s1.removal_price(trim), _b.price_removal)
@@ -139,7 +139,7 @@ func _init() -> void:
 
 	print("\n-- a reward is taken or lost, never banked --")
 	var pending := RunState.new(_b, 1)
-	pending.offer_reward([&"unravel", &"scatter", &"disperse"])
+	pending.offer_reward([&"soften", &"scatter", &"disperse"])
 	check("three on the table", pending.pending_reward().size(), 3)
 	check("taking one adds it", pending.take_reward(1), true)
 	check("got the one chosen", pending.deck[0]["id"], &"scatter")
@@ -147,7 +147,7 @@ func _init() -> void:
 	check("and cannot be taken twice", pending.take_reward(0), false)
 
 	var skipped := RunState.new(_b, 1)
-	skipped.offer_reward([&"unravel", &"scatter"])
+	skipped.offer_reward([&"soften", &"scatter"])
 	skipped.skip_reward()
 	check("skipping clears it", skipped.has_pending_reward(), false)
 	check("and adds nothing", skipped.deck.size(), 0)
@@ -158,7 +158,7 @@ func _init() -> void:
 	var walker := RunState.new(_b, 12)
 	var map := MapState.new(walker, MapGenerator.generate(_b, table, rng(12)))
 	var step: Vector2i = map.neighbours(Vector2i.ZERO)[0]
-	walker.offer_reward([&"unravel", &"scatter"])
+	walker.offer_reward([&"soften", &"scatter"])
 	check("leaving is allowed", map.move_to(step), true)
 	check("the offer did not follow", walker.has_pending_reward(), false)
 	check("and nothing was taken", walker.deck.size(), 0)
@@ -184,10 +184,10 @@ func _init() -> void:
 
 	print("\n-- a pending reward survives a save --")
 	var mid := RunState.new(_b, 1)
-	mid.offer_reward([&"unravel", &"scatter", &"disperse"])
+	mid.offer_reward([&"soften", &"scatter", &"disperse"])
 	var resumed := RunState.from_dict(mid.to_dict(), _b)
 	check("the same three cards come back", Array(resumed.pending_reward()),
-		[&"unravel", &"scatter", &"disperse"])
+		[&"soften", &"scatter", &"disperse"])
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)

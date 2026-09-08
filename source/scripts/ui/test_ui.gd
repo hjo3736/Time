@@ -79,6 +79,7 @@ func _go() -> void:
 	await _out_of_reach_is_shown(boot)
 	await _the_clock_runs_as_you_spend(boot)
 	_the_string_table_is_well_formed()
+	await _a_date_starts_the_run(boot)
 	await _prices_are_drawn_on_the_map(boot)
 	await _english_leaves_no_korean_behind(boot)
 	await _a_save_from_an_older_build(boot)
@@ -446,15 +447,15 @@ func _go() -> void:
 	check("and why this card has it", help.contains(TranslationServer.translate("help.exhaust_reason")), true)
 	check("explains the refund", help.contains(TranslationServer.translate("help.refund")), true)
 
-	var debuff := CardHelp.tooltip_for(db.get_card(&"unravel"))
-	check("explains the status it applies", debuff.contains(TranslationServer.translate("status.vulnerable.help")), true)
+	var debuff := CardHelp.tooltip_for(db.get_card(&"soften"))
+	check("explains the status it applies", debuff.contains(TranslationServer.translate("status.softened.help")), true)
 
 	var multi := CardHelp.tooltip_for(db.get_card(&"scatter"))
 	check("explains the re-roll", multi.contains(TranslationServer.translate("help.reroll")), true)
 
 	print("\n-- card numbers follow the buffs and debuffs in play --")
-	var strike := db.get_card(&"interrupt")
-	check("printed number", strike.rules_text(), TranslationServer.translate("effect.damage").format({"amount": 6}))
+	var strike := db.get_card(&"take")
+	check("printed number", strike.rules_text(), TranslationServer.translate("effect.take").format({"amount": 6}))
 
 	var probe: BattleState = s.rc.battle
 	var mark := probe.enemy_handles()[0]
@@ -464,7 +465,7 @@ func _go() -> void:
 	check("no modifiers, no change",
 		strike.rules_text_live(probe, BattleState.WARDEN, mark), strike.rules_text())
 
-	probe.combatants[mark].add_status(StatusRules.VULNERABLE, 2)
+	probe.combatants[mark].add_status(StatusRules.SOFTENED, 2)
 
 	s._battle.show_battle(s.rc)
 	await process_frame
@@ -474,7 +475,7 @@ func _go() -> void:
 			idle.get_rules_text(), s.rc.battle.card_at(0).rules_text())
 
 	var boosted := strike.rules_text_live(probe, BattleState.WARDEN, mark)
-	check("vulnerable pushes it up", boosted.contains("9"), true)
+	check("softened pushes it up", boosted.contains("9"), true)
 	check("and marks it", boosted.contains("[color="), true)
 	probe.combatants[mark].block = 0
 	probe.combatants[mark].hp = probe.combatants[mark].max_hp
@@ -483,9 +484,9 @@ func _go() -> void:
 	check("and the blow matches", hp_now - probe.combatants[mark].hp, 9)
 
 	probe.combatants[mark].statuses.clear()
-	probe.warden().add_status(StatusRules.WEAK, 2)
+	probe.warden().add_status(StatusRules.BLUNTED, 2)
 	var weakened := strike.rules_text_live(probe, BattleState.WARDEN, mark)
-	check("weak pulls it down", weakened.contains("4"), true)
+	check("blunted pulls it down", weakened.contains("4"), true)
 	probe.combatants[mark].block = 0
 	probe.combatants[mark].hp = probe.combatants[mark].max_hp
 	var hp_weak: int = probe.combatants[mark].hp
@@ -495,7 +496,7 @@ func _go() -> void:
 	print("\n-- dragging over a target changes the number on the card --")
 	var two := RunState.new(_b_of(s), 4)
 	for i in 6:
-		two.add_card(&"interrupt")
+		two.add_card(&"take")
 	var a := Combatant.new()
 	a.max_hp = 40
 	a.hp = 40
@@ -504,16 +505,16 @@ func _go() -> void:
 	bmob.max_hp = 40
 	bmob.hp = 40
 	bmob.intents = [EnemyIntent.wait()] as Array[EnemyIntent]
-	bmob.add_status(StatusRules.VULNERABLE, 3)
+	bmob.add_status(StatusRules.SOFTENED, 3)
 	var rng2 := RandomNumberGenerator.new()
 	rng2.seed = 4
 	var duel := BattleState.new(two, db, [a, bmob] as Array[Combatant], rng2)
 
-	var strike_card := db.get_card(&"interrupt")
+	var strike_card := db.get_card(&"take")
 	var vs_plain := strike_card.rules_text_live(duel, BattleState.WARDEN, 1)
 	var vs_vuln := strike_card.rules_text_live(duel, BattleState.WARDEN, 2)
 	check("plain target shows the printed number", vs_plain.contains("6"), true)
-	check("vulnerable target shows more", vs_vuln.contains("9"), true)
+	check("a softened target shows more", vs_vuln.contains("9"), true)
 	check("the two differ", vs_plain != vs_vuln, true)
 
 	print("\n-- and what the drop would do is shown on the enemy itself --")
@@ -521,14 +522,14 @@ func _go() -> void:
 
 	s.rc.battle.combatants[mark].statuses.clear()
 	s.rc.battle.warden().statuses.clear()
-	s.rc.battle.combatants[mark].add_status(StatusRules.VULNERABLE, 3)
+	s.rc.battle.combatants[mark].add_status(StatusRules.SOFTENED, 3)
 	s._battle.show_battle(s.rc)
 	await process_frame
 
 	var live := -1
 	for i in s.rc.battle.piles().hand.size():
 		var c4 := s.rc.battle.card_at(i)
-		if c4.id == &"interrupt" and c4.cost_minutes() <= s.rc.battle.turn_budget:
+		if c4.id == &"take" and c4.cost_minutes() <= s.rc.battle.turn_budget:
 			live = i
 			break
 	if live >= 0:
@@ -549,7 +550,7 @@ func _go() -> void:
 
 	print("\n-- every choice screen builds without a crash --")
 	var s2: GameScreen = await screen()
-	s2.rc.run.offer_reward([&"unravel", &"scatter", &"disperse"])
+	s2.rc.run.offer_reward([&"soften", &"scatter", &"disperse"])
 	s2.rc.phase = RunController.Phase.REWARD
 	s2.refresh()
 	check("reward screen", s2._choice.visible, true)
@@ -582,7 +583,7 @@ func _go() -> void:
 
 	print("\n-- reward cards do not walk off sideways when hovered --")
 	var r: GameScreen = await screen(2)
-	r.rc.run.offer_reward([&"unravel", &"scatter", &"disperse"])
+	r.rc.run.offer_reward([&"soften", &"scatter", &"disperse"])
 	r.rc.phase = RunController.Phase.REWARD
 	r.refresh()
 	await process_frame
@@ -625,17 +626,17 @@ func _go() -> void:
 	stub.battle = tb
 
 	check("plain", tv._intent_amount(stub, 1, w1, w1.current_intent()), 12)
-	w1.add_status(StatusRules.WEAK, 2)
-	check("weakened on screen", tv._intent_amount(stub, 1, w1, w1.current_intent()), 9)
+	w1.add_status(StatusRules.BLUNTED, 2)
+	check("blunted on screen", tv._intent_amount(stub, 1, w1, w1.current_intent()), 9)
 	check("and marked as reduced", tv._intent_colour(stub, 1, w1), UiTheme.GREEN)
 
 	var hp_pre: int = tb.warden().hp
 	tb.damage(BattleState.WARDEN, 12, 1)
 	check("and that is what lands", hp_pre - tb.warden().hp, 9)
 
-	w1.add_status(StatusRules.WEAK, -2)
-	tb.warden().add_status(StatusRules.VULNERABLE, 2)
-	check("vulnerable pushes it the other way",
+	w1.add_status(StatusRules.BLUNTED, -2)
+	tb.warden().add_status(StatusRules.SOFTENED, 2)
+	check("softened pushes it the other way",
 		tv._intent_amount(stub, 1, w1, w1.current_intent()), 18)
 	check("and is not marked as reduced", tv._intent_colour(stub, 1, w1), UiTheme.BLOOD)
 	tv.queue_free()
@@ -983,7 +984,7 @@ func _resuming_into_a_fight(boot: RootScreen) -> void:
 
 func _pausing_out_of_a_fight(boot: RootScreen) -> void:
 	print("\n-- escape opens a way out of a run, and it saves --")
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
 	var walk := 0
@@ -1099,7 +1100,7 @@ func _keybinds_are_rebindable(boot: RootScreen) -> void:
 	check("reset puts them back", Keybinds.key_of(Keybinds.Action.MAP), KEY_M)
 
 	print("\n-- and the bound key is the one the game listens for --")
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
 	var walk := 0
@@ -1173,7 +1174,7 @@ func _settings_plate_holds_its_size(boot: RootScreen) -> void:
 
 func _abandoning_a_run(boot: RootScreen) -> void:
 	print("\n-- abandoning asks first, then destroys the run --")
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
 	g._on_move(g.rc.map.reachable()[0])
@@ -1208,7 +1209,7 @@ func _abandoning_a_run(boot: RootScreen) -> void:
 	check("with nothing to continue into",
 		boot._title._continue_item.visible, false)
 
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 
 
@@ -1313,7 +1314,7 @@ func _route_to(rc: RunController, kind: int) -> Array:
 
 func _language_reaches_a_running_game(boot: RootScreen) -> void:
 	print("\n-- switching language mid-run relabels the game, not just the menus --")
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var korean: String = boot._game._hud.get_child(0).get_child(0).get_child(0).text
 	check("the hud is in Korean", korean, tr("ui.hud.now"))
@@ -1322,7 +1323,8 @@ func _language_reaches_a_running_game(boot: RootScreen) -> void:
 	boot._on_language_changed()
 	await process_frame
 	check("the run survived the rebuild", boot._game.rc != null, true)
-	check("and it is the same run", boot._game.rc.run.seed, 2)
+	check("and it is the same run", boot._game.rc.run.seed,
+		RunClock.seed_from_date(0, 0, 2, 12))
 	var english: String = boot._game._hud.get_child(0).get_child(0).get_child(0).text
 	check("the hud followed", english, "Now")
 	check("which is not what it said before", english != korean, true)
@@ -1336,7 +1338,7 @@ func _language_reaches_a_running_game(boot: RootScreen) -> void:
 
 func _out_of_reach_is_shown(boot: RootScreen) -> void:
 	print("\n-- an enemy that cannot be hurt says so, and the card agrees --")
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
 	await _walk_into_a_fight(g)
@@ -1361,7 +1363,7 @@ func _out_of_reach_is_shown(boot: RootScreen) -> void:
 	# The preview has to agree with that, or the card lies about what it will do.
 	var strike := CardDatabase.new()
 	strike.load_from()
-	var blade := strike.get_card(&"interrupt")
+	var blade := strike.get_card(&"take")
 	check("the card says zero too",
 		blade.rules_text_live(g.rc.battle, BattleState.WARDEN, mark).contains("0"), true)
 
@@ -1586,7 +1588,7 @@ func _english_leaves_no_korean_behind(boot: RootScreen) -> void:
 
 
 func _sweep_a_fight(boot: RootScreen, tally: Dictionary) -> void:
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
 	await _walk_into_a_fight(g)
@@ -1668,13 +1670,13 @@ func _a_save_from_an_older_build(boot: RootScreen) -> void:
 	check("and it stopped offering to continue",
 		boot._title._continue_item.visible, false)
 	SaveGame.clear()
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 
 
 func _the_clock_runs_as_you_spend(boot: RootScreen) -> void:
 	print("\n-- the clock shows time going as cards are played, not all at the end --")
-	boot.begin(2)
+	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
 	await _walk_into_a_fight(g)
@@ -1744,3 +1746,52 @@ func _the_string_table_is_well_formed() -> void:
 	check("the table has rows", rows > 100, true)
 	check("none is ragged, so no comma split a value", ragged.size(), 0)
 	check("and no key is written twice", repeated.size(), 0)
+
+
+func _a_date_starts_the_run(boot: RootScreen) -> void:
+	print("\n-- the date you type is the seed you run --")
+	boot.show_title()
+	await process_frame
+	boot._open_dates()
+	await process_frame
+	var dates: DateView = boot._dates
+	check("the sheet is up", dates.visible, true)
+
+	dates._year.text = "1487"
+	dates._month.text = "47"
+	dates._day.text = "88"
+	dates._hour.text = "21"
+	dates._retell()
+	await process_frame
+
+	var wanted := RunClock.seed_from_date(1487, 47, 88, 21)
+	check("it reads the three fields as one seed", dates.entered_seed(), wanted)
+	check("and shows the day it will open on",
+		dates._reads.text.contains("47"), true)
+
+	dates.chosen.emit(dates.entered_seed())
+	await process_frame
+	check("the sheet closed", dates.visible, false)
+	check("a run started", boot._game != null, true)
+	check("on that seed", boot._game.rc.run.seed, wanted)
+	check("and the clock opens on that very day",
+		boot._game.rc.run.clock.format_clock(),
+		RunClock.new(_b_of(boot._game), -1, wanted).format_clock())
+
+	print("\n-- a rolled date stays inside five digits --")
+	var too_big := 0
+	for roll in 200:
+		var seed_value := boot.rolled_seed()
+		if int(RunClock.date_from_seed(seed_value)["year"]) > RunClock.YEAR_LIMIT:
+			too_big += 1
+		if int(RunClock.date_from_seed(seed_value)["hour"]) > 23:
+			too_big += 1
+	check("no rolled year or hour falls outside its range", too_big, 0)
+
+	print("\n-- letters and nonsense do not crash the sheet --")
+	dates._year.text = "1a2b"
+	dates._month.text = "x"
+	dates._day.text = ""
+	dates._hour.text = "99"
+	check("only the digits are read, and the hour stays inside a day",
+		dates.entered_seed(), RunClock.seed_from_date(12, 0, 0, 23))

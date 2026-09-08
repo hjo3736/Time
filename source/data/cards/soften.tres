@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_vx4lv"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_apply_status.gd" id="2_06ic4"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_sv6ph"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_h2wf6"]
+
+[sub_resource type="Resource" id="Resource_octqg"]
+script = ExtResource("2_06ic4")
+
+[sub_resource type="Resource" id="Resource_f7u4c"]
+script = ExtResource("2_06ic4")
+stacks = 3
+
+[sub_resource type="Resource" id="Resource_yln7v"]
+script = ExtResource("4_h2wf6")
+effects = Array[ExtResource("1_vx4lv")]([SubResource("Resource_f7u4c")])
+
+[resource]
+script = ExtResource("3_sv6ph")
+id = &"soften"
+name_key = &"card.soften.name"
+kind = 1
+effects = Array[ExtResource("1_vx4lv")]([SubResource("Resource_octqg")])
+upgrade = SubResource("Resource_yln7v")

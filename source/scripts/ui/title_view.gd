@@ -2,7 +2,7 @@ class_name TitleView
 extends Control
 
 
-signal run_requested
+signal date_requested
 signal continue_requested
 signal compendium_requested
 signal settings_requested
@@ -51,7 +51,7 @@ func _ready() -> void:
 
 	_continue_item = _item(tr("ui.title.continue"), func() -> void: continue_requested.emit())
 	menu.add_child(_continue_item)
-	menu.add_child(_item(tr("ui.title.new_run"), func() -> void: run_requested.emit()))
+	menu.add_child(_item(tr("ui.title.new_run"), func() -> void: date_requested.emit()))
 	menu.add_child(_item(tr("ui.title.compendium"), func() -> void: compendium_requested.emit()))
 	menu.add_child(_item(tr("ui.title.settings"), func() -> void: settings_requested.emit()))
 	menu.add_child(_item(tr("ui.title.quit"), func() -> void: get_tree().quit()))

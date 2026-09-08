@@ -25,9 +25,9 @@ func enemy(hp: int, intents: Array[EnemyIntent], behavior: EnemyBehavior = null)
 
 
 func strikes(n: int = 10) -> RunState:
-	var run := RunState.new(_b, 1)
+	var run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
 	for i in n:
-		run.add_card(&"interrupt")
+		run.add_card(&"take")
 	return run
 
 
@@ -45,7 +45,7 @@ func battle(run: RunState, enemies: Array[Combatant]) -> BattleState:
 
 func hit(bt: BattleState, target: int) -> bool:
 	for i in bt.piles().hand.size():
-		if bt.card_at(i).id == &"interrupt":
+		if bt.card_at(i).id == &"take":
 			return bt.play_card(i, target)
 	return false
 
@@ -178,11 +178,13 @@ func _the_sky_changes_the_pattern() -> void:
 		c.current_intent().amount, data.night_intents[0].amount)
 	check("and the two are not the same",
 		data.intents[0].amount != data.night_intents[0].amount, true)
+	var plainest := enemies.get_enemy(&"crumbling")
+	var steady := plainest.spawn(_b, rng(1))
 	for unwritten in [RunClock.Daytime.MORNING, RunClock.Daytime.DAY,
-			RunClock.Daytime.EVENING]:
-		c.sky = unwritten
-		check("phase %d has no list of its own, so it falls back" % unwritten,
-			c.current_intent().amount, data.intents[0].amount)
+			RunClock.Daytime.EVENING, RunClock.Daytime.NIGHT]:
+		steady.sky = unwritten
+		check("an enemy written for no phase reads the same in phase %d" % unwritten,
+			steady.current_intent().amount, plainest.intents[0].amount)
 
 	var four := data.spawn(_b, rng(1))
 	four.morning_intents = [EnemyIntent.attack(1)] as Array[EnemyIntent]

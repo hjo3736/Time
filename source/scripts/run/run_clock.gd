@@ -26,6 +26,7 @@ var restored: int:
 		return _restored
 
 var _balance: Balance
+var _seed := 0
 var _remaining: int
 var _elapsed: int
 var _restored: int
@@ -33,8 +34,10 @@ var _expired_announced := false
 var _spent: Dictionary = {}
 
 
-func _init(p_balance: Balance = null, starting_remaining_override: int = -1) -> void:
+func _init(p_balance: Balance = null, starting_remaining_override: int = -1,
+		p_seed: int = 0) -> void:
 	_balance = p_balance if p_balance != null else Balance.default()
+	_seed = p_seed
 	var start := starting_remaining_override if starting_remaining_override >= 0 else _balance.starting_remaining
 	_remaining = maxi(0, start)
 	_elapsed = 0
@@ -156,8 +159,32 @@ func spent_by_source() -> Dictionary:
 	return _spent.duplicate()
 
 
+const YEAR_LIMIT := 9999
+
+
+static func seed_from_date(year: int, month: int, day: int, hour: int = 0) -> int:
+	return (clampi(year, 0, YEAR_LIMIT) * 1000000
+		+ clampi(month, 0, 99) * 10000
+		+ clampi(day, 0, 99) * 100
+		+ clampi(hour, 0, 23))
+
+
+static func date_from_seed(seed_value: int) -> Dictionary:
+	var whole: int = clampi(seed_value, 0, YEAR_LIMIT * 1000000 + 999999)
+	return {
+		"year": whole / 1000000,
+		"month": (whole / 10000) % 100,
+		"day": (whole / 100) % 100,
+		"hour": clampi(whole % 100, 0, 23),
+	}
+
+
+func opening_minute() -> int:
+	return int(date_from_seed(_seed)["hour"]) * Balance.MINUTES_PER_HOUR
+
+
 func minute_of_day() -> int:
-	return (_balance.clock_start_minute + _elapsed) % Balance.MINUTES_PER_DAY
+	return (opening_minute() + _elapsed) % Balance.MINUTES_PER_DAY
 
 
 func daytime() -> int:
@@ -188,27 +215,31 @@ func minutes_until_sky_turns() -> int:
 
 
 func date_at(minutes_from_start: int) -> Dictionary:
-	var total: int = _balance.clock_start_minute + maxi(0, minutes_from_start)
+	var total: int = opening_minute() + maxi(0, minutes_from_start)
 	var days_in := total / Balance.MINUTES_PER_DAY
 	var minute := total % Balance.MINUTES_PER_DAY
 
-	var day: int = _balance.start_day - 1 + days_in
-	var month: int = _balance.start_month - 1 + day / _balance.days_per_month
+	var opened := date_from_seed(_seed)
+	var day: int = int(opened["day"]) + days_in
+	var month: int = int(opened["month"]) + day / _balance.days_per_month
 	day = day % _balance.days_per_month
-	var year: int = _balance.start_year + month / _balance.months_per_year
+	var year: int = int(opened["year"]) + month / _balance.months_per_year
 	month = month % _balance.months_per_year
 
 	return {
-		"year": year, "month": month + 1, "day": day + 1,
+		"year": year, "month": month, "day": day,
 		"hour": minute / Balance.MINUTES_PER_HOUR,
 		"minute": minute % Balance.MINUTES_PER_HOUR,
 	}
 
 
 func format_date_of(marks: Dictionary) -> String:
-	return TranslationServer.translate("time.date").format(marks)
-
-
+	return TranslationServer.translate("time.date").format({
+		"year": marks["year"],
+		"month": "%02d" % int(marks["month"]),
+		"day": "%02d" % int(marks["day"]),
+		"hour": "%02d" % int(marks["hour"]),
+	})
 func format_clock() -> String:
 	return format_date_of(date_at(_elapsed))
 

@@ -112,7 +112,7 @@ func _init() -> void:
 					break
 
 		var mark := fighting.battle.enemy_handles()[0]
-		fighting.battle.combatants[mark].add_status(StatusRules.VULNERABLE, 2)
+		fighting.battle.combatants[mark].add_status(StatusRules.SOFTENED, 2)
 
 		var resumed := through_disk(fighting)
 		check("still in the fight", resumed.phase, RunController.Phase.BATTLE)
@@ -127,7 +127,7 @@ func _init() -> void:
 		check("same number of enemies", resumed.battle.combatants.size(),
 			fighting.battle.combatants.size())
 		check("the mid-turn debuff went with it",
-			resumed.battle.combatants[mark].status(StatusRules.VULNERABLE), 0)
+			resumed.battle.combatants[mark].status(StatusRules.SOFTENED), 0)
 		check("and the enemy is unhurt again",
 			resumed.battle.combatants[mark].hp, resumed.battle.combatants[mark].max_hp)
 		check("intents intact", resumed.battle.combatants[mark].intents.size(),

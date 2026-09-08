@@ -24,7 +24,7 @@ func rng(seed_value: int) -> RandomNumberGenerator:
 func run_with(relic_ids: Array, cards_in_deck: int = 8) -> RunState:
 	var run := RunState.new(_b, 1)
 	for i in cards_in_deck:
-		run.add_card(&"interrupt")
+		run.add_card(&"take")
 	for id in relic_ids:
 		run.add_relic(id, _relics)
 	return run
@@ -45,7 +45,7 @@ func battle_for(run: RunState, hp: int = 99) -> BattleState:
 
 func hit(bt: BattleState) -> bool:
 	for i in bt.piles().hand.size():
-		if bt.card_at(i).id == &"interrupt":
+		if bt.card_at(i).id == &"take":
 			return bt.play_card(i, 1)
 	return false
 

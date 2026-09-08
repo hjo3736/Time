@@ -2,7 +2,7 @@ class_name EffectApplyStatus
 extends CardEffect
 
 
-@export var status := &"vulnerable"
+@export var status := &"softened"
 @export var stacks := 2
 @export var on_self := false
 

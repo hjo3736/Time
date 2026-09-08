@@ -33,20 +33,20 @@ func _init() -> void:
 	check("sorted by id", sorted, expected_order)
 
 	print("\n-- lookup --")
-	check("has", db.has(&"interrupt"), true)
+	check("has", db.has(&"take"), true)
 	check("missing", db.has(&"nonesuch"), false)
 	check("missing returns null", db.get_card(&"nonesuch"), null)
-	check("base card", db.get_card(&"interrupt").rules_text(), tr("effect.damage").format({"amount": 6}))
+	check("base card", db.get_card(&"take").rules_text(), tr("effect.take").format({"amount": 6}))
 
 	print("\n-- upgraded variants are built once and reused --")
-	var up := db.get_card(&"interrupt", 1)
-	check("upgraded text", up.rules_text(), tr("effect.damage").format({"amount": 9}))
-	check("upgraded name", up.display_name(), "Interrupt+")
-	check("cached, not rebuilt", db.get_card(&"interrupt", 1), up)
-	check("base still base", db.get_card(&"interrupt").rules_text(), tr("effect.damage").format({"amount": 6}))
+	var up := db.get_card(&"take", 1)
+	check("upgraded text", up.rules_text(), tr("effect.take").format({"amount": 9}))
+	check("upgraded name", up.display_name(), "Take+")
+	check("cached, not rebuilt", db.get_card(&"take", 1), up)
+	check("base still base", db.get_card(&"take").rules_text(), tr("effect.take").format({"amount": 6}))
 
 	print("\n-- filters --")
-	check("by rarity", ids(db.filter({"rarity": CardData.Rarity.STARTER})), ["brace", "interrupt"])
+	check("by rarity", ids(db.filter({"rarity": CardData.Rarity.STARTER})), ["brace", "take"])
 	var skills := db.filter({"kind": CardData.Kind.SKILL})
 	check("kind filter returns only that kind",
 		skills.all(func(c: CardData) -> bool: return c.kind == CardData.Kind.SKILL), true)
@@ -67,8 +67,8 @@ func _init() -> void:
 		return c.kind == CardData.Kind.ATTACK and c.rarity == CardData.Rarity.COMMON), true)
 
 	print("\n-- filters carry the meta-progression pool --")
-	check("unlocked subset", ids(db.filter({"unlocked": [&"interrupt", &"disperse"]})), ["disperse", "interrupt"])
-	check("exclude what was already offered", ids(db.filter({"exclude": [&"interrupt"]})).has("interrupt"), false)
+	check("unlocked subset", ids(db.filter({"unlocked": [&"take", &"disperse"]})), ["disperse", "take"])
+	check("exclude what was already offered", ids(db.filter({"exclude": [&"take"]})).has("take"), false)
 
 	print("\n-- filters keep the sorted order --")
 	check("still sorted", ids(db.filter({"class_id": &"warden"})), ids(db.all()))

@@ -113,9 +113,9 @@ func _init() -> void:
 	cards.load_from()
 	var hits := []
 	for level in [0, 10]:
-		var run := RunState.new(_b, 1)
+		var run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
 		for i in 8:
-			run.add_card(&"interrupt")
+			run.add_card(&"take")
 		var group2 := _table.spawn(_table.get_encounter(&"a1_lone_pacing"), _enemies, _b, rng(2), level)
 		var bt := BattleState.new(run, cards, group2, rng(2))
 		bt.end_turn()

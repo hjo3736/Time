@@ -49,10 +49,10 @@ func _init() -> void:
 	print("\n-- status can point either way --")
 	var s_ctx := RecordingEffectContext.new(0, PackedInt32Array([1]))
 	var st := EffectApplyStatus.new()
-	st.status = &"vulnerable"
+	st.status = &"softened"
 	st.stacks = 2
 	st.apply(s_ctx)
-	check("landed on target", s_ctx.get_status(1, &"vulnerable"), 2)
+	check("landed on target", s_ctx.get_status(1, &"softened"), 2)
 	st.on_self = true
 	st.status = &"wound"
 	st.apply(s_ctx)

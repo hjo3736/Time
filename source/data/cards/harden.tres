@@ -12,7 +12,7 @@ amount = 6
 
 [sub_resource type="Resource" id="Resource_ki5k6"]
 script = ExtResource("3_s5vsl")
-status = &"weak"
+status = &"blunted"
 stacks = 1
 
 [sub_resource type="Resource" id="Resource_ijb2b"]
@@ -21,7 +21,7 @@ amount = 9
 
 [sub_resource type="Resource" id="Resource_4xdks"]
 script = ExtResource("3_s5vsl")
-status = &"weak"
+status = &"blunted"
 stacks = 1
 
 [sub_resource type="Resource" id="Resource_rg6d8"]

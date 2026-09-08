@@ -6,6 +6,7 @@ var _title: TitleView
 var _game: GameScreen
 var _compendium: CompendiumView
 var _settings: SettingsView
+var _dates: DateView
 
 var _balance: Balance
 var _cards: CardDatabase
@@ -36,6 +37,14 @@ func _ready() -> void:
 	_settings.language_changed.connect(_on_language_changed)
 	add_child(_settings)
 
+	_dates = DateView.new()
+	_dates.visible = false
+	_dates.closed.connect(func() -> void: _dates.visible = false)
+	_dates.chosen.connect(func(seed_value: int) -> void:
+		_dates.visible = false
+		begin(seed_value))
+	add_child(_dates)
+
 	get_viewport().size_changed.connect(_on_viewport_resized)
 
 
@@ -46,7 +55,7 @@ func _build_title() -> void:
 		_title.queue_free()
 	_title = TitleView.new()
 	_title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_title.run_requested.connect(func() -> void: begin(randi()))
+	_title.date_requested.connect(_open_dates)
 	_title.continue_requested.connect(resume)
 	_title.compendium_requested.connect(_open_compendium)
 	_title.settings_requested.connect(_open_settings)
@@ -77,6 +86,20 @@ func _on_viewport_resized() -> void:
 		_settings.show_settings()
 	if _game != null:
 		_game.refresh()
+
+
+func rolled_seed() -> int:
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+	return RunClock.seed_from_date(
+		rng.randi_range(0, RunClock.YEAR_LIMIT), rng.randi_range(0, 99),
+		rng.randi_range(0, 99), rng.randi_range(0, 23))
+
+
+func _open_dates() -> void:
+	_dates.open_on(rolled_seed())
+	_dates.visible = true
+	move_child(_dates, get_child_count() - 1)
 
 
 func _open_compendium() -> void:

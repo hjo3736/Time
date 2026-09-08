@@ -8,6 +8,9 @@ extends CardEffect
 
 @export var reroll_target_each_hit := false
 
+## Overrides the wording, keeping {amount} / {times} / {who} substitution.
+@export var text_key := &""
+
 
 func apply(ctx: EffectContext) -> void:
 	for i in maxi(1, times):
@@ -26,6 +29,9 @@ func describe(targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true)
 
 
 func _line(shown: Variant, targeting: int, name_target := true) -> String:
+	if text_key != &"":
+		return tr(text_key).format({
+			"who": tr(who_key(targeting)), "amount": shown, "times": times})
 	if name_target and names_its_target(targeting):
 		var who := tr(who_key(targeting))
 		if times > 1:

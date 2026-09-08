@@ -77,25 +77,39 @@ func _init() -> void:
 	p1.intents.clear()
 	check("definition intact", _db.get_enemy(&"pacing").intents.size(), 3)
 
-	print("\n-- 잔상 fights as authored --")
+	print("\n-- 잔상 fights as authored, for as long as the sky holds --")
 	var cards := CardDatabase.new()
 	cards.load_from()
-	var run := RunState.new(_b, 1)
+	var run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 8))
 	for i in 10:
 		run.add_card(&"brace")
 	var ghost := data.spawn(_b, rng(1))
 	var bt := BattleState.new(run, cards, [ghost] as Array[Combatant], rng(1))
+	check("the fight opens in daylight", run.clock.daytime(), RunClock.Daytime.DAY)
 	bt.end_turn()
 	check("first hit", bt.warden().hp, _b.starting_max_hp - 5)
 	bt.end_turn()
 	check("second hit", bt.warden().hp, _b.starting_max_hp - 10)
 	bt.end_turn()
 	check("then the big one", bt.warden().hp, _b.starting_max_hp - 19)
+	check("three turns is all a nine-hour day holds",
+		run.clock.daytime(), RunClock.Daytime.EVENING)
+	check("so it has already turned to the evening line",
+		_amounts(bt.combatants[1].active_intents()),
+		_amounts(_db.get_enemy(&"afterimage").evening_intents))
+
 	bt.end_turn()
-	check("and the cycle comes round", bt.warden().hp, _b.starting_max_hp - 24)
+	check("and the evening line is a guard, so nothing lands",
+		bt.warden().hp, _b.starting_max_hp - 19)
+
+	var alone := data.spawn(_b, rng(1))
+	alone.sky = RunClock.Daytime.DAY
+	alone.intent_index = 3
+	check("the day cycle would have come round to the first blow",
+		alone.current_intent().amount, _db.get_enemy(&"afterimage").intents[0].amount)
 
 	print("\n-- 바스러지는 것 opens hard and falls apart --")
-	var run2 := RunState.new(_b, 1)
+	var run2 := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 5))
 	for i in 10:
 		run2.add_card(&"brace")
 	var crumb := crumbling.spawn(_b, rng(1))
@@ -110,15 +124,15 @@ func _init() -> void:
 	check("harmless by now", bt2.warden().hp, _b.starting_max_hp - 27)
 
 	print("\n-- killing one pays its own size --")
-	var run3 := RunState.new(_b, 1)
+	var run3 := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 5))
 	for i in 10:
-		run3.add_card(&"interrupt")
+		run3.add_card(&"take")
 	var victim := data.spawn(_b, rng(1))
 	var bt3 := BattleState.new(run3, cards, [victim] as Array[Combatant], rng(1))
 	while not bt3.is_over() and bt3.turn < 40:
 		var played := false
 		for i in bt3.piles().hand.size():
-			if bt3.card_at(i).id == &"interrupt" and bt3.play_card(i, 1):
+			if bt3.card_at(i).id == &"take" and bt3.play_card(i, 1):
 				played = true
 				break
 		if not played:
@@ -133,3 +147,10 @@ func _init() -> void:
 
 func _hours(minutes: int) -> int:
 	return maxi(60, roundi(float(minutes) / 60.0) * 60)
+
+
+func _amounts(intents: Array) -> Array:
+	var out := []
+	for i in intents:
+		out.append(i.amount)
+	return out

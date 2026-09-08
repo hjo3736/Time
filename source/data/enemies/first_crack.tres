@@ -15,7 +15,7 @@ kind = 3
 [sub_resource type="Resource" id="Resource_2gcpd"]
 script = ExtResource("2_ojbjj")
 kind = 2
-status = &"vulnerable"
+status = &"softened"
 stacks = 2
 
 [sub_resource type="Resource" id="Resource_ak8uc"]
