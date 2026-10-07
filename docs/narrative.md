@@ -80,6 +80,11 @@ content an ordered curriculum rather than a pool of flavor text:
 | **II** | Duration. Things that took a long time, things that were too short, someone counting days. The first memories where the *length* of something is the point. |
 | **III** | Loss. Goodbyes, endings, the deaths of people the player has already met in earlier fragments. |
 
+**The curriculum is authored, and that is fine.** Nothing in the setting forces
+sensation before duration before loss — it is ordered that way because it is the
+order the Warden can learn in. Do not go looking for a fictional reason to bolt it
+to; the ordering earns itself by working.
+
 The third act only works if the first two did their job. A death fragment lands
 because the player met that person eating breakfast six hours ago, and it lands on
 the Warden because by then it has enough pieces to understand what is being

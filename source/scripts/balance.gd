@@ -65,6 +65,10 @@ const MINUTES_PER_DAY := 1440
 @export var price_removal := 6 * MINUTES_PER_HOUR
 @export var price_removal_increment := 3 * MINUTES_PER_HOUR
 
+## A relic costs this many times what a card of the same rarity costs. One dial
+## rather than three prices, so the rarity ladder stays the ladder the cards use.
+@export var relic_price_multiple := 2
+
 @export var acts_per_run := 3
 
 @export var starting_deck: Array[StringName] = []
@@ -81,6 +85,11 @@ const MINUTES_PER_DAY := 1440
 
 @export var fires_per_act: Array[int] = [2, 3, 4]
 @export var shops_per_act: Array[int] = [1, 2, 2]
+
+## How many rooms the start may touch. 1 makes the floor open on a corridor
+## rather than a junction: there is no routing decision until the second room.
+## 4 is the most a square can touch, so 4 means unconstrained.
+@export var start_exits_per_act: Array[int] = [1, 4, 4]
 
 @export var elite_min_travel_from_start := 10 * MINUTES_PER_HOUR
 
@@ -142,6 +151,10 @@ func elites_in(act: int) -> int:
 	return _per_act(elites_per_act, act)
 
 
+func start_exits_in(act: int) -> int:
+	return clampi(_per_act(start_exits_per_act, act), 1, 4)
+
+
 func rooms_in(act: int) -> int:
 	return (2 + content_in(act) + empty_in(act)
 		+ fires_in(act) + shops_in(act) + elites_in(act))
@@ -191,6 +204,12 @@ func validate() -> PackedStringArray:
 			"Conversion is dead: a %dm cap at %d:1 rounds down to nothing. Raise conversion_cap above conversion_rate."
 			% [conversion_cap, conversion_rate]
 		)
+
+	for act in range(1, acts_per_run + 1):
+		if _per_act(start_exits_per_act, act) < 1:
+			problems.append(
+				"start_exits_per_act[%d] is below 1; a start room with no way out is a floor nobody leaves."
+				% act)
 
 	for named in [
 		["fights_and_events_per_act", fights_and_events_per_act],

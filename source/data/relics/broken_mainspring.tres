@@ -7,3 +7,4 @@ script = ExtResource("1_r6iol")
 id = &"broken_mainspring"
 name_key = &"relic.broken_mainspring.name"
 text_key = &"relic.broken_mainspring.text"
+rarity = 1

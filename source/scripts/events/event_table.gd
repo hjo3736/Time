@@ -51,12 +51,37 @@ func all() -> Array[EventData]:
 	return out
 
 
+## Scaffolding, matching EncounterTable: an act with no events of its own draws
+## act one's. borrowed_acts() reports it and test_events asserts on the answer.
+const BORROW_FROM_ACT := 1
+
+
 func candidates(act: int, seen: Array = []) -> Array[EventData]:
+	# The borrow keys off what is authored, never off `seen`. An act that has its
+	# own events and has spent them is out of events, not owed act one's.
+	var source_act := act
+	if act != BORROW_FROM_ACT and not _authored_in(act):
+		source_act = BORROW_FROM_ACT
 	var out: Array[EventData] = []
 	for id in _sorted_ids:
 		var e: EventData = _by_id[id]
-		if e.act == act and not seen.has(e.id):
+		if e.act == source_act and not seen.has(e.id):
 			out.append(e)
+	return out
+
+
+func _authored_in(act: int) -> bool:
+	for id in _sorted_ids:
+		if int((_by_id[id] as EventData).act) == act:
+			return true
+	return false
+
+
+func borrowed_acts(acts_per_run: int) -> Array[int]:
+	var out: Array[int] = []
+	for act in range(1, acts_per_run + 1):
+		if act != BORROW_FROM_ACT and not _authored_in(act):
+			out.append(act)
 	return out
 
 

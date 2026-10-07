@@ -7,3 +7,4 @@ script = ExtResource("1_x4ggy")
 id = &"worn_shoes"
 name_key = &"relic.worn_shoes.name"
 text_key = &"relic.worn_shoes.text"
+rarity = 2

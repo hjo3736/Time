@@ -40,11 +40,13 @@ func enemy(
 	behavior: Script = null,
 	tier: EnemyData.Tier = EnemyData.Tier.NORMAL,
 	by_sky: Dictionary = {},
+	act: int = 1,
 ) -> EnemyData:
 	var e := EnemyData.new()
 	e.id = id
 	e.name_key = StringName("enemy.%s.name" % id)
 	e.tier = tier
+	e.act = act
 	e.hp_min = hp_min
 	e.hp_max = hp_max
 	e.intents = intents
@@ -103,71 +105,47 @@ func _init() -> void:
 	DirAccess.make_dir_recursive_absolute(OUT_DIR)
 	print("writing enemies to %s\n" % OUT_DIR)
 
-	_teaching()
-	_askew()
-	_elites()
-	_boss()
+	# The bestiary is being rebuilt from nothing. The two vocabularies are
+	# deliberately separate: a normal's gimmick is read off its intent line and
+	# needs no tell, while an elite's changes a rule of the exchange and carries
+	# one. If a normal needs explaining, it belongs a tier up.
+	_act_one()
+	_act_two()
+	_act_three()
 
-	print("\n%d enemies  ([ ] = 되풀이의 브레이크 윈도우)" % _written)
+	print("\n%d enemies  ([ ] = 브레이크 윈도우)" % _written)
 	quit(0)
 
 
-func _teaching() -> void:
-	print("일반 — 기본")
+func _act_one() -> void:
+	print("1막 — 일반")
 
-	write(enemy(&"afterimage", 20, 24,
-		[attack(5), attack(5), attack(9)] as Array[EnemyIntent], null, EnemyData.Tier.NORMAL,
-		{
-			MORNING: [attack(3)],
-			EVENING: [block(6)],
-			NIGHT: [attack(3), attack(3), attack(3), attack(12)],
-		}))
+	write(enemy(&"squabble", 22, 25,
+		[attack(6), attack(9), block(7)] as Array[EnemyIntent]))
 
-	write(enemy(&"pacing", 26, 32,
-		[attack(6), block(8), attack(6)] as Array[EnemyIntent], null, EnemyData.Tier.NORMAL,
-		{
-			MORNING: [wait()],
-			EVENING: [attack(9)],
-			NIGHT: [block(12), attack(11)],
-		}))
+	write(enemy(&"doorsill", 32, 35,
+		[attack(5)] as Array[EnemyIntent], BehaviorTwilit))
 
+	print("\n1막 — 정예")
 
-func _askew() -> void:
-	print("\n일반 — 어긋난 것들")
+	# 가속. Deliberately a wall rather than a killer: it guards itself, so the
+	# fight runs long, and running long is the whole cost. The player is not being
+	# asked whether they can survive it but whether they can afford it.
+	write(enemy(&"murphys_law", 78, 86,
+		[block(12), attack(10), block(12), attack(14)] as Array[EnemyIntent],
+		BehaviorQuickening, EnemyData.Tier.ELITE))
 
-	write(enemy(&"crumbling", 30, 36,
-		[attack(14)] as Array[EnemyIntent], BehaviorWithered))
-
-	write(enemy(&"echo", 16, 20,
-		[attack(6), window(attack(4))] as Array[EnemyIntent], BehaviorLooper))
-
-	write(enemy(&"late_one", 14, 18,
-		[attack(7), block(4)] as Array[EnemyIntent], BehaviorReversed))
-
-	write(enemy(&"stood_still", 28, 34,
-		[wait(), attack(11), wait(), attack(11)] as Array[EnemyIntent], BehaviorStilled))
-
-	write(enemy(&"footsteps", 18, 22,
-		[attack(4), attack(4), inflict(StatusRules.BLUNTED, 1)] as Array[EnemyIntent],
-		BehaviorOverlaid))
+	# 흘림. The opposite question to 가속: that one cannot be blocked out of, this
+	# one has to be. Mostly many small blows, because every one that gets past the
+	# guard is another hour gone, so a point of block short is an hour short.
+	write(enemy(&"throng", 60, 66,
+		[attack(4, 3), block(10), attack(7, 2), attack(12)] as Array[EnemyIntent],
+		BehaviorSpilling, EnemyData.Tier.ELITE))
 
 
-func _elites() -> void:
-	print("\n엘리트")
-
-	write(enemy(&"long_standing", 58, 66,
-		[wait(), wait(), attack(18), block(10)] as Array[EnemyIntent],
-		BehaviorStilled, EnemyData.Tier.ELITE))
-
-	write(enemy(&"repeating_door", 34, 40,
-		[attack(12), window(attack(6)), window(attack(6))] as Array[EnemyIntent],
-		BehaviorLooper, EnemyData.Tier.ELITE))
+func _act_two() -> void:
+	pass
 
 
-func _boss() -> void:
-	print("\n보스")
-
-	write(enemy(&"first_crack", 106, 118,
-		[attack(10), wait(), inflict(StatusRules.SOFTENED, 2), attack(14), wait(), attack(20)]
-			as Array[EnemyIntent],
-		BehaviorStilled, EnemyData.Tier.BOSS))
+func _act_three() -> void:
+	pass

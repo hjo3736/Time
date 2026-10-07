@@ -46,11 +46,40 @@ func get_encounter(id: StringName) -> EncounterData:
 	return _by_id.get(id)
 
 
+## Scaffolding. An act with no encounters of its own fights act one's instead, so
+## the clock economy can be measured before acts two and three are written. The
+## borrowing is not silent: borrowed_acts() reports it and test_encounters asserts
+## on the answer, so filling an act in changes a test rather than nothing.
+const BORROW_FROM_ACT := 1
+
+
 func candidates(act: int, tier: EnemyData.Tier, opening: bool = false,
 		sky: int = -1) -> Array[EncounterData]:
+	# The borrow turns on when an act has nothing authored at this tier at all,
+	# never merely because the sky filtered its pool empty — that case is pick()'s
+	# to handle, and an act with real content should fall back to its own day
+	# encounters rather than to another act's night ones.
+	var source_act := act
+	if act != BORROW_FROM_ACT and _authored_for(act, tier, opening, -1).is_empty():
+		source_act = BORROW_FROM_ACT
+	return _authored_for(source_act, tier, opening, sky)
+
+
+func _authored_for(act: int, tier: EnemyData.Tier, opening: bool,
+		sky: int) -> Array[EncounterData]:
 	return _all.filter(func(e: EncounterData) -> bool:
 		return (e.act == act and e.tier == tier and e.opening_only == opening
 			and _shows_under(e, sky)))
+
+
+func borrowed_acts(acts_per_run: int) -> Array[int]:
+	var out: Array[int] = []
+	for act in range(1, acts_per_run + 1):
+		if act == BORROW_FROM_ACT:
+			continue
+		if _authored_for(act, EnemyData.Tier.NORMAL, false, -1).is_empty():
+			out.append(act)
+	return out
 
 
 func _shows_under(e: EncounterData, sky: int) -> bool:

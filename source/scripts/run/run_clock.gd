@@ -25,6 +25,11 @@ var restored: int:
 	get:
 		return _restored
 
+## When morning, day, evening and night begin, in minutes of the day. Seeded from
+## Balance and rewritten by RunState whenever the relics change, because a relic
+## may reshape the sky and the clock is what everything else asks.
+var sky_bounds: PackedInt32Array
+
 var _balance: Balance
 var _seed := 0
 var _remaining: int
@@ -42,6 +47,7 @@ func _init(p_balance: Balance = null, starting_remaining_override: int = -1,
 	_remaining = maxi(0, start)
 	_elapsed = 0
 	_restored = 0
+	sky_bounds = default_sky_bounds()
 	for source in Source.values():
 		_spent[source] = 0
 
@@ -100,6 +106,18 @@ func spend_restored(minutes: int) -> bool:
 
 func conversion_unit() -> int:
 	return _balance.conversion_rate * Balance.MINUTES_PER_HOUR
+
+
+## Restored lost rather than spent: it goes back into the leak, so it never
+## reaches a shop or a fire. Clamped at nothing — an empty pool has nothing to
+## spill — and returns what actually left, so a caller can say how much.
+func spill(minutes: int) -> int:
+	var lost := clampi(minutes, 0, _restored)
+	if lost == 0:
+		return 0
+	_restored -= lost
+	time_changed.emit()
+	return lost
 
 
 func convertible_restored() -> int:
@@ -187,15 +205,24 @@ func minute_of_day() -> int:
 	return (opening_minute() + _elapsed) % Balance.MINUTES_PER_DAY
 
 
+func default_sky_bounds() -> PackedInt32Array:
+	return PackedInt32Array([
+		_balance.morning_starts_minute,
+		_balance.day_starts_minute,
+		_balance.evening_starts_minute,
+		_balance.night_starts_minute,
+	])
+
+
 func daytime() -> int:
 	var now := minute_of_day()
-	if now < _balance.morning_starts_minute:
+	if now < sky_bounds[0]:
 		return Daytime.NIGHT
-	if now < _balance.day_starts_minute:
+	if now < sky_bounds[1]:
 		return Daytime.MORNING
-	if now < _balance.evening_starts_minute:
+	if now < sky_bounds[2]:
 		return Daytime.DAY
-	if now < _balance.night_starts_minute:
+	if now < sky_bounds[3]:
 		return Daytime.EVENING
 	return Daytime.NIGHT
 
@@ -206,12 +233,10 @@ func is_night() -> bool:
 
 func minutes_until_sky_turns() -> int:
 	var now := minute_of_day()
-	for turn in [_balance.morning_starts_minute, _balance.day_starts_minute,
-			_balance.evening_starts_minute, _balance.night_starts_minute]:
+	for turn in sky_bounds:
 		if now < int(turn):
 			return int(turn) - now
-	return Balance.MINUTES_PER_DAY - now + _balance.morning_starts_minute
-	return Balance.MINUTES_PER_DAY - now + _balance.morning_starts_minute
+	return Balance.MINUTES_PER_DAY - now + sky_bounds[0]
 
 
 func date_at(minutes_from_start: int) -> Dictionary:

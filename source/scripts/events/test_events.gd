@@ -49,6 +49,16 @@ func _init() -> void:
 	sorted_order.sort()
 	check("sorted by id", order, sorted_order)
 
+	print("\n-- acts with nothing of their own borrow act one's, and say so --")
+	check("acts two and three are still unwritten",
+		_events.borrowed_acts(_b.acts_per_run), [2, 3])
+	check("so a later act still has something to offer",
+		_events.candidates(3).is_empty(), false)
+	check("and what it offers is act one's", _events.candidates(3)[0].act, 1)
+	check("a borrowed act still respects what the run has already seen",
+		_events.candidates(3, [_events.candidates(3)[0].id]).size(),
+		_events.candidates(3).size() - 1)
+
 	print("\n-- every event offers a way to walk away --")
 	for e in _events.all():
 		var free := e.choices.any(func(c: EventChoice) -> bool: return c.outcomes.is_empty())
@@ -68,7 +78,9 @@ func _init() -> void:
 	check("and the seen one is not offered again", without.id != a.id, true)
 	var all_seen := _events.all().map(func(e: EventData) -> StringName: return e.id)
 	check("nothing left to offer says so", _events.pick(rng(1), 1, all_seen), null)
-	check("no act 2 events yet", _events.pick(rng(1), 2, []), null)
+	check("act 2 draws act one's until it has its own", _events.pick(rng(1), 2, []).act, 1)
+	check("and a borrowed act runs dry the same way",
+		_events.pick(rng(1), 2, all_seen), null)
 
 	print("\n-- an event resolves and the room is spent --")
 	var rc := controller()

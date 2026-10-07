@@ -2,9 +2,16 @@ class_name Relic
 extends Resource
 
 
+enum Rarity { COMMON, UNCOMMON, RARE, BOSS }
+
 @export var id := &""
 @export var name_key := &""
 @export var text_key := &""
+
+## BOSS is not a step above RARE, it is a separate shelf: boss relics are handed
+## out by act bosses and never rolled anywhere else, so they may be strange in
+## ways a relic on the general table could not afford to be.
+@export var rarity := Rarity.COMMON
 
 
 func display_name() -> String:
@@ -41,6 +48,13 @@ func modify_restored(_run: RunState, base: int) -> int:
 
 func modify_room_cost(_run: RunState, base: int) -> int:
 	return base
+
+
+## The four minutes-of-day at which morning, day, evening and night begin. A
+## relic that reshapes the sky rewrites them; RunState folds every relic's answer
+## together and hands the result to the clock.
+func modify_sky_bounds(_run: RunState, bounds: PackedInt32Array) -> PackedInt32Array:
+	return bounds
 
 
 func validate() -> PackedStringArray:

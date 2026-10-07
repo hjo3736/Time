@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicNightBell" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_night_bell.gd" id="1_vlxll"]
+
+[resource]
+script = ExtResource("1_vlxll")
+id = &"night_bell"
+name_key = &"relic.night_bell.name"
+text_key = &"relic.night_bell.text"
+rarity = 1

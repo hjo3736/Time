@@ -15,7 +15,6 @@ const DIRECTIONS := [
 var _here: Label
 var _here_note: Label
 var _doors: GridContainer
-var _boss_note: Label
 
 
 func _ready() -> void:
@@ -45,10 +44,6 @@ func _ready() -> void:
 	_doors.add_theme_constant_override("v_separation", 10)
 	box.add_child(_doors)
 
-	_boss_note = UiTheme.label("", 14, UiTheme.INK_DIM)
-	_boss_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(_boss_note)
-
 
 func show_room(rc: RunController) -> void:
 	var room := rc.current_room()
@@ -75,13 +70,6 @@ func show_room(rc: RunController) -> void:
 			_doors.add_child(_blank())
 			continue
 		_doors.add_child(_door(rc, step, String(by_step[step])))
-
-	var steps := rc.map.steps_to_boss()
-	_boss_note.text = tr("ui.room.boss_note").format({
-		"n": steps,
-		"span": RunClock.format_span(rc.map.minutes_to_boss()),
-		"about": tr("ui.map.about") if rc.map.boss_walk_is_guess() else "",
-	})
 
 
 func _blank() -> Control:

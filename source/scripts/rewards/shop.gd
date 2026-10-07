@@ -4,11 +4,16 @@ extends RefCounted
 
 signal card_bought(card: CardData)
 signal removal_bought(deck_index: int)
+signal relic_bought(relic: Relic)
 
 var cards: Array[CardData] = []
 var prices: PackedInt32Array = PackedInt32Array()
 
 var removal_available := true
+
+## One relic a shop, or none if the table has nothing left to offer.
+var relic: Relic = null
+var relic_price := 0
 
 var _balance: Balance
 
@@ -20,10 +25,17 @@ func _init(
 	class_id: StringName = &"warden",
 	unlocked: Array = [],
 	restoring := false,
+	relics: RelicDatabase = null,
+	owned: Array = [],
 ) -> void:
 	_balance = balance
 	if restoring:
 		return
+
+	if relics != null:
+		relic = relics.roll(rng, balance, owned)
+		if relic != null:
+			relic_price = price_of_relic(relic)
 
 	var taken: Array = []
 	for slot in balance.shop_card_count:
@@ -50,6 +62,33 @@ func price_of(card: CardData) -> int:
 			return _balance.price_uncommon
 		_:
 			return _balance.price_common
+
+
+func price_of_relic(r: Relic) -> int:
+	var base := _balance.price_common
+	match r.rarity:
+		Relic.Rarity.RARE, Relic.Rarity.BOSS:
+			base = _balance.price_rare
+		Relic.Rarity.UNCOMMON:
+			base = _balance.price_uncommon
+	return base * _balance.relic_price_multiple
+
+
+func can_afford_relic(run: RunState) -> bool:
+	return relic != null and run.clock.restored >= relic_price
+
+
+func buy_relic(run: RunState, relics: RelicDatabase) -> bool:
+	if not can_afford_relic(run):
+		return false
+	if not run.clock.spend_restored(relic_price):
+		return false
+	var bought := relic
+	relic = null
+	relic_price = 0
+	run.add_relic(bought.id, relics)
+	relic_bought.emit(bought)
+	return true
 
 
 func removal_price(run: RunState) -> int:
@@ -101,7 +140,7 @@ func buy_removal(run: RunState, deck_index: int) -> bool:
 
 
 func is_empty() -> bool:
-	return cards.is_empty() and not removal_available
+	return cards.is_empty() and relic == null and not removal_available
 
 
 func to_dict() -> Dictionary:
@@ -109,10 +148,13 @@ func to_dict() -> Dictionary:
 		"cards": cards.map(func(c: CardData) -> String: return String(c.id)),
 		"prices": prices.duplicate(),
 		"removal_available": removal_available,
+		"relic": String(relic.id) if relic != null else "",
+		"relic_price": relic_price,
 	}
 
 
-static func from_dict(data: Dictionary, db: CardDatabase, balance: Balance) -> Shop:
+static func from_dict(data: Dictionary, db: CardDatabase, balance: Balance,
+		relics: RelicDatabase = null) -> Shop:
 	var rng := RandomNumberGenerator.new()
 	var out := Shop.new(db, balance, rng, &"warden", [], true)
 	for id in data.get("cards", []):
@@ -121,4 +163,8 @@ static func from_dict(data: Dictionary, db: CardDatabase, balance: Balance) -> S
 			out.cards.append(card)
 	out.prices = PackedInt32Array(data.get("prices", []))
 	out.removal_available = bool(data.get("removal_available", true))
+	var relic_id := StringName(data.get("relic", ""))
+	if relic_id != &"" and relics != null:
+		out.relic = relics.get_relic(relic_id)
+		out.relic_price = int(data.get("relic_price", 0))
 	return out

@@ -13,10 +13,11 @@ func encounter(
 	tier: EnemyData.Tier = EnemyData.Tier.NORMAL,
 	opening: bool = false,
 	link_pairs: bool = false,
+	act: int = 1,
 ) -> EncounterData:
 	var e := EncounterData.new()
 	e.id = id
-	e.act = 1
+	e.act = act
 	e.tier = tier
 	e.weight = weight
 	e.members.assign(members)
@@ -34,9 +35,10 @@ func write(e: EncounterData, enemies: EnemyDatabase) -> void:
 		_written += 1
 	var names := PackedStringArray()
 	for m in e.members:
-		names.append(tr(enemies.get_enemy(m).name_key))
-	print("  %s  w%-3d %s%s" % [
-		"ok  " if err == OK else "FAIL", e.weight, " + ".join(names),
+		var data := enemies.get_enemy(m)
+		names.append(tr(data.name_key) if data != null else "<%s?>" % m)
+	print("  %s  a%d w%-3d %s%s" % [
+		"ok  " if err == OK else "FAIL", e.act, e.weight, " + ".join(names),
 		"   (첫 전투 전용)" if e.opening_only else ("   (연결됨)" if e.link_pairs else ""),
 	])
 
@@ -48,37 +50,36 @@ func _init() -> void:
 	enemies.load_from()
 	print("writing encounters to %s\n" % OUT_DIR)
 
-	print("첫 전투")
-	write(encounter(&"a1_opening_lone_afterimage", 10, [&"afterimage"],
-		EnemyData.Tier.NORMAL, true), enemies)
-
-	print("\n일반 — 배운 것들")
-	write(encounter(&"a1_afterimage_pair", 10, [&"afterimage", &"afterimage"]), enemies)
-	write(encounter(&"a1_lone_pacing", 8, [&"pacing"]), enemies)
-	write(encounter(&"a1_afterimage_pacing", 8, [&"afterimage", &"pacing"]), enemies)
-
-	print("\n일반 — 처음 만나는 분류 (단독)")
-	write(encounter(&"a1_lone_crumbling", 7, [&"crumbling"]), enemies)
-	write(encounter(&"a1_lone_echo", 7, [&"echo"]), enemies)
-	write(encounter(&"a1_lone_late_one", 6, [&"late_one"]), enemies)
-	write(encounter(&"a1_lone_stood_still", 6, [&"stood_still"]), enemies)
-	write(encounter(&"a1_footsteps_pair", 6, [&"footsteps", &"footsteps"],
-		EnemyData.Tier.NORMAL, false, true), enemies)
-
-	print("\n일반 — 섞인 것들")
-	write(encounter(&"a1_pacing_echo", 5, [&"pacing", &"echo"]), enemies)
-	write(encounter(&"a1_afterimage_late_one", 5, [&"afterimage", &"late_one"]), enemies)
-	write(encounter(&"a1_crumbling_afterimage", 4, [&"crumbling", &"afterimage"]), enemies)
-
-	print("\n엘리트")
-	write(encounter(&"a1_elite_long_standing", 10, [&"long_standing"],
-		EnemyData.Tier.ELITE), enemies)
-	write(encounter(&"a1_elite_repeating_door", 10, [&"repeating_door"],
-		EnemyData.Tier.ELITE), enemies)
-
-	print("\n보스")
-	write(encounter(&"a1_boss_first_crack", 10, [&"first_crack"],
-		EnemyData.Tier.BOSS), enemies)
+	# Emptied along with the bestiary. Encounters name enemies, so there is
+	# nothing to write until there are enemies to name. Acts are a parameter now
+	# rather than hardcoded to 1 — see the act ladder in docs/setting.md.
+	_act_one(enemies)
+	_act_two(enemies)
+	_act_three(enemies)
 
 	print("\n%d encounters" % _written)
 	quit(0)
+
+
+func _act_one(enemies: EnemyDatabase) -> void:
+	print("1막 — 첫 전투")
+	write(encounter(&"a1_opening_lone_squabble", 10, [&"squabble"],
+		EnemyData.Tier.NORMAL, true), enemies)
+
+	print("1막 — 일반")
+	write(encounter(&"a1_lone_squabble", 10, [&"squabble"]), enemies)
+	write(encounter(&"a1_lone_doorsill", 10, [&"doorsill"]), enemies)
+
+	print("1막 — 정예")
+	write(encounter(&"a1_elite_murphys_law", 10, [&"murphys_law"],
+		EnemyData.Tier.ELITE), enemies)
+	write(encounter(&"a1_elite_throng", 10, [&"throng"],
+		EnemyData.Tier.ELITE), enemies)
+
+
+func _act_two(_enemies: EnemyDatabase) -> void:
+	pass
+
+
+func _act_three(_enemies: EnemyDatabase) -> void:
+	pass

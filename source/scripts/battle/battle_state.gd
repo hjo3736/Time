@@ -73,6 +73,11 @@ func piles() -> BattlePiles:
 	return _piles
 
 
+## For behaviours that reach past the fight into the run — 가속 and 흘림.
+func run() -> RunState:
+	return _run
+
+
 func warden() -> Combatant:
 	return combatants[WARDEN]
 
@@ -98,6 +103,17 @@ func rng() -> RandomNumberGenerator:
 
 func is_over() -> bool:
 	return phase == Phase.VICTORY or phase == Phase.DEFEAT
+
+
+## Asked of the living only, and asked at the moment the turn is billed — so
+## killing the thing that was dragging the clock stops the bleeding that same turn.
+func turn_cost_now() -> int:
+	var out := _balance.turn_cost
+	for handle in enemy_handles():
+		var who: Combatant = combatants[handle]
+		if who.behavior != null:
+			out = who.behavior.modify_turn_cost(self, handle, out)
+	return maxi(0, out)
 
 
 func begin_turn() -> void:
@@ -165,7 +181,7 @@ func end_turn() -> void:
 		return
 
 	_piles.discard_hand()
-	_run.clock.advance_turn()
+	_run.clock.advance(turn_cost_now(), RunClock.Source.TURN)
 	StatusRules.tick_down(warden())
 
 	if _run.clock.is_expired():
@@ -242,6 +258,10 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 		combatant_blocked.emit(handle, shielded)
 	if dealt > 0:
 		combatant_damaged.emit(handle, dealt)
+	if handle == WARDEN and dealt > 0 and from > WARDEN and from < combatants.size():
+		var attacker: Combatant = combatants[from]
+		if attacker.behavior != null:
+			attacker.behavior.on_hit_warden(self, from, dealt)
 	if handle != WARDEN and not target.is_alive():
 		_run.clock.restore(_run.relic_restored(target.restored_value))
 		for relic in _run.relic_defs():

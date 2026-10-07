@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicThinIce" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_thin_ice.gd" id="1_vun4w"]
+
+[resource]
+script = ExtResource("1_vun4w")
+id = &"thin_ice"
+name_key = &"relic.thin_ice.name"
+text_key = &"relic.thin_ice.text"
+rarity = 2

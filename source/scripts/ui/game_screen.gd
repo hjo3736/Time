@@ -13,6 +13,7 @@ var _room: RoomView
 var _map: MapView
 var _picker: CardPicker
 var _pause: PauseView
+var _relic_view: RelicView
 
 enum PickerJob { NONE, DECK, UPGRADE, REMOVE, DRAW, DISCARD, EXHAUST }
 var _picker_job := PickerJob.NONE
@@ -58,6 +59,7 @@ func _ready() -> void:
 	_menu = TopMenu.new()
 	_menu.map_requested.connect(_toggle_map)
 	_menu.deck_requested.connect(_toggle_deck)
+	_menu.relics_requested.connect(_toggle_relics)
 	top.add_child(_menu)
 
 	_content = Control.new()
@@ -92,6 +94,11 @@ func _ready() -> void:
 	_picker.cancelled.connect(_close_picker)
 	_picker.visible = false
 	add_child(_picker)
+
+	_relic_view = RelicView.new()
+	_relic_view.visible = false
+	_relic_view.closed.connect(_close_relics)
+	add_child(_relic_view)
 
 	_pause = PauseView.new()
 	_pause.visible = false
@@ -139,6 +146,9 @@ func refresh() -> void:
 	_hud.refresh(rc)
 	_persist()
 	_menu.set_deck_count(rc.run.deck.size())
+	_menu.set_relic_count(rc.run.relics.size())
+	if _relic_view.visible:
+		_relic_view.show_relics(rc.run, _relics)
 	_room.visible = false
 	_battle.visible = false
 	_choice.visible = false
@@ -166,8 +176,11 @@ func refresh() -> void:
 			_show_event()
 		RunController.Phase.ACT_CLEARED:
 			_choice.visible = true
-			_choice.present(tr("ui.act.cleared").format({"n": rc.run.act}),
-				tr("ui.act.cleared_body"),
+			var cleared_body := tr("ui.act.cleared_body")
+			var boss_gave := _relic_line("ui.act.relic_gained")
+			if boss_gave != "":
+				cleared_body = "%s\n%s" % [boss_gave, cleared_body]
+			_choice.present(tr("ui.act.cleared").format({"n": rc.run.act}), cleared_body,
 				[{"label": tr("ui.act.continue"), "id": "next_act"}])
 		RunController.Phase.ENDED:
 			_choice.visible = true
@@ -196,7 +209,22 @@ func _show_reward() -> void:
 		cards.append({"card": card, "id": ["take", i]})
 	var options := []
 	options.append({"label": tr("ui.reward.skip"), "id": "skip"})
-	_choice.present(tr("ui.reward.title"), tr("ui.reward.body"), options, cards)
+	var body := tr("ui.reward.body")
+	var gained := _relic_line("ui.reward.relic_gained")
+	if gained != "":
+		body = "%s\n%s" % [gained, body]
+	_choice.present(tr("ui.reward.title"), body, options, cards)
+
+
+## The relic an elite or a boss just handed over, worded for the screen that is
+## about to appear. Empty when the room gave none.
+func _relic_line(key: String) -> String:
+	if rc.last_relic == StringName():
+		return ""
+	var relic := _relics.get_relic(rc.last_relic)
+	if relic == null:
+		return ""
+	return tr(key).format({"name": relic.display_name(), "text": relic.description()})
 
 
 func _show_fire() -> void:
@@ -253,6 +281,15 @@ func _show_shop() -> void:
 			"id": ["buy", i],
 			"disabled": not rc.shop.can_afford_card(rc.run, i),
 		})
+	if rc.shop.relic != null:
+		options.append({
+			"label": tr("ui.shop.relic").format({
+				"name": rc.shop.relic.display_name(),
+				"price": RunClock.format_span(rc.shop.relic_price)}),
+			"detail": rc.shop.relic.description(),
+			"id": "buy_relic",
+			"disabled": not rc.shop.can_afford_relic(rc.run),
+		})
 	options.append({
 		"label": tr("ui.shop.remove").format({
 			"price": RunClock.format_span(rc.shop.removal_price(rc.run))}),
@@ -302,6 +339,8 @@ func _on_choice(id: Variant) -> void:
 				rc.leave_fire()
 			"leave_shop":
 				rc.leave_shop()
+			"buy_relic":
+				rc.buy_relic()
 			"remove":
 				_open_picker(PickerJob.REMOVE)
 				return
@@ -334,6 +373,7 @@ func _toggle_map() -> void:
 	if _map.visible:
 		_close_map()
 		return
+	_close_relics()
 	_map.visible = true
 	_menu.set_map_open(true)
 	_map.open(rc)
@@ -342,6 +382,22 @@ func _toggle_map() -> void:
 func _close_map() -> void:
 	_map.visible = false
 	_menu.set_map_open(false)
+
+
+func _toggle_relics() -> void:
+	if _relic_view.visible:
+		_close_relics()
+		return
+	_close_map()
+	_close_picker()
+	_relic_view.visible = true
+	_menu.set_relics_open(true)
+	_relic_view.show_relics(rc.run, _relics)
+
+
+func _close_relics() -> void:
+	_relic_view.visible = false
+	_menu.set_relics_open(false)
 
 
 func _on_map_move(coord: Vector2i) -> void:
@@ -361,6 +417,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		Keybinds.Action.DECK:
 			_toggle_deck()
+			get_viewport().set_input_as_handled()
+		Keybinds.Action.RELICS:
+			_toggle_relics()
 			get_viewport().set_input_as_handled()
 		Keybinds.Action.END_TURN:
 			if rc != null and rc.phase == RunController.Phase.BATTLE and not _pause.visible:
@@ -398,6 +457,7 @@ func _picker_indices(job: PickerJob) -> Array:
 
 func _open_picker(job: PickerJob) -> void:
 	_close_map()
+	_close_relics()
 	_picker_job = job
 	var entries := []
 	for i in _picker_indices(job):

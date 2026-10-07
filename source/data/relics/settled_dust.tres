@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RelicSettledDust" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_settled_dust.gd" id="1_msbow"]
+
+[resource]
+script = ExtResource("1_msbow")
+id = &"settled_dust"
+name_key = &"relic.settled_dust.name"
+text_key = &"relic.settled_dust.text"

@@ -33,6 +33,14 @@ func validate(enemies: EnemyDatabase) -> PackedStringArray:
 	for member in members:
 		if not enemies.has(member):
 			problems.append("%s: unknown enemy '%s'." % [label, member])
+			continue
+		# The acts are three separate rosters, not one roster reskinned. An act I
+		# encounter fielding an act III Askew would put the least legible thing in
+		# the game in front of a player who has met nothing yet.
+		var data := enemies.get_enemy(member)
+		if data.act != act:
+			problems.append("%s: is act %d but fields '%s', which is act %d."
+				% [label, act, member, data.act])
 	if link_pairs and members.size() % 2 != 0:
 		problems.append("%s: link_pairs needs an even number of members." % label)
 

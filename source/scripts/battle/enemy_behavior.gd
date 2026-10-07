@@ -26,6 +26,18 @@ func outgoing_amount(_battle: BattleState, _handle: int, intent: EnemyIntent) ->
 	return intent.amount
 
 
+## What a turn of this fight bills to the run's clock. The only hook that reaches
+## out of the battle and into the run, so the only one a block cannot answer.
+func modify_turn_cost(_battle: BattleState, _handle: int, base: int) -> int:
+	return base
+
+
+## Called when one of this enemy's blows takes hp off the Warden — after block, so
+## only what actually got through. `dealt` is that hp.
+func on_hit_warden(_battle: BattleState, _handle: int, _dealt: int) -> void:
+	pass
+
+
 func advance_intent(_battle: BattleState, who: Combatant) -> void:
 	who.advance_intent()
 

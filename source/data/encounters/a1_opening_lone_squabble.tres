@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_op6pt"]
+
+[resource]
+script = ExtResource("1_op6pt")
+id = &"a1_opening_lone_squabble"
+members = Array[StringName]([&"squabble"])
+opening_only = true

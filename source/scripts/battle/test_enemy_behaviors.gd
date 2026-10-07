@@ -157,6 +157,122 @@ func _init() -> void:
 	nb.end_turn()
 	check("hits back", nb.warden().hp, _b.starting_max_hp - 5)
 
+	print("\n-- 힘 is flat, permanent, and blunted along with the blow --")
+	var strong := enemy(20, [EnemyIntent.attack(5)] as Array[EnemyIntent])
+	var strong_bt := battle(strikes(), [strong])
+	check("no strength, no change",
+		StatusRules.modified_damage(strong, strong_bt.warden(), 5), 5)
+	strong.add_status(StatusRules.STRENGTH, 2)
+	check("two strength adds two", StatusRules.modified_damage(strong, strong_bt.warden(), 5), 7)
+	strong.add_status(StatusRules.BLUNTED, 1)
+	check("무뎌짐 blunts the strength too, not only the blow",
+		StatusRules.modified_damage(strong, strong_bt.warden(), 5), 5)
+	strong.add_status(StatusRules.BLUNTED, -1)
+	StatusRules.tick_down(strong)
+	check("and 힘 does not wear off with the durations",
+		strong.status(StatusRules.STRENGTH), 2)
+
+	print("\n-- 성장: it grows at twilight and keeps what it gained --")
+	var lit := enemy(999, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorTwilit.new())
+	# Departing at 05:00 opens the fight in the morning and walks it into day.
+	var dawn := RunState.new(_b, RunClock.seed_from_date(1487, 3, 1, 5))
+	for i in 10:
+		dawn.add_card(&"brace")
+	var twilit_bt := battle(dawn, [lit])
+	var seen := []
+	for turn in 6:
+		var shown := StatusRules.modified_damage(lit, twilit_bt.warden(), lit.current_intent().amount)
+		var before := twilit_bt.warden().hp
+		twilit_bt.end_turn()
+		seen.append([lit.sky, shown, before - twilit_bt.warden().hp])
+	var strengths := seen.map(func(row: Array) -> int: return int(row[1]))
+	check("the blow grows across the fight", strengths, [5, 6, 6, 6, 6, 7])
+	var mismatched := 0
+	for row in seen:
+		if int(row[1]) != int(row[2]):
+			mismatched += 1
+	# The buff lands at turn end, so what the player read while planning is what
+	# actually hit them. A turn where those two disagree is a broken promise.
+	check("and every turn landed exactly what it showed", mismatched, 0)
+	check("only two skies ever paid", lit.status(StatusRules.STRENGTH), 2)
+
+	print("\n-- 가속: it bills the run, and no amount of blocking answers that --")
+	var plain_run := strikes()
+	var plain_bt := battle(plain_run, [enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent])])
+	check("an ordinary turn costs the authored tick", plain_bt.turn_cost_now(), _b.turn_cost)
+	plain_bt.end_turn()
+	check("and that is what left the clock",
+		_b.starting_remaining - plain_run.clock.remaining, _b.turn_cost)
+
+	var lag_run := strikes()
+	var dragger := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorQuickening.new())
+	var lag_bt := battle(lag_run, [dragger])
+	check("with it standing, the turn costs an hour more",
+		lag_bt.turn_cost_now(), _b.turn_cost + 60)
+	lag_bt.end_turn()
+	check("and the run paid it", _b.starting_remaining - lag_run.clock.remaining, _b.turn_cost + 60)
+	check("nothing was taken off the vessel", lag_bt.warden().hp, _b.starting_max_hp)
+
+	var two_run := strikes()
+	var two_bt := battle(two_run, [
+		enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorQuickening.new()),
+		enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorQuickening.new()),
+	])
+	check("two of them drag twice as hard", two_bt.turn_cost_now(), _b.turn_cost + 120)
+
+	var freed_run := strikes()
+	var doomed_dragger := enemy(6, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorQuickening.new())
+	var freed_bt := battle(freed_run, [doomed_dragger])
+	check("it drags while alive", freed_bt.turn_cost_now(), _b.turn_cost + 60)
+	hit(freed_bt, 1)
+	check("killed", doomed_dragger.is_alive(), false)
+	# Billed on the living at the moment of billing, so the turn you end it is
+	# already cheaper. Otherwise the last turn of the fight punishes the kill.
+	check("and the turn that killed it costs the ordinary tick",
+		freed_bt.turn_cost_now(), _b.turn_cost)
+
+	print("\n-- 흘림: a blow that gets through spills an hour, and block holds it --")
+	var bare_run := strikes()
+	bare_run.clock.restore(10 * 60)
+	var spiller := enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorSpilling.new())
+	var bare_bt := battle(bare_run, [spiller])
+	bare_bt.end_turn()
+	check("an unblocked blow cost an hour of what was carried",
+		bare_run.clock.restored, 9 * 60)
+
+	var guarded_run := strikes()
+	guarded_run.clock.restore(10 * 60)
+	var guarded_bt := battle(guarded_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
+		BehaviorSpilling.new())])
+	guarded_bt.warden().block = 5
+	guarded_bt.end_turn()
+	check("a blow fully blocked spills nothing", guarded_run.clock.restored, 10 * 60)
+
+	var flurry_run := strikes()
+	flurry_run.clock.restore(10 * 60)
+	var flurry_bt := battle(flurry_run, [enemy(99, [EnemyIntent.attack(4, 3)] as Array[EnemyIntent],
+		BehaviorSpilling.new())])
+	flurry_bt.warden().block = 8
+	flurry_bt.end_turn()
+	# Block soaks the first two of three 4s; only the third gets through.
+	check("a flurry spills once per blow that got past the guard",
+		flurry_run.clock.restored, 9 * 60)
+
+	var empty_run := strikes()
+	var empty_bt := battle(empty_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
+		BehaviorSpilling.new())])
+	empty_bt.end_turn()
+	check("an empty pool has nothing to spill, and does not go negative",
+		empty_run.clock.restored, 0)
+
+	var swing_run := strikes()
+	swing_run.clock.restore(10 * 60)
+	var target := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorSpilling.new())
+	var swing_bt := battle(swing_run, [target])
+	hit(swing_bt, 1)
+	check("the Warden hitting it spills nothing — only its blows do",
+		swing_run.clock.restored, 10 * 60)
+
 	_the_sky_changes_the_pattern()
 	_the_pattern_is_fixed_at_the_turn_it_started()
 
@@ -165,9 +281,15 @@ func _init() -> void:
 
 func _the_sky_changes_the_pattern() -> void:
 	print("\n-- an enemy that fights differently after dark --")
-	var enemies := EnemyDatabase.new()
-	enemies.load_from()
-	var data := enemies.get_enemy(&"afterimage")
+	# Built here rather than taken from the roster: this checks the machinery, and
+	# it should not start failing because the bestiary was re-authored.
+	var data := EnemyData.new()
+	data.id = &"test_sky"
+	data.name_key = &"enemy.test_sky.name"
+	data.hp_min = 20
+	data.hp_max = 20
+	data.intents = [EnemyIntent.attack(5)] as Array[EnemyIntent]
+	data.night_intents = [EnemyIntent.attack(12)] as Array[EnemyIntent]
 	check("it was authored with a night pattern", data.night_intents.is_empty(), false)
 
 	var c := data.spawn(_b, rng(1))
@@ -178,7 +300,12 @@ func _the_sky_changes_the_pattern() -> void:
 		c.current_intent().amount, data.night_intents[0].amount)
 	check("and the two are not the same",
 		data.intents[0].amount != data.night_intents[0].amount, true)
-	var plainest := enemies.get_enemy(&"crumbling")
+	var plainest := EnemyData.new()
+	plainest.id = &"test_steady"
+	plainest.name_key = &"enemy.test_steady.name"
+	plainest.hp_min = 30
+	plainest.hp_max = 30
+	plainest.intents = [EnemyIntent.attack(9)] as Array[EnemyIntent]
 	var steady := plainest.spawn(_b, rng(1))
 	for unwritten in [RunClock.Daytime.MORNING, RunClock.Daytime.DAY,
 			RunClock.Daytime.EVENING, RunClock.Daytime.NIGHT]:
@@ -198,17 +325,21 @@ func _the_sky_changes_the_pattern() -> void:
 		read.append(four.current_intent().amount)
 	check("all four phases can be written apart", read, [1, 2, 3, 4])
 
-	var plain := enemies.get_enemy(&"echo").spawn(_b, rng(1))
+	var bare := EnemyData.new()
+	bare.id = &"test_bare"
+	bare.name_key = &"enemy.test_bare.name"
+	bare.hp_min = 20
+	bare.hp_max = 20
+	bare.intents = [EnemyIntent.attack(7)] as Array[EnemyIntent]
+	var plain := bare.spawn(_b, rng(1))
 	plain.sky = RunClock.Daytime.NIGHT
 	check("an enemy with no night pattern keeps its day one",
-		plain.current_intent().amount, enemies.get_enemy(&"echo").intents[0].amount)
+		plain.current_intent().amount, bare.intents[0].amount)
 
 
 func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
 	print("\n-- the sky turning mid-turn does not change the pattern until the next one --")
 	var b := Balance.default()
-	var enemies := EnemyDatabase.new()
-	enemies.load_from()
 	var cards := CardDatabase.new()
 	cards.load_from()
 
@@ -216,7 +347,13 @@ func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
 	run.clock.advance(run.clock.minutes_until_sky_turns() - b.turn_cost, RunClock.Source.TRAVEL)
 	var opened_under := run.clock.daytime()
 
-	var group: Array[Combatant] = [enemies.get_enemy(&"afterimage").spawn(b, rng(2))]
+	var fixture := EnemyData.new()
+	fixture.id = &"test_clockwatcher"
+	fixture.name_key = &"enemy.test_clockwatcher.name"
+	fixture.hp_min = 30
+	fixture.hp_max = 30
+	fixture.intents = [EnemyIntent.attack(5)] as Array[EnemyIntent]
+	var group: Array[Combatant] = [fixture.spawn(b, rng(2))]
 	var bt := BattleState.new(run, cards, group, rng(2))
 	var enemy: Combatant = bt.combatants[1]
 	check("the fight opens under the sky the run is under", enemy.sky, opened_under)

@@ -55,6 +55,43 @@ func all() -> Array[Relic]:
 	return out
 
 
+func of_rarity(rarity: Relic.Rarity, owned: Array = []) -> Array[Relic]:
+	var out: Array[Relic] = []
+	for r in all():
+		if r.rarity == rarity and not owned.has(r.id):
+			out.append(r)
+	return out
+
+
+static func rarity_for(balance: Balance, rng: RandomNumberGenerator) -> Relic.Rarity:
+	var total := (balance.reward_weight_common + balance.reward_weight_uncommon
+		+ balance.reward_weight_rare)
+	var roll := rng.randi_range(1, maxi(1, total))
+	if roll <= balance.reward_weight_common:
+		return Relic.Rarity.COMMON
+	if roll <= balance.reward_weight_common + balance.reward_weight_uncommon:
+		return Relic.Rarity.UNCOMMON
+	return Relic.Rarity.RARE
+
+
+## The general table. BOSS is deliberately absent: those are handed out by act
+## bosses and by nothing else, so no roll can put one in a shop.
+func roll(rng: RandomNumberGenerator, balance: Balance, owned: Array = []) -> Relic:
+	var wanted := rarity_for(balance, rng)
+	for candidate in [wanted, Relic.Rarity.COMMON, Relic.Rarity.UNCOMMON, Relic.Rarity.RARE]:
+		var pool := of_rarity(candidate, owned)
+		if not pool.is_empty():
+			return pool[rng.randi_range(0, pool.size() - 1)]
+	return null
+
+
+func roll_boss(rng: RandomNumberGenerator, owned: Array = []) -> Relic:
+	var pool := of_rarity(Relic.Rarity.BOSS, owned)
+	if pool.is_empty():
+		return null
+	return pool[rng.randi_range(0, pool.size() - 1)]
+
+
 func validate() -> PackedStringArray:
 	var problems := _load_problems.duplicate()
 	if _by_id.is_empty():

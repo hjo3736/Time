@@ -37,6 +37,10 @@ var _opened_with_teaching_fight := false
 
 var fight_snapshot := {}
 
+## What the room just resolved handed over, so the screen can name it. Transient:
+## it describes the last room, not the run, and is not saved.
+var last_relic := StringName()
+
 
 func _init(
 	balance: Balance,
@@ -87,10 +91,6 @@ func reachable() -> Array:
 	return map.reachable()
 
 
-func minutes_to_boss() -> int:
-	return map.minutes_to_boss()
-
-
 func status() -> Dictionary:
 	return {
 		"act": run.act,
@@ -105,7 +105,6 @@ func status() -> Dictionary:
 		"relics": run.relics.size(),
 		"at": map.current,
 		"room": current_room().kind if current_room() != null else -1,
-		"to_boss": minutes_to_boss(),
 	}
 
 
@@ -134,7 +133,7 @@ func _resolve_room() -> void:
 		Room.Kind.EVENT:
 			_start_event()
 		Room.Kind.SHOP:
-			shop = Shop.new(_cards, _balance, _rng)
+			shop = Shop.new(_cards, _balance, _rng, &"warden", [], false, _relics, run.relics)
 			run.clock.advance(_balance.shop_cost, RunClock.Source.SHOP)
 			if _check_clock():
 				return
@@ -195,7 +194,14 @@ func _on_battle_ended(victory: bool) -> void:
 
 
 func _room_resolved(room: Room) -> void:
+	last_relic = StringName()
+
+	# An elite is worth a relic on top of its card, and an act boss is the only
+	# thing that hands out a boss relic. Nothing else grants one.
+	if room != null and room.kind == Room.Kind.ELITE:
+		_grant_relic(_relics.roll(_rng, _balance, run.relics))
 	if room != null and room.kind == Room.Kind.BOSS:
+		_grant_relic(_relics.roll_boss(_rng, run.relics))
 		phase = Phase.ACT_CLEARED
 		return
 
@@ -206,6 +212,13 @@ func _room_resolved(room: Room) -> void:
 	run.offer_reward(offer.map(func(c: CardData) -> StringName: return c.id))
 	reward_offered.emit(Array(run.pending_reward()))
 	phase = Phase.REWARD
+
+
+func _grant_relic(relic: Relic) -> void:
+	if relic == null:
+		return
+	run.add_relic(relic.id, _relics)
+	last_relic = relic.id
 
 
 func take_reward(index: int) -> bool:
@@ -247,6 +260,10 @@ func buy_card(index: int) -> bool:
 
 func buy_removal(deck_index: int) -> bool:
 	return phase == Phase.SHOP and shop != null and shop.buy_removal(run, deck_index)
+
+
+func buy_relic() -> bool:
+	return phase == Phase.SHOP and shop != null and shop.buy_relic(run, _relics)
 
 
 func leave_shop() -> void:
@@ -330,6 +347,9 @@ static func from_dict(
 	relics: RelicDatabase,
 ) -> RunController:
 	var run := RunState.from_dict(data.get("run", {}), balance)
+	# The save carries relic ids, not definitions. Without this a resumed run
+	# keeps the list and loses every effect on it, silently.
+	run.attach_relics(relics)
 	var out := RunController.new(balance, cards, enemies, encounters, relics, run.seed)
 	out.run = run
 	out._rng.seed = int(data.get("rng_seed", run.seed))
@@ -341,7 +361,7 @@ static func from_dict(
 	out.battle = BattleState.from_dict(data["battle"], run, cards) if data.has("battle") else null
 	if out.battle != null:
 		out.battle.battle_ended.connect(out._on_battle_ended, CONNECT_ONE_SHOT)
-	out.shop = Shop.from_dict(data["shop"], cards, balance) if data.has("shop") else null
+	out.shop = Shop.from_dict(data["shop"], cards, balance, relics) if data.has("shop") else null
 	if data.has("event"):
 		out.event = out._events.get_event(StringName(data["event"]))
 	out.phase = int(data.get("phase", Phase.EXPLORING))

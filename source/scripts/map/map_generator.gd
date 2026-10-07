@@ -22,7 +22,7 @@ static func generate(
 	var events := content - combat_rooms
 	var total := 2 + combat_rooms + empty_rooms + fires + shops + elites + events
 
-	var rooms := _carve(total, rng)
+	var rooms := _carve(total, rng, balance.start_exits_in(act))
 	_price(rooms, balance, rng)
 	var distances := _distances(rooms, Vector2i.ZERO)
 	var travel := _travel(rooms, Vector2i.ZERO, balance)
@@ -49,14 +49,15 @@ static func _price(rooms: Dictionary, balance: Balance, rng: RandomNumberGenerat
 			rooms[next].exits[-step] = minutes
 
 
-static func _carve(target: int, rng: RandomNumberGenerator) -> Dictionary:
+static func _carve(target: int, rng: RandomNumberGenerator,
+		start_exits: int = 4) -> Dictionary:
 	var rooms := {Vector2i.ZERO: _room(Vector2i.ZERO, Room.Kind.START)}
 
 	while rooms.size() < target:
 		var allow_loops := rng.randf() < LOOP_CHANCE
-		var options := _candidates(rooms, allow_loops)
+		var options := _candidates(rooms, allow_loops, start_exits)
 		if options.is_empty():
-			options = _candidates(rooms, true)
+			options = _candidates(rooms, true, start_exits)
 		if options.is_empty():
 			break
 		var coord: Vector2i = options[rng.randi_range(0, options.size() - 1)]
@@ -65,12 +66,20 @@ static func _carve(target: int, rng: RandomNumberGenerator) -> Dictionary:
 	return rooms
 
 
-static func _candidates(rooms: Dictionary, allow_loops: bool) -> Array:
+static func _candidates(rooms: Dictionary, allow_loops: bool,
+		start_exits: int = 4) -> Array:
+	# Adjacency is the map: a room next to the start is a way out of it, whether
+	# or not anything meant it to be. So capping the start's exits is a carving
+	# rule, not something that can be tidied up afterwards.
+	var start_is_full := neighbours_of(rooms, Vector2i.ZERO).size() >= start_exits
+
 	var seen := {}
 	for coord in rooms:
 		for step in NEIGHBOURS:
 			var next: Vector2i = coord + step
 			if rooms.has(next):
+				continue
+			if start_is_full and next.distance_squared_to(Vector2i.ZERO) == 1:
 				continue
 			var touching := 0
 			for back in NEIGHBOURS:

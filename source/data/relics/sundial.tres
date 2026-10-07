@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RelicSundial" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_sundial.gd" id="1_l4jou"]
+
+[resource]
+script = ExtResource("1_l4jou")
+id = &"sundial"
+name_key = &"relic.sundial.name"
+text_key = &"relic.sundial.text"

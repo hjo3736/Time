@@ -6,7 +6,10 @@ signal closed
 
 const SIDE_WIDTH := 260.0
 
-const SETTINGS_PLATE := Vector2(900, 430)
+## Fixed so the plate does not resize as the player moves between tabs. The height
+## is set by the tallest tab, which is the keybinding list, so **adding a binding to
+## `Keybinds.ORDER` means raising this.** test_ui measures every tab against it.
+const SETTINGS_PLATE := Vector2(900, 560)
 
 const PAUSE_PLATE := Vector2(470, 340)
 

@@ -8,10 +8,13 @@ Working title — rename freely.
 - **Target:** PC (Windows first), mouse-driven, 1920x1080 base viewport
 - **Status:** run state, the card layer and 32 cards implemented and tested.
   The battle loop runs end to end and all five Askew categories behave.
-  Three act-one normals and five encounters exist, with Threat scaling live.
-  Floors generate and can be walked; rewards and shops work.
+  Ten Askew and fifteen encounters exist, all of them act one, with Threat on a
+  back-loaded curve. Floors generate and can be walked; rewards, shops, fires,
+  relics and events all work. A run departs on a date the player picks — the
+  date is the seed — and the hour it is drives what the world holds.
   A whole run is playable from a title screen and survives a quit mid-fight.
-  Art and events not started.
+  **Acts two and three have no encounters yet**, so their fights resolve to
+  nothing; that and art are what is missing.
 
 ## Core loop
 
@@ -20,8 +23,9 @@ Working title — rename freely.
    walked either way, backtracking included.
 2. Fight turn-based single-screen battles by playing cards from a hand.
 3. Take a reward (new card, relic, reclaimed time) and shape the deck.
-4. Open the boss door when ready — its location is marked from the start.
-   Three acts to a run.
+4. Open the boss door when ready — but it is not marked and its distance is not
+   quoted, so finding it is part of the walk. Three acts to a run, each one
+   fielding Askew further gone than the last.
 
 Battle turn: draw to hand size, spend energy to play cards, end turn, enemies
 resolve their telegraphed intents, discard hand, repeat.
@@ -66,8 +70,8 @@ and [docs/narrative.md](docs/narrative.md).
 - **Time is never wasted quietly.** Unspent time still passes. The player is
   never punished for acting, only for taking too long.
 - **Everything is billed in hours.** Injury does not kill the Warden; it sends
-  them to a fire, and a fire costs eight hours. Whatever goes wrong, it is paid
-  for in the one currency the game is about.
+  them to a fire, and resting at one costs four hours. Whatever goes wrong, it is
+  paid for in the one currency the game is about.
 
 ## Meta-progression
 
@@ -111,8 +115,8 @@ working, which means more is possible.
 | 2 | Battle state machine | done — piles, turn budget, intents, win/lose, hp handoff |
 | 3 | Effect resolution | done — `BattleEffectContext`; status vocabulary still minimal |
 | 4 | Hand & pile UI | prototype done — click to play, intents shown, no art yet |
-| 5 | Enemy AI | done for act 1 — five behaviours, three normals, weighted encounters |
-| 6 | Run map | done — seeded Isaac floors, symmetric 1-3h corridors revealed by walking, typed-frontier fog, boss marked |
+| 5 | Enemy AI | done for act 1 — five behaviours, ten Askew, weighted encounters, per-daytime intents; acts 2-3 have no encounters at all |
+| 6 | Run map | done — seeded Isaac floors, symmetric 1-3h corridors revealed by walking, typed-frontier fog, boss door neither marked nor priced |
 | 7 | Rewards & shop | card picks, shop stock and removal done; relic sales wait on relics |
 | 8 | Relics | done — four relics; hooks reach the map and the clock, not just battle |
 | 9 | Save / resume | done — whole run incl. the fight in progress, JSON in `user://`; unlock ledger still to come |
@@ -121,10 +125,12 @@ working, which means more is possible.
 ## Open questions
 
 - Final title, and the god's name (currently the epithet 겁/劫).
-- **What the three acts are**, now that the world below is simply the world.
 - What the people of the world below know about any of this.
-- Whether to ship a daily-seed mode.
-- Run length in in-game days, once the clock economy has real numbers.
+- Whether a departure date should also be a *shared* seed — the date-as-seed
+  screen answers the daily-seed question diegetically, but nothing yet suggests a
+  date to the player or compares runs that left on the same one.
+- Run length is 30 in-game days. Whether that is the right number waits on acts
+  two and three existing.
 
 
 ## Localization
@@ -139,7 +145,7 @@ changes, because the code never holds a display string.
 
 Rules, in order of how expensive they are to break:
 
-- **Keys are explicit** (`card.interrupt.name`), never the source text itself.
+- **Keys are explicit** (`card.take.name`), never the source text itself.
   Using Korean strings as keys reads nicely right up until someone rewords a
   line and silently orphans every other language.
 - **English never lags Korean.** Treat the `en` cell as part of finishing a
@@ -153,20 +159,45 @@ Rules, in order of how expensive they are to break:
   carrying the tone, and tone written in a second language arrives flat. Once it
   is flat in the pivot it is flat in every language downstream.
 
-## Naming: plain mechanics, flavoured cards
+## Naming: descriptive mechanics, flavoured cards
 
-**Mechanical vocabulary stays transparent.** Block is Block (방어도), Vulnerable
-is Vulnerable (취약). These words were not chosen for atmosphere — they were
-chosen so that a player reads them once and never has to remember them. A game
-whose central pillar is *the cost of a choice is legible before it is committed*
-cannot afford keywords that need memorising.
+**A keyword has to describe its own effect.** Block is Block (방어도). Softened
+(물러짐) takes more damage; Blunted (무뎌짐) deals less. These words were not
+chosen for atmosphere — they were chosen so that a player reads one once and
+never has to remember it. A game whose central pillar is *the cost of a choice is
+legible before it is committed* cannot afford keywords that need memorising.
 
-**Card names carry the flavour instead**, because they carry no mechanical load:
-the rules text sits directly beneath them. `차단` above `6의 피해를 줍니다` is
-unambiguous and does not read as someone else's game.
+**That test is the rule, not the genre's vocabulary.** An earlier pass renamed
+Block to "Hold" and Vulnerable to "Unwound"; it read better and played worse,
+because neither word says what it does — "Unwound" could mean anything at all.
+물러짐 and 무뎌짐 pass exactly where "Unwound" failed: a soft thing takes damage
+easily and a blunt edge cuts poorly, so the mechanic is legible off the word.
+Rename a keyword only when the replacement is at least as self-describing as what
+it replaces, and never because it sounds better. Block keeps its plain name for
+that reason and no other — 방어도 is already the most descriptive thing a number
+that absorbs damage can be called.
 
-An earlier pass renamed Block to "Hold" and Vulnerable to "Unwound". It read
-better and played worse. Do not do it again.
+**Card names carry the flavour**, because they carry no mechanical load: the
+rules text sits directly beneath them. `무르게` above `적 하나에게 물러짐 2
+부여합니다` is unambiguous and does not read as someone else's game.
+
+**One word for both sides of the exchange.** 힘 sits on the attacker, whoever the
+attacker is: on an Askew it presses harder into the vessel, on the Warden it
+empties the white gauge faster. Those read as opposite things, and it is still
+one word, because a player who has learned what a number does should not have to
+learn it again from the other end. The cost is that its wording has to stay
+neutral — `status.strength.help` says *every blow it strikes*, not *damage dealt*
+and not *time taken*, because the moment it picks a side it is wrong for the
+other one. Split a shared stat in two only if the two halves stop behaving the
+same, never because they are described differently.
+
+**Rules text may re-describe an effect. It may never restate the number.**
+`EffectDamage` carries a `text_key`, so 거두기 reads `적으로부터 6만큼의 시간을
+가져옵니다` rather than `6의 피해를 줍니다` — the white gauge is a recovery and not
+a wound, and the starting card is where that has to land. The 6 is still the 6,
+in the same place, in the same digits. Use the override where the fiction of a
+number is genuinely not damage; do not use it to make a line read better.
+
 ## Layout
 
 ```
@@ -202,13 +233,17 @@ All tunable numbers live in [`source/data/balance.tres`](source/data/balance.tre
 and are read through `Balance`. Nothing else should hold a magic number.
 
 `Balance.validate()` encodes the design rules that are easy to break while
-retuning, and the tests assert the shipped profile passes them. It already
-catches two mistakes this project actually made on paper:
+retuning, and the tests assert the shipped profile passes them. Every one of
+these is a mistake this project actually made:
 
-- a conversion cap low enough that converting costs more time than it returns,
-  which silently kills the delivered-versus-kept axis;
-- an act holding no more rooms than the budget can buy, which silently removes
-  the choice of which rooms to take.
+- a conversion cap so low it rounds down to nothing, so a fire spends the run's
+  time and hands back zero — which silently kills the delivered-versus-kept axis;
+- an act promising more guaranteed fights and events than it has rooms to put
+  them in;
+- `expected_threat_steps` drifting from the number of steps the budget actually
+  holds, which is not just a wrong HUD label: the escalation curve divides by it;
+- a global `enemy_hp_scale` other than 1.0, which turns every number authored in
+  `tool_write_enemies.gd` into a lie.
 
 Add an invariant here whenever a design rule turns out to depend on a number.
 
@@ -399,9 +434,14 @@ that sets it.
 ## Events
 
 `Room.Kind.EVENT` was a label with nothing behind it — the map never placed one
-and the controller had no branch for it. Both are filled in now: three per act
-from `Balance.events_per_act`, drawn from `source/data/events/` and never
-repeated inside a run.
+and the controller had no branch for it. Both are filled in now, drawn from
+`source/data/events/` and never repeated inside a run.
+
+**Fights and events come out of one pool of rooms.** An act holds
+`fights_and_events_per_act` content rooms; the fights are rolled inside that
+count and the events are whatever is left, with `events_min_per_act` as the
+floor. So a floor heavy with events is a floor light on fights, which is a
+difference the player can feel before knowing why.
 
 An event is `EventData` — title, body, and two or more `EventChoice`. A choice
 holds `EventOutcome` resources, which are the run-level counterpart to

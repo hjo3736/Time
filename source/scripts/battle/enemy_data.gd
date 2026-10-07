@@ -8,6 +8,11 @@ enum Tier { NORMAL, ELITE, BOSS }
 @export var name_key := &""
 @export var tier := Tier.NORMAL
 
+## Which act's pool this belongs to. An act is how far gone its Askew are — see
+## docs/setting.md — so the roster is split three ways rather than reskinned, and
+## an encounter may not mix acts.
+@export var act := 1
+
 @export var hp_min := 20
 @export var hp_max := 26
 

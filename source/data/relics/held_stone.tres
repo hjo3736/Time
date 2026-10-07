@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RelicHeldStone" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_held_stone.gd" id="1_84xlh"]
+
+[resource]
+script = ExtResource("1_84xlh")
+id = &"held_stone"
+name_key = &"relic.held_stone.name"
+text_key = &"relic.held_stone.text"

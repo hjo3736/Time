@@ -211,6 +211,7 @@ func attach_relics(db: RelicDatabase) -> void:
 		var def := db.get_relic(id)
 		if def != null:
 			_relic_defs.append(def)
+	_resettle_sky()
 
 
 func relic_defs() -> Array[Relic]:
@@ -225,6 +226,16 @@ func add_relic(relic_id: StringName, db: RelicDatabase = null) -> void:
 		var def := db.get_relic(relic_id)
 		if def != null:
 			_relic_defs.append(def)
+			_resettle_sky()
+
+
+## Recomputed from Balance every time rather than folded onto what is already
+## there, so losing a relic could never leave the sky bent the way it left it.
+func _resettle_sky() -> void:
+	var bounds := _clock.default_sky_bounds()
+	for r in _relic_defs:
+		bounds = r.modify_sky_bounds(self, bounds)
+	_clock.sky_bounds = bounds
 
 
 func relic_room_cost(base: int) -> int:

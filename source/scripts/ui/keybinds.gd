@@ -1,14 +1,18 @@
 class_name Keybinds
 extends RefCounted
 
-enum Action { END_TURN, MAP, DECK, PAUSE }
+## Appended, never inserted. keys.cfg stores these as raw integers, so renumbering
+## an existing action hands a player's key to a different one on their next launch.
+## Display order lives in ORDER, which is free to disagree with the enum.
+enum Action { END_TURN, MAP, DECK, PAUSE, RELICS }
 
-const ORDER := [Action.END_TURN, Action.MAP, Action.DECK, Action.PAUSE]
+const ORDER := [Action.END_TURN, Action.MAP, Action.DECK, Action.RELICS, Action.PAUSE]
 
 const LABELS := {
 	Action.END_TURN: "ui.keys.end_turn",
 	Action.MAP: "ui.keys.map",
 	Action.DECK: "ui.keys.deck",
+	Action.RELICS: "ui.keys.relics",
 	Action.PAUSE: "ui.keys.pause",
 }
 
@@ -16,6 +20,7 @@ const DEFAULTS := {
 	Action.END_TURN: KEY_SPACE,
 	Action.MAP: KEY_M,
 	Action.DECK: KEY_D,
+	Action.RELICS: KEY_R,
 	Action.PAUSE: KEY_ESCAPE,
 }
 

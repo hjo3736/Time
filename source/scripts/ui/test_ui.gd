@@ -651,6 +651,39 @@ func _go() -> void:
 	d._toggle_deck()
 	check("closed again", d._picker.visible, false)
 
+	print("\n-- what the Warden carries can be read from the corner --")
+	var rv: GameScreen = await screen(2)
+	check("closed to begin with", rv._relic_view.visible, false)
+	rv._toggle_relics()
+	await process_frame
+	check("opened", rv._relic_view.visible, true)
+	check("and says so rather than showing an empty plate",
+		rv._relic_view.body().get_child_count(), 1)
+	rv.rc.run.add_relic(&"equality", rv._relics)
+	rv.rc.run.add_relic(&"worn_shoes", rv._relics)
+	rv.refresh()
+	await process_frame
+	check("an open panel follows what the run picks up",
+		rv._relic_view.body().get_child_count(), 2)
+	check("in the order they were picked up, which is the order they chain in",
+		Array(rv.rc.run.relics), [&"equality", &"worn_shoes"])
+	rv._toggle_relics()
+	check("closed again", rv._relic_view.visible, false)
+
+	print("\n-- the panels do not stack on one another --")
+	rv._toggle_relics()
+	rv._toggle_map()
+	await process_frame
+	check("opening the map put the relics away", rv._relic_view.visible, false)
+	check("and the map is up", rv._map.visible, true)
+	rv._toggle_relics()
+	await process_frame
+	check("and the reverse holds too", rv._map.visible, false)
+	rv._toggle_deck()
+	await process_frame
+	check("the deck displaces them as well", rv._relic_view.visible, false)
+	rv._close_picker()
+
 	print("\n-- sharpening asks which card --")
 	d.rc.phase = RunController.Phase.FIRE
 	d.refresh()
@@ -987,13 +1020,7 @@ func _pausing_out_of_a_fight(boot: RootScreen) -> void:
 	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
-	var walk := 0
-	while g.rc.phase != RunController.Phase.BATTLE and walk < 40:
-		walk += 1
-		var doors := g.rc.map.reachable()
-		if doors.is_empty():
-			break
-		g._on_move(doors[walk % doors.size()])
+	await _walk_into_a_fight(g)
 	check("in a fight", g.rc.phase, RunController.Phase.BATTLE)
 
 	check("nothing is up yet", g._pause.visible, false)
@@ -1103,13 +1130,7 @@ func _keybinds_are_rebindable(boot: RootScreen) -> void:
 	boot.begin(RunClock.seed_from_date(0, 0, 2, 12))
 	await process_frame
 	var g: GameScreen = boot._game
-	var walk := 0
-	while g.rc.phase != RunController.Phase.BATTLE and walk < 40:
-		walk += 1
-		var doors := g.rc.map.reachable()
-		if doors.is_empty():
-			break
-		g._on_move(doors[walk % doors.size()])
+	await _walk_into_a_fight(g)
 	check("in a fight", g.rc.phase, RunController.Phase.BATTLE)
 
 	var turn := g.rc.battle.turn
@@ -1219,7 +1240,11 @@ func _refuses_bind(action: int, combined: int) -> bool:
 	return Keybinds.key_of(action) == before
 
 
+## Walks with a purpose rather than at random. Picking `doors[step % size]` used to
+## work by luck; once act one's start became a single corridor it began oscillating
+## in a pocket of two rooms and never reached a fight at all.
 func _walk_into_a_fight(s: GameScreen) -> void:
+	var seen := {}
 	for step in 60:
 		if s.rc.phase == RunController.Phase.BATTLE:
 			return
@@ -1233,13 +1258,34 @@ func _walk_into_a_fight(s: GameScreen) -> void:
 			RunController.Phase.REWARD:
 				s._on_choice("skip")
 			RunController.Phase.EXPLORING:
-				var doors := s.rc.map.reachable()
-				if doors.is_empty():
+				var next: Variant = _next_step_toward_a_fight(s, seen)
+				if next == null:
 					return
-				s._on_move(doors[step % doors.size()])
+				seen[next] = int(seen.get(next, 0)) + 1
+				s._on_move(next)
 			_:
 				return
 		await process_frame
+
+
+## A reachable fight if one is going spare, otherwise the door walked through
+## least often — which is what stops the walk from pacing between two rooms.
+func _next_step_toward_a_fight(s: GameScreen, seen: Dictionary) -> Variant:
+	var doors := s.rc.map.reachable()
+	if doors.is_empty():
+		return null
+	for coord in doors:
+		var room: Room = s.rc.map.at(coord)
+		if room != null and room.is_hostile() and not room.is_spent():
+			return coord
+	var best: Variant = null
+	var fewest := 1 << 30
+	for coord in doors:
+		var times := int(seen.get(coord, 0))
+		if times < fewest:
+			fewest = times
+			best = coord
+	return best
 
 
 func _events_are_drawn(boot: RootScreen) -> void:
@@ -1472,10 +1518,13 @@ func _prices_are_drawn_on_the_map(boot: RootScreen) -> void:
 	check("the floor does not make every corridor the same length",
 		different.size() > 1, true)
 
-	print("\n-- the walk to the boss is offered as an estimate, not a promise --")
-	check("it reads as a guess while unseen rooms lie on the path",
+	print("\n-- the walk to the boss is never quoted to the player --")
+	check("the floor still knows the walk is an estimate",
 		g.rc.map.boss_walk_is_guess(), true)
-	check("and the hint says so", g._map._hint.text.contains(tr("ui.map.about")), true)
+	check("but the map hint holds the battle note and nothing else",
+		g._map._hint.text, tr("ui.map.no_move_in_battle"))
+	check("and the door is not on the map until it is found",
+		g.rc.map.known_rooms().has(g.rc.map.boss_coord), false)
 
 	g._close_map()
 	await process_frame

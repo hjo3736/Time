@@ -53,6 +53,8 @@ keyword.ethereal,휘발,Ethereal
 keyword.ethereal.help,턴이 끝날 때 손에 남아 있으면 소멸한다.,Exhausts if still in hand at end of turn.
 keyword.unplayable,사용 불가,Unplayable
 keyword.unplayable.help,낼 수 없다.,Cannot be played.
+keyword.growth,성장,Growth
+keyword.growth.help,힘을 얻는다.,Gains Strength.
 help.target.single,적 하나를 골라 사용한다. 적 위로 끌어다 놓는다.,Aimed at one enemy. Drag it onto them.
 help.target.all,살아 있는 적 전부에게 적용된다.,Hits every living enemy.
 help.target.self,대상이 없다. 손패 위쪽으로 끌어올린다.,No target. Drag it upward.
@@ -143,9 +145,7 @@ ui.overlay.close,닫는다,Close
 ui.overlay.back,←  돌아간다,←  Back
 ui.map.title,지도,Map
 ui.map.close,닫기,Close
-ui.map.boss_hint,보스 문까지 {n}칸 · {about}{span}{note},{n} rooms to the boss door · {about}{span}{note}
-ui.map.about,약 ,about 
-ui.map.no_move_in_battle,  ·  전투 중에는 이동할 수 없다,  ·  no walking during a fight
+ui.map.no_move_in_battle,전투 중에는 이동할 수 없다,No walking during a fight
 ui.map.here,여기,Here
 ui.map.legend_zoom,휠  —  확대 · 축소,Wheel  —  zoom
 ui.map.legend_pan,빈 곳 드래그  —  지도 이동,Drag empty space  —  pan
@@ -166,7 +166,6 @@ ui.room.west,서,W
 ui.room.east,동,E
 ui.room.south,남,S
 ui.room.spent_note,이 방은 지나갔다,This room is spent
-ui.room.boss_note,보스 문까지 {n}칸 · {about}{span},{n} rooms to the boss door · {about}{span}
 ui.title.continue,이어한다,Continue
 ui.title.new_run,내려간다,Go down
 ui.date.title,언제 떠나는가,When do you set out
@@ -327,3 +326,68 @@ memory.the-kettle,아직 끓는 주전자,The Kettle
 memory.cold-hands,언 손,Cold Hands
 memory.the-late-one,늦는 사람,The One Who Is Late
 ui.battle.out_of_reach,닿지 않는다,Out of reach
+relic.settled_dust.name,가라앉은 먼지,Settled Dust
+relic.settled_dust.text,매 턴 2의 방어도를 얻는다.,Gain 2 block each turn.
+relic.sundial.name,해시계,Sundial
+relic.sundial.text,낮에는 매 턴 1시간을 더 쓸 수 있다.,Gain 1h of turn budget during the day.
+relic.night_bell.name,밤종,Night Bell
+relic.night_bell.text,밤에 회수하는 시간이 50% 늘어난다.,Reclaim 50% more time at night.
+relic.long_shadow.name,긴 그림자,Long Shadow
+relic.long_shadow.text,저녁에는 걷는 데 절반의 시간만 든다.,Walking costs half as much in the evening.
+relic.morning_frost.name,아침 서리,Morning Frost
+relic.morning_frost.text,아침에 시작한 전투는 적 전체가 물러짐 2를 지닌 채 시작한다.,A fight begun in the morning starts with 2 Softened on every enemy.
+relic.held_stone.name,쥐고 있던 돌,Held Stone
+relic.held_stone.text,전투 첫 턴에 8의 방어도를 얻는다.,Gain 8 block on the first turn of a fight.
+relic.first_light.name,첫 빛,First Light
+relic.first_light.text,전투 첫 턴에 1시간을 더 쓸 수 있다.,Gain 1h of turn budget on the first turn of a fight.
+relic.quick_hand.name,빠른 손,Quick Hand
+relic.quick_hand.text,전투 첫 턴에 카드를 2장 더 뽑는다.,Draw 2 more cards on the first turn of a fight.
+relic.short_rope.name,짧은 끈,Short Rope
+relic.short_rope.text,세 턴 안에 쓰러뜨린 것에게서 시간을 25% 더 거둔다.,Reclaim 25% more from anything felled within three turns.
+relic.slow_kettle.name,더딘 주전자,Slow Kettle
+relic.slow_kettle.text,전투 네 번째 턴부터 매 턴 1시간을 더 쓸 수 있다.,Gain 1h of turn budget from the fourth turn of a fight onward.
+relic.practiced_hand.name,익숙해진 손,Practiced Hand
+relic.practiced_hand.text,전투 다섯 번째 턴부터 카드값이 1시간 줄어든다.,Cards cost 1h less from the fifth turn of a fight onward.
+relic.counted_days.name,헤아린 날,Counted Days
+relic.counted_days.text,위협 단계마다 매 턴 10분을 더 쓸 수 있다.,Gain 10 minutes of turn budget for each step of Threat.
+relic.last_ember.name,마지막 불씨,Last Ember
+relic.last_ember.text,체력이 절반 아래인 턴에는 1시간을 더 쓸 수 있다.,Gain 1h of turn budget on any turn begun below half health.
+relic.full_pockets.name,가득 찬 주머니,Full Pockets
+relic.full_pockets.text,회수한 시간이 24시간을 넘으면 걷는 데 절반의 시간만 든다.,Walking costs half as much while more than 24h stands reclaimed.
+relic.borrowed_coat.name,빌린 외투,Borrowed Coat
+relic.borrowed_coat.text,무언가를 쓰러뜨릴 때마다 체력 3을 회복한다.,Heal 3 whenever something falls.
+relic.thin_ice.name,살얼음,Thin Ice
+relic.thin_ice.text,매 턴 2시간을 더 쓸 수 있다. 대신 회수하는 시간이 절반이 된다.,Gain 2h of turn budget each turn. Reclaim half as much time.
+relic.equality.name,평등,Equality
+relic.equality.text,아침과 낮과 저녁과 밤이 저마다 여섯 시간이 된다.,Morning and day and evening and night become six hours each.
+ui.shop.relic,{name}  ―  {price},{name}  ―  {price}
+ui.reward.relic_gained,엘리트가 쥐고 있던 것: {name} · {text},Taken off the elite: {name} · {text}
+ui.act.relic_gained,보스가 쥐고 있던 것: {name} · {text},Taken off the boss: {name} · {text}
+ui.hud.relics,유물,Relics
+ui.menu.relics,유물,Relics
+ui.menu.close_relics,유물 닫기,Close relics
+ui.menu.relic_count,유물 {n}개,{n} relics
+ui.keys.relics,유물,Relics
+ui.relics.title,지니고 있는 것 {n},What is carried  ·  {n}
+ui.relics.empty,아직 아무것도 지니고 있지 않다. 엘리트와 보스가 쥐고 있고 상점이 판다.,Nothing is carried yet. Elites and bosses hold them; shops sell them.
+ui.relics.common,흔한 것,common
+ui.relics.uncommon,드문 것,uncommon
+ui.relics.rare,귀한 것,rare
+ui.relics.boss,보스가 쥐고 있던 것,boss
+enemy.same_evening.name,같은 저녁,The Same Evening
+enemy.swallowed_word.name,삼킨 말,The Swallowed Word
+enemy.doubled_morning.name,겹친 아침,The Doubled Morning
+enemy.cooling_thing.name,식어가는 것,The Cooling Thing
+enemy.squabble.name,실랑이,Squabble
+enemy.doorsill.name,문턱,The Doorsill
+status.strength,힘,Strength
+status.strength.help,이 존재의 모든 타격에 그만큼 더해진다. 줄어들지 않는다.,Adds that much to every blow it strikes. It does not wear off.
+askew.twilight.tell,아침과 저녁마다 성장한다,Grows each morning and each evening
+keyword.quickening,가속,Quickening
+keyword.quickening.help,이것과 싸우는 턴은 런의 시계를 더 많이 쓴다.,A turn spent fighting this bills the run more time.
+askew.quickening.tell,살아 있는 한 시간이 가속된다. 매 턴 1시간씩 더 흐른다.,While it stands time quickens. Every turn runs an hour longer.
+enemy.murphys_law.name,머피의 법칙,Murphy's Law
+keyword.spill,흘림,Spill
+keyword.spill.help,막지 못한 타격마다 회수한 시간을 흘린다. 흘린 시간은 세계로 돌아간다.,Every blow that gets through spills recovered time back into the world.
+askew.spill.tell,막지 못한 타격마다 회수한 시간을 1시간씩 흘린다.,Every blow that gets through spills an hour of recovered time.
+enemy.throng.name,북새통,The Throng

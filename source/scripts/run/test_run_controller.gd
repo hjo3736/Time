@@ -103,7 +103,7 @@ func _init() -> void:
 	check("standing on the start", rc.map.current, Vector2i.ZERO)
 	check("the boss door follows the dial",
 		rc.map.is_known(rc.map.boss_coord), _b.boss_marked_on_map)
-	check("and priced", rc.minutes_to_boss() > 0, true)
+	check("and the run quotes no distance to it", rc.status().has("to_boss"), false)
 
 	print("\n-- walking into a fight starts one --")
 	var f := controller(2)
@@ -180,6 +180,21 @@ func _init() -> void:
 	check("by the clock, not by damage", doomed.outcome, RunController.Outcome.RAN_OUT)
 	check("hp was never the problem", doomed.run.hp, _b.starting_max_hp)
 
+	print("\n-- an elite pays a relic on top of its card --")
+	var elite := controller(11)
+	if walk_to_kind(elite, Room.Kind.ELITE):
+		check("no relics before it", elite.run.relics.size(), 0)
+		_auto_fight(elite)
+		check("one after", elite.run.relics.size(), 1)
+		check("named for the screen", elite.last_relic, elite.run.relics[0])
+		check("never a boss relic",
+			_relics.get_relic(elite.last_relic).rarity == Relic.Rarity.BOSS, false)
+		check("and the card reward still came", elite.phase, RunController.Phase.REWARD)
+		elite.skip_reward()
+		check("which clears when the next room resolves", elite.run.relics.size(), 1)
+	else:
+		check("an elite was reachable", false, true)
+
 	print("\n-- opening the boss door finishes the act --")
 	var boss := controller(6)
 	boss.map.current = boss.map.neighbours(boss.map.boss_coord)[0]
@@ -188,6 +203,10 @@ func _init() -> void:
 		_auto_fight(boss)
 	check("act cleared", boss.phase, RunController.Phase.ACT_CLEARED)
 	check("no reward screen for a boss", boss.run.has_pending_reward(), false)
+	check("the boss handed over a relic", boss.run.relics.size(), 1)
+	check("and the screen can name it", boss.last_relic, boss.run.relics[0])
+	check("a boss relic, from the shelf nothing else draws from",
+		_relics.get_relic(boss.last_relic).rarity, Relic.Rarity.BOSS)
 	check("moving on", boss.advance_act(), true)
 	check("act two", boss.run.act, 2)
 	check("on a new floor", boss.map.current, Vector2i.ZERO)

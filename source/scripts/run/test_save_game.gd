@@ -76,6 +76,21 @@ func _init() -> void:
 	check("and the walk to the boss still reads the same",
 		back.map.minutes_to_boss(), walked.map.minutes_to_boss())
 
+	print("\n-- relics come back working, not merely listed --")
+	var carried := RunController.new(_balance, _cards, _enemies, _encounters, _relics, 5)
+	carried.run.add_relic(&"equality", _relics)
+	carried.run.add_relic(&"broken_mainspring", _relics)
+	var reloaded := RunController.from_dict(
+		carried.to_dict(), _balance, _cards, _enemies, _encounters, _relics)
+	check("ids carried", Array(reloaded.run.relics), Array(carried.run.relics))
+	# The save holds ids only, so a loader that forgets to reattach leaves a run
+	# that still lists its relics and no longer has any of them.
+	check("definitions reattached", reloaded.run.relic_defs().size(), 2)
+	check("and 깨진 태엽 is still paying out", reloaded.run.relic_turn_budget(_balance.turn_cost),
+		carried.run.relic_turn_budget(_balance.turn_cost))
+	check("and 평등 still holds the sky open",
+		Array(reloaded.run.clock.sky_bounds), [360, 720, 1080, 1440])
+
 	print("\n-- the fog is saved, not re-derived from the start room --")
 	var visited_before := 0
 	for coord in walked.map.rooms:

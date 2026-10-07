@@ -45,7 +45,7 @@ See [setting.md](setting.md) for why it is also true in fiction.
 
 ### Remaining is a single budget for the entire run
 
-**It does not reset between acts.** 336h covers all three, start to finish.
+**It does not reset between acts.** 720h covers all three, start to finish.
 
 The fiction forbids a reset outright — the hourglass is empty, and the god cannot
 top the Warden up. But the mechanical reason is the stronger one: a per-act budget
@@ -172,10 +172,10 @@ They meet at exactly one place — the fire.
 
 ### Damage is a tax, not a cause of death
 
-Taking a hit does not kill the player. It makes them need a fire, and a fire
-costs 8 hours.
+Taking a hit does not kill the player. It makes them need a fire, and resting at
+one costs 4 hours.
 
-> damage taken → HP low → need a fire → 8h spent → Remaining drops
+> damage taken → HP low → need a fire → 4h spent → Remaining drops
 
 **Damage becomes time, one step removed.** This is the load-bearing decision of
 the whole resource layer, and the reason is blunt: *whichever resource kills the
@@ -190,40 +190,45 @@ of the last time left in a broken hourglass. Damage is that vessel failing, and
 resting is time spent holding it together — a thing made of time spending itself
 to stay in one piece.
 
-### The fire: one action for eight hours
+### The fire: one action, priced by which one
 
-Pay 8h and take **one** of:
+Take **one** of:
 
-1. **Rest** — heal roughly 30% of max HP
-2. **Upgrade** — improve one card
-3. **Convert** — Restored into Remaining at 2:1, capped
+| | Costs | Does |
+|---|---|---|
+| **Rest** | 4h | Heal 20% of max HP |
+| **Upgrade** | 2h | Improve one card |
+| **Convert** | free | Restored into Remaining at 2:1, capped |
 
-Slay the Spire's rest-or-smith with conversion added as a third arm. This gives
-conversion a real opportunity cost beyond the exchange rate, and it produces this
-design's signature squeeze: **when HP is low and time is short, the player has to
-choose which way to die.**
+Slay the Spire's rest-or-smith with conversion added as a third arm.
 
-*(Tuning risk: this may prove too tight. If so, the first thing to loosen is
-allowing conversion alongside one other action, not adding a fourth option.)*
+**The opportunity cost is the single action, not a shared price.** That is what
+produces this design's signature squeeze — when HP is low and time is short, the
+player has to choose which way to die — and it survives conversion being free in
+hours, because taking the conversion still costs the heal.
+
+*(An earlier version charged a flat 8h whichever arm was taken. The split is a
+tuning decision and the reasoning behind these three particular numbers is not
+written down yet; if it matters later, write it here.)*
 
 ### A worked segment
 
-Opening: Remaining 336h · HP 70/70 · Restored 0.
+Opening: Remaining 720h · HP 80/80 · Restored 0.
 
 | Step | Remaining | HP | Restored |
 |---|---|---|---|
-| start | 336h | 70/70 | 0 |
-| travel 2h → normal fight, 3 turns (9h), take 12 | 325h | 58/70 | 6h |
-| travel 4h → **elite**, 6 turns (18h), take 26 | 303h | 32/70 | 20h |
+| start | 720h | 80/80 | 0 |
+| walk 2h → normal fight, 3 turns (9h), take 12 | 709h | 68/80 | 6h |
+| walk 3h → **elite**, 6 turns (18h), take 26 | 688h | 42/80 | 20h |
 
-Decision point at 32/70. A fire sits 3h away; a shop sits 1h away.
+Decision point at 42/80. A fire sits 3h of corridor away; a shop sits 1h away.
 
-- **Fire:** 3h travel + 8h = 11h → Remaining 292h, HP 53/70. The 20h of Restored
-  stays unspent, because the fire only buys one thing.
-- **Shop:** 1h travel → Remaining 302h, and 20h of Restored buys cards. HP stays
-  at 32, and the next bad fight ends the run.
+- **Fire:** 3h walk + 4h rest = 7h → Remaining 681h, HP 58/80. The 20h of
+  Restored stays unspent, because the fire only buys one thing.
+- **Shop:** 1h walk + 1h inside = 2h → Remaining 686h, and 20h of Restored buys
+  cards. HP stays at 42, and the next bad fight ends the run.
 
-Ten hours and a card reward against a third of the health bar. The answer differs
+Five hours and a card reward against sixteen points of health. The answer differs
 every time — it depends on the deck, the Threat step, and what the map shows
 ahead. That is the loop.
 
@@ -247,8 +252,9 @@ The elegant-sounding version breaks three ways:
   this route" (strategic) become one decision on one number, and the game loses a
   dimension it currently has for free.
 - **The scale does not exist.** A fight deals maybe 30–40 total damage. As
-  minutes that is noise against a 336h budget; as hours it makes a run eight
-  fights long. There is no middle value that works.
+  minutes that is noise against a 720h budget; as hours it swallows the whole
+  budget in about twenty fights, leaving nothing for turns or walking. There is
+  no middle value that works.
 - **Defense becomes strictly correct.** If block prevents *time* loss, and time is
   the master resource, blocking dominates every other use of a turn. Attacking
   stops being justifiable.
@@ -259,7 +265,7 @@ The elegant-sounding version breaks three ways:
 |--------|------|-------|
 | Battle turn | 3h (full allotment) | Flat, regardless of spend |
 | Room transition | 1-3h, per corridor | Same both ways; backtracking included — see below |
-| Fire (rest) | 8h | Buys **one** of: heal / upgrade / convert |
+| Fire | 4h rest · 2h upgrade · free convert | Buys **one** of the three |
 | Shop | 1h | Spends Restored; there is no gold |
 | Event | Variable | The event states its cost before you commit |
 
@@ -305,16 +311,28 @@ question becomes live on every floor.
 **The floors must contain far more rooms than the budget can pay for.** This is
 the load-bearing ratio, and everything else about the map is secondary to it.
 
-Run the arithmetic. A combat room costs ~10.5h of turns. Against a 336h budget,
-minus six fires at 8h and roughly 60h of walking, that is **about 23 combat rooms
-affordable** across an entire run — a little more once conversion is counted.
-Note how much of that is travel now that rooms are priced individually: walking
-is no longer a rounding error, it is roughly **a quarter to a third** of the run
-(measured, 100 runs per greed level). Routing well buys rooms.
+Run the arithmetic. A fight costs about 13h of turns (4.3 turns, measured over
+150 runs per greed level). Against a 720h budget, minus nine fires at 4h and the
+walking — no longer a rounding error now that corridors are priced individually,
+but roughly **a seventh to a fifth** of the run — that is **something like 41
+fights affordable** across an entire run.
 
-So if the three acts hold about 23 combat rooms, the player simply takes all of
-them and there is no choice to make. **Stock the acts with 55–60**, and every
-floor becomes *which of these do I buy*.
+The acts hold 57 content rooms between them, of which 37 to 49 are fights. So the
+budget and the content are within a few fights of each other. That is **too close
+to make room selection a decision**: a player can very nearly take everything, so
+*which of these do I buy* has no teeth, and what is left is not a choice about
+farming but about routing.
+
+The shape to aim for is a floor holding clearly more than the budget can pay for.
+The room counts were stocked for that against a much smaller budget; the budget
+has since grown to meet them.
+
+*(An earlier version of this paragraph put the affordable count at 68 and called
+the ratio inverted. That was computed on 2.3 turns a fight, which was itself an
+artifact: acts two and three had no encounters, so every combat room on those
+floors resolved instantly and dragged the measured average down. Both the fight
+length and the room arithmetic here are the first ones taken with all three acts
+fielding enemies.)*
 
 *(An earlier draft claimed empty rooms were what stopped full-clearing from being
 correct. That was wrong: Remaining already caps how much can be cleared, all on
@@ -358,17 +376,23 @@ Threat stepping upward is the main feedback channel and it helps, but it only
 communicates *the world is getting worse* — never *how much you still have to
 pay for*.
 
-**Show Threat as progress against the whole run: `Threat 4 / ~14`.** A player who
-knows a run is about fourteen steps long can read that as a budget gauge. It
-turns an invisible trap into a dashboard, and it costs one label.
+**Show Threat as progress against the whole run: `Threat 4 / ~30`.** A player who
+knows a run is about thirty steps long can read that as a budget gauge. It turns
+an invisible trap into a dashboard, and it costs one label. `Balance.validate()`
+keeps the denominator honest — `expected_threat_steps` has to equal the number of
+steps the budget actually holds, because the escalation curve reads it too and a
+label that drifts from the curve is worse than no label.
 
 **Backtracking is not a feature here, it is just movement.** An open map normally
 wrecks roguelike pacing because players grind it; this one cannot be grinded, and
 the guarantee is free: cleared rooms do not repopulate and Elapsed only ever
 rises, so loitering buys nothing and makes the world worse.
 
-**Keep a `cost_minutes` field on each connection** even while every one is 30.
-Same reasoning as `class_id`: free now, a refactor later.
+**Every connection carries its own cost**, and they are real now: `Room.exits`
+maps a direction to a length in minutes, written symmetrically at generation so a
+corridor is the same walk in both directions. Kept as a field back when every one
+of them was identical, on the same reasoning as `class_id` — free then, a
+refactor later.
 
 ### Fog of war, and what "perfect information" actually requires
 
@@ -382,20 +406,41 @@ can actually step into right now displays what it will cost them. What fog
 removes is long-range planning, which is a different thing and is allowed to be
 scarce.
 
-**One exception: the boss room is marked from the moment the floor begins.**
+**No exception. The boss door is not shown, and neither is the distance to it.**
 
-The run's central decision is *go now, or clear more*, and that decision cannot be
-made blind. Isaac eventually hands the player a Compass for exactly this reason;
-here it is not an item but the default, because knowing where the boss sits is an
-input to the core loop rather than a convenience.
+`boss_marked_on_map` is off, the room panel quotes no distance, and the map hint
+carries nothing but whether walking is allowed right now. `MapState` can still
+answer how far the door is — `steps_to_boss()`, `minutes_to_boss()`,
+`boss_walk_is_guess()` — but those are for the tests and the generator, and the
+comment above them says so. Isaac hands the player a Compass eventually; this
+floor has no Compass.
 
-*(A looser variant: reveal the floor's **shape** — blank room outlines — while
-still hiding types. Floor-level budgeting returns completely, at the cost of some
-of the Isaac feel. Try boss-marking alone first.)*
+**This is a real cost and it is worth writing down rather than discovering
+later.** The argument for marking the boss was that the run's central decision is
+*go now, or clear more*, and that decision cannot be made blind. It is now made
+blind. What the player has left to budget with is Remaining, the Threat step, and
+what the frontier shows — enough to know how much run is left, not enough to know
+what leaving costs. *Go now* stops being a choice that can be taken deliberately
+and becomes something that happens when the door turns up.
+
+The counterweight is that finding the door is the exploration, which is the Isaac
+shape this map was chosen for in the first place, and that a floor whose exit is
+signposted is a floor the player reads once and then solves. Whether that trade
+is right is a playtest question, not an argument question.
+
+**It is one line to reverse in each direction.** `boss_marked_on_map = true` puts
+the door back on the map; the distance readout is a `tr()` call and a label in
+[`room_view.gd`](../source/scripts/ui/room_view.gd) and
+[`map_view.gd`](../source/scripts/ui/map_view.gd). If runs start ending because
+the player could not see the exit coming, this is the first place to look.
+
+*(A looser variant, if the full blackout proves too much: reveal the floor's
+**shape** — blank room outlines — while still hiding types. Floor-level budgeting
+returns without naming the door.)*
 
 Fog has a price of its own, which is good: a dead end is only discovered by
-walking into it, at an hour each way. Tune the generator carefully — a few
-dead ends are tension, many are irritation.
+walking into it, at a corridor's length each way. Tune the generator carefully —
+a few dead ends are tension, many are irritation.
 
 ## Escalation
 
@@ -405,10 +450,18 @@ Elapsed time drives a **Threat Level**. Threat must be:
 - **Telegraphed.** The HUD always shows current Threat and hours until the next
   step. Committing to a fight must never silently push you over a line — show
   the projected clock on every map choice before it is confirmed.
+- **Back-loaded, not linear.** The multiplier is
+  `1 + total * (level / steps) ^ curve` — at `curve 2.0` and `total 1.0` over
+  thirty steps, enemies are 25% larger at the halfway mark and twice their
+  authored size at the end. A linear ramp spends its whole budget of pressure in
+  the first act, where the player has the fewest answers; a curve leaves act one
+  close to what the enemies were actually authored as and puts the escalation
+  where the deck exists to meet it.
 - **Qualitative, not just numeric.** Pure stat bloat is boring and reads as
-  punishment. Every threshold raises HP/damage modestly; every *third* threshold
-  unlocks a new enemy ability or intent. The world getting worse should be
-  something you can see in enemy behavior, not just in a health bar.
+  punishment. The scaling above is the floor, not the whole of it; the world
+  getting worse should be something you can see in enemy behavior. The hooks for
+  that are already here — enemies carry per-daytime intent lists — but nothing is
+  yet keyed to Threat itself.
 
 ### The farm-vs-rush tension
 
@@ -540,21 +593,28 @@ with, not because they are right.
 | Quantity | Starting value |
 |---|---|
 | Turn budget | 3h |
-| Starting Remaining | ~14 days (336h) |
-| Max HP | ~70 |
-| Fire heal | ~30% of max HP |
+| Starting Remaining | 30 days (720h) |
+| Max HP | 80 |
+| Fire heal | 20% of max HP |
 | Battle turn tick | 3h |
-| Average fight | 3–4 turns → 9–12h spent |
+| Average fight | 2.3 turns → ~7h spent (measured) |
 | Restored per normal fight | ~6h |
 | Restored per act boss | large — the run's pulse; tune once acts exist |
-| Total rooms per act | ~20 |
-| Fires per act | 3, healing 40% |
+| Content rooms per act | 14 / 19 / 24, split between fights and events |
+| Fights per act | 10-12 / 12-16 / 15-21, rolled inside that split |
+| Events per act | at least 2 / 3 / 3 |
+| Elites per act | 2 / 2 / 3, placed 10h from the start and 5h apart |
+| Fires per act | 2 / 3 / 4 |
+| Shops per act | 1 / 2 / 2 |
+| Empty rooms per act | 0 — corridors carry the dead space instead |
+| Total rooms per act | 21 / 28 / 35, start and boss door included |
+| Fire prices | rest 4h · upgrade 2h · convert free |
 | Conversion rate | 2 Restored → 1 Remaining |
-| Conversion cap | 36h of Restored per fire (yields 18h; net +10h after the 8h fire) |
-| Combat rooms per act | 9 available, ~6 affordable |
+| Conversion cap | 36h of Restored per fire, yielding 18h |
 | Enemy scale | both x1.0 — enemies fight as authored |
-| Room transition | 1-3h per corridor, same both ways, guessed at 1.5h until walked (~26-31% of a run) |
-| Threat step | every 48h **elapsed** (~14 steps per run) |
+| Room transition | 1-3h per corridor, same both ways, guessed at 1.5h until walked (~26-36% of a run) |
+| Threat step | every 24h **elapsed** (30 steps per run) |
+| Threat curve | `1 + 1.0 * (level/30) ^ 2.0` — x1.25 at the halfway mark, x2 at the end |
 
 The number to watch in the first playable build is **how much of a run's Restored
 a competent player has to convert just to survive.** If it is near zero, the fire
@@ -586,7 +646,12 @@ It was an artifact of the measuring instrument — see below — and it was also
 bad idea on its own terms, because a global health multiplier turns every number
 in `tool_write_enemies.gd` into a lie. `Balance.validate()` now rejects any
 `enemy_hp_scale` other than 1.0 so it cannot be reached for again. Enemy health
-is authored on the enemies; the tuned axis is `enemy_damage_scale`, at 0.8.
+is authored on the enemies.
+
+Both global scales now sit at 1.0 — `enemy_damage_scale` was 0.8 for a while and
+has been returned to full. Enemies fight exactly as written, and the dials that
+moved instead are the numbers on the enemies themselves and the Threat curve
+above.
 
 ### The instrument was reading itself
 
@@ -605,6 +670,11 @@ the clock — which no amount of health scaling ever did.
 is about.** That is the transferable part.
 
 ### The health pool is what lets the clock matter
+
+**Measured under the superseded profile: 336h, 8h fires, 3 fires an act, flat
+Threat.** The sweep below is kept because its shape is the finding and the shape
+is still the finding; the absolute numbers are not comparable to anything the
+game currently does.
 
 Measured at full enemy damage and full enemy health — the enemies are never
 softened. Only the player's side moves. Re-measured after `SimPolicy` was fixed;
@@ -626,5 +696,52 @@ health bar and the clock is scenery. It does not start binding until the pool is
 large enough that fights stop being what ends runs. Softening the enemies is the
 other road to the same place and it costs the fights their teeth.
 
-Nothing here is applied. The shipped tuning is the top row — a hard game that
-ends on the health bar.
+Nothing here was applied at the time. The shipped tuning was the top row — a hard
+game that ends on the health bar.
+
+### Where it stands now
+
+The profile has moved a long way since: 720h instead of 336h, 80hp instead of 70,
+nine fires instead of six and cheaper, corridors priced individually, Threat on a
+back-loaded curve. The reading did not move with it.
+
+| greed | finished | fell (hp) | ran out (clock) | ended in act | fights | turns/fight |
+|---|---|---|---|---|---|---|
+| 0.00 | **0** | 150 | 0 | 1.5 | 10.0 | 4.70 |
+| 0.35 | **0** | 150 | 0 | 1.5 | 10.2 | 4.50 |
+| 0.70 | **0** | 150 | 0 | 1.4 | 11.4 | 4.41 |
+| 1.00 | **0** | 150 | 0 | 1.3 | 12.4 | 4.30 |
+
+150 runs per greed level, and the first sweep in which all three acts hold
+content — acts two and three borrow act one's encounters and events (see
+`BORROW_FROM_ACT` in `EncounterTable` and `EventTable`), so the later floors are
+act one's Askew grown by the Threat curve rather than anything authored for them.
+
+Letting events borrow as well as encounters moved nothing: act reached 1.4 either
+way, and completion stayed at zero. That is worth recording as a result rather
+than a non-event — runs are ending too early to reach the content the borrow
+adds, which is the same thing every other number here is saying.
+
+**Nothing finishes.** All 600 runs end on the health bar, none on the clock, and
+a run reaches 0.6 of the 9 fires it holds. Restored converted: 18%, against a
+target of about half.
+
+The previous sweep read 32-45% completion, and that number was not real. With no
+encounters on the later floors, every combat room there cleared instantly and
+handed out a card, so surviving act one amounted to winning. Two measurements
+were inflated by the same hole:
+
+| | with the hole | with acts filled |
+|---|---|---|
+| turns a fight | 2.3 | **4.3** |
+| hp lost a fight | 4 | **7** |
+| fights a run | 18-20 | 10-12 |
+
+So a fight is nearly twice as long and nearly twice as costly as the numbers in
+this document said a week ago, and the shortfall was never in the tuning — it was
+that a third of the run was not being played.
+
+What has *not* changed is the answer to this document's own question. Losses are
+still 100% health, 0% clock. Filling the acts made the game much harder without
+moving a single loss onto the clock, which says the two failure states are not
+competing yet: runs end long before the budget is a constraint on anything.

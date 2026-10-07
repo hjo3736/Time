@@ -7,3 +7,4 @@ script = ExtResource("1_ln5so")
 id = &"stopped_watch"
 name_key = &"relic.stopped_watch.name"
 text_key = &"relic.stopped_watch.text"
+rarity = 2

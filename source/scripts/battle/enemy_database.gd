@@ -62,6 +62,23 @@ func of_tier(tier: EnemyData.Tier) -> Array[EnemyData]:
 	return all().filter(func(e: EnemyData) -> bool: return e.tier == tier)
 
 
+## Pass act -1 for every act at that tier; the compendium wants all of them and
+## the generator wants one act's worth.
+func of_act(act: int, tier: int = -1) -> Array[EnemyData]:
+	return all().filter(func(e: EnemyData) -> bool:
+		return e.act == act and (tier < 0 or e.tier == tier))
+
+
+func acts_present() -> Array[int]:
+	var seen := {}
+	for e in all():
+		seen[e.act] = true
+	var out: Array[int] = []
+	out.assign(seen.keys())
+	out.sort()
+	return out
+
+
 func validate() -> PackedStringArray:
 	var problems := _load_problems.duplicate()
 	if _by_id.is_empty():

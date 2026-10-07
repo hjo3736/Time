@@ -147,12 +147,7 @@ func show_map(rc: RunController) -> void:
 	_canvas.set_meta("current", rc.map.current)
 	_canvas.scale = Vector2(_zoom, _zoom)
 
-	_hint.text = tr("ui.map.boss_hint").format({
-		"n": rc.map.steps_to_boss(),
-		"span": RunClock.format_span(rc.map.minutes_to_boss()),
-		"about": tr("ui.map.about") if rc.map.boss_walk_is_guess() else "",
-		"note": "" if walkable else tr("ui.map.no_move_in_battle"),
-	})
+	_hint.text = "" if walkable else tr("ui.map.no_move_in_battle")
 
 
 func centre_on_current() -> void:

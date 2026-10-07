@@ -7,3 +7,4 @@ script = ExtResource("1_4xypy")
 id = &"gleaning"
 name_key = &"relic.gleaning.name"
 text_key = &"relic.gleaning.text"
+rarity = 1

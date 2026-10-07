@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicLastEmber" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_last_ember.gd" id="1_aumt7"]
+
+[resource]
+script = ExtResource("1_aumt7")
+id = &"last_ember"
+name_key = &"relic.last_ember.name"
+text_key = &"relic.last_ember.text"
+rarity = 1

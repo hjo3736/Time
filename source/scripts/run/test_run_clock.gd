@@ -94,6 +94,16 @@ func _init() -> void:
 	check("which yield one", odd.convert(odd.convertible_restored()), 60)
 	check("leaving the odd hour behind", odd.restored, 60)
 
+	print("\n-- spilling loses restored time, and never more than there is --")
+	var sp := RunClock.new(_b)
+	sp.restore(3 * 60)
+	check("an hour spilled", sp.spill(60), 60)
+	check("leaves two", sp.restored, 2 * 60)
+	check("asking for more than there is takes only what there is", sp.spill(5 * 60), 2 * 60)
+	check("and stops at nothing", sp.restored, 0)
+	check("an empty pool spills nothing", sp.spill(60), 0)
+	check("and Remaining is never touched by it", sp.remaining, _b.starting_remaining)
+
 	print("\n-- expiry fires once --")
 	var e := RunClock.new(_b, 120)
 	var expired := []

@@ -70,9 +70,61 @@ the stretch where it pooled worst. That is a production boundary, not a fact abo
 the setting — the player travels a route through one afflicted region, never a
 tour of everything that exists.
 
-*(Open: what the three acts are. The earlier "three depths of a valley" idea was
-an invention that does not survive the world being the ordinary world; act
-structure needs a new answer.)*
+### The three acts are how far gone the Askew are
+
+**An act is not a place. It is how much of the moment is left.**
+
+The Askew are moments that broke under load. Some have been broken longer than
+others, and a run walks from the ones that can still be recognised toward the ones
+that cannot.
+
+| Act | The Askew there |
+|---|---|
+| **I** | You can tell what the moment was. A door. Footsteps. An evening. |
+| **II** | Worn. Something was there and it is no longer clear what. |
+| **III** | Nothing recognisable left. The mechanism, still going. |
+
+The towns and the roads are the same all three times. **What changes is what is
+standing in them.**
+
+**Deformed does not mean bigger.** This is the rule the structure rests on, and it
+is easy to break by accident. Threat already scales enemies — hp and damage, on a
+back-loaded curve, driven by Elapsed. If an act scaled them as well, the two would
+double-count, and the claim that the world gets worse because *the player took too
+long* would quietly stop being true: act III would be hard because of where it is
+rather than because of what was spent getting there. So:
+
+| | Measures | Lives in |
+|---|---|---|
+| **Threat** | how big | `threat_hp_multiplier` and the curve |
+| **The act** | how wrong | which Askew a floor is allowed to field |
+
+**An act III Askew is not an act I Askew with more hp. It is a more broken one.**
+
+**Deepen the five categories rather than adding new ones.** 되풀이, 역행, 정지,
+겹침 and 노화 are what keeps a combat system with one damage type from going flat,
+and a sixth would blunt that rather than sharpen it. A later act fields the same
+five, further gone — a loop worn out of shape, a stilled thing that no longer
+remembers to start again. The player's vocabulary keeps paying off, and the work
+stays a matter of filling existing encounter slots, which is what the
+meta-progression rules in the [README](../README.md) ask for anyway.
+
+**The naming follows.** Act one names point at ordinary things — 되풀이하는 문,
+겹친 발소리, 같은 저녁. By act three a name that still pointed at an object would
+be lying about what is standing there.
+
+**The order cannot be reversed.** Opening on the unrecognisable would spend the
+strangeness before the player has anything to measure it against, and it would run
+the Warden's arc backwards: it learns what these things were by meeting them while
+they are still legible.
+
+**Why the later acts hold worse-broken things is not explained.** The tone rules above
+already say the game declines to hand meaning over, and this is a good place to
+decline. If a cause is ever wanted it is an open question, not a hole.
+
+**(The idea that acts differ by how deformed the Askew are is not mine. The
+legible/worn/illegible ladder, the Threat split and the naming rule are —
+removable.)**
 
 ## The Warden
 
@@ -283,4 +335,9 @@ everything.
 - Final title.
 - Whether the epithet 겁/劫 survives contact with actual dialogue.
 - What the people of the world below know about any of this.
-- What the three acts are, now that the valley idea is gone.
+- Why the Askew further in are further gone. Deliberately unanswered for now; it
+  becomes a real question only if something in the game ever has to say.
+
+**Resolved:** what the three acts are — how far gone the Askew are, above. That
+also answers what the three acts should look like: the world does not change
+between them, the things standing in it do.

@@ -96,6 +96,35 @@ func _init() -> void:
 	check("got what was bought", run.deck[0]["id"], wanted.id)
 	check("prices stayed aligned", shop.prices.size(), shop.cards.size())
 
+	print("\n-- a shop stocks one relic, priced off the card ladder --")
+	var relics := RelicDatabase.new()
+	relics.load_from()
+	var stall := Shop.new(_cards, _b, rng(2), &"warden", [], false, relics, [])
+	check("one on the shelf", stall.relic != null, true)
+	check("never a boss relic", stall.relic.rarity == Relic.Rarity.BOSS, false)
+	check("priced at the multiple", stall.relic_price, stall.price_of_relic(stall.relic))
+	var buyer := rich_run(100 * 60)
+	var purse := buyer.clock.restored
+	var on_offer := stall.relic
+	check("bought", stall.buy_relic(buyer, relics), true)
+	check("paid", purse - buyer.clock.restored, stall.price_of_relic(on_offer))
+	check("owned", Array(buyer.relics), [on_offer.id])
+	check("and it works, not just listed", buyer.relic_defs().size(), 1)
+	check("the shelf is bare", stall.relic, null)
+	check("so it cannot be bought twice", stall.buy_relic(buyer, relics), false)
+
+	print("\n-- a shop offers nothing the run already carries --")
+	var everything := relics.all().map(func(r: Relic) -> StringName: return r.id)
+	var picked_over := Shop.new(_cards, _b, rng(2), &"warden", [], false, relics, everything)
+	check("no relic left to stock", picked_over.relic, null)
+
+	print("\n-- a relic too dear to afford cannot be taken --")
+	var thin := RunState.new(_b, 1)
+	var dear := Shop.new(_cards, _b, rng(2), &"warden", [], false, relics, [])
+	check("refused", dear.buy_relic(thin, relics), false)
+	check("still on the shelf", dear.relic != null, true)
+	check("and nothing owned", thin.relics.size(), 0)
+
 	print("\n-- shopping never touches the ending ledger --")
 	check("nothing kept", run.total_kept, 0)
 	check("Remaining untouched", run.clock.remaining, _b.starting_remaining)

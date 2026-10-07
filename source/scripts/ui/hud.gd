@@ -10,6 +10,7 @@ var _hp: Label
 var _restored: Label
 var _threat: Label
 var _act: Label
+var _relics: Label
 
 const SKY_KEYS := {
 	RunClock.Daytime.MORNING: "time.sky_morning",
@@ -62,6 +63,9 @@ func _ready() -> void:
 	_act = UiTheme.label("", 20)
 	row.add_child(_column(tr("ui.hud.act"), _act))
 
+	_relics = UiTheme.label("", 20, UiTheme.GOLD)
+	row.add_child(_column(tr("ui.hud.relics"), _relics))
+
 
 func _column(caption: String, value: Label) -> VBoxContainer:
 	var box := VBoxContainer.new()
@@ -75,8 +79,12 @@ func spent_so_far(rc: RunController) -> int:
 	var battle := rc.battle
 	if battle == null or battle.phase != BattleState.Phase.PLAYER_TURN:
 		return 0
-	var committed := battle.turn_budget_max - battle.turn_budget
-	return clampi(committed, 0, rc.run.clock.balance.turn_cost)
+	var tick := battle.turn_cost_now()
+	var committed := clampi(battle.turn_budget_max - battle.turn_budget, 0, tick)
+	# Anything the turn bills beyond the budget cannot be played out of, so it is
+	# shown as already gone rather than arriving as a jump when the turn ends.
+	var unavoidable := maxi(0, tick - battle.turn_budget_max)
+	return mini(tick, committed + unavoidable)
 
 
 func shown_target(rc: RunController) -> int:
@@ -97,6 +105,7 @@ func refresh(rc: RunController) -> void:
 	_restored.text = RunClock.format_span(run.clock.restored)
 	_threat.text = "%d / ~%d" % [run.clock.threat_level(), run.clock.balance.expected_threat_steps]
 	_act.text = str(run.act)
+	_relics.text = str(run.relics.size())
 
 
 func _flow_to(target: int) -> void:

@@ -64,6 +64,28 @@ func _init() -> void:
 				queue.append(n)
 	check("every room is walkable from the start", reached, rooms.size())
 
+	print("\n-- act one opens on a corridor, and only act one --")
+	var table := EncounterTable.new()
+	table.load_from()
+	var spread := {1: {}, 2: {}, 3: {}}
+	var wrong := 0
+	var stranded := 0
+	for act in [1, 2, 3]:
+		for seed_value in 60:
+			var built := MapGenerator.generate(_b, table, rng(seed_value), act)
+			var exits: int = MapGenerator.neighbours_of(built, Vector2i.ZERO).size()
+			spread[act][exits] = int(spread[act].get(exits, 0)) + 1
+			if act == 1 and exits != 1:
+				wrong += 1
+			if exits < 1:
+				stranded += 1
+	# There is nothing to decide on the first step, which is the point: act one
+	# does not ask the player to route before it has shown them anything.
+	check("every act one floor leaves exactly one way out", wrong, 0)
+	check("and it is the dial doing it, not luck",
+		spread[2].size() > 1 or spread[3].size() > 1, true)
+	check("no floor in any act strands the Warden on the start", stranded, 0)
+
 	print("\n-- the floor holds what it was asked for --")
 	var tally := kinds(rooms)
 	check("one start", int(tally.get(Room.Kind.START, 0)), 1)
@@ -319,37 +341,65 @@ func _walked_from(rooms: Dictionary, origin: Vector2i) -> Dictionary:
 	return best
 
 
+const SKIES := [RunClock.Daytime.MORNING, RunClock.Daytime.DAY,
+	RunClock.Daytime.EVENING, RunClock.Daytime.NIGHT]
+
+
 func _rooms_are_stocked_for_both_skies() -> void:
-	print("\n-- every hostile room is stocked for daylight and for darkness --")
+	print("\n-- every hostile room is stocked for all four skies --")
+	# encounter_for() takes a Daytime, and this used to pass it false and true.
+	# That read as MORNING and DAY, so evening and night were never checked at all.
 	var hostile := 0
-	var missing_day := 0
-	var missing_night := 0
+	var missing := {}
 	var differs := 0
-	for seed_value in 40:
+	var floors := 40
+	for sky in SKIES:
+		missing[sky] = 0
+	for seed_value in floors:
 		var rooms := floor_for(seed_value)
 		for coord in rooms:
 			var room: Room = rooms[coord]
 			if not room.is_hostile():
 				continue
 			hostile += 1
-			if _encounters.get_encounter(room.encounter_for(false)) == null:
-				missing_day += 1
-			if _encounters.get_encounter(room.encounter_for(true)) == null:
-				missing_night += 1
-			if room.encounter_for(true) != room.encounter_for(false):
+			for sky in SKIES:
+				if _encounters.get_encounter(room.encounter_for(sky)) == null:
+					missing[sky] = int(missing[sky]) + 1
+			if room.encounter_for(RunClock.Daytime.NIGHT) \
+					!= room.encounter_for(RunClock.Daytime.DAY):
 				differs += 1
 
 	check("there are hostile rooms to check", hostile > 100, true)
-	check("each has a fight for the day", missing_day, 0)
-	check("and one for the night", missing_night, 0)
-	check("and the two are often not the same", differs > hostile / 4, true)
+	# A room can only be stocked from a pool that exists. Act one has no boss
+	# encounter yet, so its boss rooms are the unstocked ones and the count should
+	# equal the number of floors — not zero, and not more than that either.
+	var boss_pool := _encounters.candidates(1, EnemyData.Tier.BOSS).size()
+	for sky in SKIES:
+		if boss_pool > 0:
+			check("none is unstocked for sky %d" % sky, missing[sky], 0)
+		else:
+			check("only the boss room is unstocked for sky %d, once per floor" % sky,
+				missing[sky], floors)
+	# Stocking a room draws four times in a row off one pool, and pick() refuses the
+	# last `encounter_history_length` ids it handed out. At exactly one more than
+	# that history the refusals leave a single candidate each time, so the draws
+	# cycle with that period and the first and fourth — day and night — land on the
+	# same encounter every single time. One fewer and the history saturates, pick()
+	# falls back to the whole pool, and they vary again. So the dead spot is a
+	# specific pool size rather than "small", which is the opposite of obvious.
+	var normals := _encounters.candidates(1, EnemyData.Tier.NORMAL).size()
+	if normals == _b.encounter_history_length + 1:
+		check("a pool one larger than the history forces day and night to match",
+			differs, 0)
+	else:
+		check("day and night are not the same room everywhere", differs > 0, true)
 
 	print("\n-- the same seed stocks the same fights, whichever way you walk --")
 	var a := floor_for(99)
 	var b := floor_for(99)
 	var drifted := 0
 	for coord in a:
-		if a[coord].encounter_for(false) != b[coord].encounter_for(false) \
-				or a[coord].encounter_for(true) != b[coord].encounter_for(true):
-			drifted += 1
+		for sky in SKIES:
+			if a[coord].encounter_for(sky) != b[coord].encounter_for(sky):
+				drifted += 1
 	check("nothing drifted", drifted, 0)

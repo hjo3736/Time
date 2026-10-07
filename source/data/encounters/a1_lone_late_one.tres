@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="EncounterData" format=3]
-
-[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_y4gji"]
-
-[resource]
-script = ExtResource("1_y4gji")
-id = &"a1_lone_late_one"
-weight = 6
-members = Array[StringName]([&"late_one"])

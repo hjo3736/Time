@@ -45,6 +45,7 @@ rooms_per_act_affordable = 6
 empty_rooms_per_act = Array[int]([0, 0, 0])
 fires_per_act = Array[int]([2, 3, 4])
 shops_per_act = Array[int]([1, 2, 2])
+start_exits_per_act = Array[int]([1, 4, 4])
 elite_min_travel_from_start = 600
 elite_min_travel_apart = 300
 elites_per_act = Array[int]([2, 2, 3])

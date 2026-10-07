@@ -140,6 +140,10 @@ func count_of(kind: Room.Kind) -> int:
 	return n
 
 
+# The three boss-walk queries below answer questions about a generated floor and
+# are read by tests and tools. None of them may reach the player: how far the boss
+# door is, is not information the run gives out. See the fog section of
+# docs/time-system.md.
 func steps_to_boss() -> int:
 	var seen := {current: 0}
 	var queue := [current]
