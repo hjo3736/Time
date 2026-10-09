@@ -7,11 +7,13 @@
 
 [sub_resource type="Resource" id="Resource_av4ld"]
 script = ExtResource("2_ipiab")
+base = 6
 per_card = 0
 per_day = 1
 
 [sub_resource type="Resource" id="Resource_23yme"]
 script = ExtResource("2_ipiab")
+base = 6
 per_card = 0
 per_day = 2
 
@@ -25,5 +27,6 @@ id = &"long_kept"
 name_key = &"card.long_kept.name"
 rarity = 3
 lanes = Array[int]([2])
+cost_hours = 2
 effects = Array[ExtResource("1_dik0u")]([SubResource("Resource_av4ld")])
 upgrade = SubResource("Resource_yplmd")

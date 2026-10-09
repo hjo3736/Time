@@ -266,13 +266,13 @@ func _chronomancy() -> void:
 		card(&"reclaim", K.ATTACK, R.RARE, 2, T.SINGLE_ENEMY,
 			[dmg(8), reclaimed(2)], [L.CHRONOMANCY], KW.EXHAUST),
 		[dmg(10), reclaimed(3)]))
-	# Weaker than 거두기 on the day the run leaves and level with it two days
-	# on. It is the one card that pays for being late, which is the same
+	# Two hours for one 거두기 on the day the run leaves, and level
+	# with two of them six days on. The one card that pays for being late, the same
 	# lateness Threat charges for.
 	write(upgrade(
-		card(&"long_kept", K.ATTACK, R.RARE, 1, T.SINGLE_ENEMY,
-			[grow_dmg(4, 0, 0, 1)], [L.CHRONOMANCY]),
-		[grow_dmg(4, 0, 0, 2)]))
+		card(&"long_kept", K.ATTACK, R.RARE, 2, T.SINGLE_ENEMY,
+			[grow_dmg(6, 0, 0, 1)], [L.CHRONOMANCY]),
+		[grow_dmg(6, 0, 0, 2)]))
 
 
 func _curses() -> void:
