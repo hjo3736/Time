@@ -69,6 +69,10 @@ func cards_played_this_turn() -> int:
 	return _battle.cards_played_this_turn
 
 
+func days_elapsed() -> int:
+	return _battle.run().clock.day_index()
+
+
 func hand_size() -> int:
 	return _battle.piles().hand.size()
 

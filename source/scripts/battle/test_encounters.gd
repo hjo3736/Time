@@ -71,7 +71,7 @@ func _init() -> void:
 	var mixed := EncounterData.new()
 	mixed.id = &"test_mixed"
 	mixed.act = 2
-	mixed.members.assign([_enemies.all()[0].id])
+	mixed.members.assign([_enemies.of_act(1)[0].id])
 	var complaint := mixed.validate(_enemies)
 	check("the linter catches a later act fielding act one's Askew",
 		complaint.size() > 0, true)

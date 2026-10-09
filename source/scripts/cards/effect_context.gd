@@ -62,6 +62,12 @@ func cards_played_this_turn() -> int:
 	return 0
 
 
+## Midnights the run has passed, not turns of the fight.
+func days_elapsed() -> int:
+	_unimplemented("days_elapsed")
+	return 0
+
+
 func hand_size() -> int:
 	_unimplemented("hand_size")
 	return 0

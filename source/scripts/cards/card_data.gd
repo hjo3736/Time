@@ -111,12 +111,18 @@ func rules_text_live(battle, source: int, target: int) -> String:
 		return tr(text_key)
 	var parts := PackedStringArray()
 	var named := false
+	# The preview has to be weighed the way the play will be, or a number shown on
+	# the card is not the number that lands.
+	if battle != null:
+		battle.cost_in_play = battle.cost_of(self)
 	for effect in effects:
 		var line: String = effect.describe_live(battle, source, target, targeting, not named)
 		if effect.faces_enemies():
 			named = true
 		if line != "":
 			parts.append(line)
+	if battle != null:
+		battle.cost_in_play = -1
 	return " ".join(parts)
 
 

@@ -363,6 +363,8 @@ func _intent_line(enemy: EnemyData) -> String:
 			EnemyIntent.Kind.STATUS:
 				parts.append(tr("ui.compendium.intent_status").format({
 					"name": tr("status.%s" % intent.status), "n": intent.stacks}))
+			EnemyIntent.Kind.GROW:
+				parts.append(tr("ui.compendium.intent_grow").format({"n": intent.stacks}))
 			EnemyIntent.Kind.WAIT:
 				parts.append(tr("ui.compendium.intent_wait"))
 	return "  →  ".join(parts) if not parts.is_empty() else "―"

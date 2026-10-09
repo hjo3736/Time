@@ -27,7 +27,7 @@ func rng(seed_value: int = 5) -> RandomNumberGenerator:
 ## Targets for the finished game, for when that day comes:
 ##   ~20 enemies, normals >= 6, elites >= 2, a boss per act, and every one of the
 ##   five Askew behaviours fielded by some boss.
-const HELD_NOW := {"all": 4, "normal": 2, "elite": 2, "boss": 0}
+const HELD_NOW := {"all": 7, "normal": 4, "elite": 3, "boss": 0}
 
 const ASKEW := ["BehaviorLooper", "BehaviorReversed", "BehaviorStilled",
 	"BehaviorOverlaid", "BehaviorWithered"]
@@ -62,13 +62,11 @@ func _init() -> void:
 	var by_act := {}
 	for e in _db.all():
 		by_act[e.act] = int(by_act.get(e.act, 0)) + 1
-	check("acts present", _db.acts_present(), [1])
+	check("acts present", _db.acts_present(), [1, 2])
 	check("and of_act agrees with the count",
 		_db.of_act(1).size(), int(by_act.get(1, 0)))
-	var stray := 0
-	for act in [2, 3]:
-		stray += _db.of_act(act).size()
-	check("nothing authored for acts two and three yet", stray, 0)
+	check("act two holds its first three", _db.of_act(2).size(), 3)
+	check("nothing authored for act three yet", _db.of_act(3).size(), 0)
 
 	print("\n-- nothing in act one dies to the starting deck's best opening turn --")
 	# An Askew that can be taken in one turn never gets to show what it does: 성장

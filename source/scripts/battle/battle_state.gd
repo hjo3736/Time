@@ -28,6 +28,10 @@ var turn_budget_max := 0
 
 var cards_played_this_turn := 0
 
+## Minutes paid for the card whose effects are resolving, or being previewed;
+## -1 when no card is. Damage that arrives while this is -1 came from no card.
+var cost_in_play := -1
+
 var _run: RunState
 var _balance: Balance
 var _cards: CardDatabase
@@ -57,6 +61,10 @@ func _init(run: RunState, cards: CardDatabase, enemies: Array[Combatant],
 	_piles = BattlePiles.new(run.deck.size(), rng)
 
 	follow_the_sky()
+	for handle in enemy_handles():
+		var who: Combatant = combatants[handle]
+		if who.behavior != null:
+			who.behavior.on_battle_start(self, handle)
 	for relic in run.relic_defs():
 		relic.on_battle_start(run, self)
 
@@ -132,6 +140,18 @@ func begin_turn() -> void:
 	turn_started.emit(turn)
 
 
+## What playing this card would bill the turn right now, in minutes — the printed
+## cost after everything that changes it. One function so that the play and the
+## preview of the play cannot disagree.
+func cost_of(card: CardData) -> int:
+	var cost := card.cost_minutes()
+	if card.is_variable_cost():
+		cost = turn_budget
+	for relic in _run.relic_defs():
+		cost = relic.modify_card_cost(_run, self, card, cost)
+	return maxi(0, cost)
+
+
 func play_card(hand_index: int, chosen_target: int = -1) -> bool:
 	if phase != Phase.PLAYER_TURN:
 		return false
@@ -141,12 +161,7 @@ func play_card(hand_index: int, chosen_target: int = -1) -> bool:
 	if card.has_keyword(CardData.Keyword.UNPLAYABLE):
 		return false
 
-	var cost := card.cost_minutes()
-	if card.is_variable_cost():
-		cost = turn_budget
-	for relic in _run.relic_defs():
-		cost = relic.modify_card_cost(_run, self, card, cost)
-	cost = maxi(0, cost)
+	var cost := cost_of(card)
 	if cost > turn_budget:
 		return false
 
@@ -168,8 +183,10 @@ func play_card(hand_index: int, chosen_target: int = -1) -> bool:
 	ctx.targets = targets
 	if card.is_variable_cost():
 		ctx.variable_amount = cost / Balance.MINUTES_PER_HOUR
+	cost_in_play = cost
 	for effect in card.effects:
 		effect.apply(ctx)
+	cost_in_play = -1
 
 	card_played.emit(deck_index)
 	_check_end()
@@ -237,6 +254,8 @@ func _perform(handle: int, intent: EnemyIntent) -> void:
 			enemy.block += amount
 		EnemyIntent.Kind.STATUS:
 			warden().add_status(intent.status, intent.stacks)
+		EnemyIntent.Kind.GROW:
+			enemy.add_status(StatusRules.STRENGTH, intent.stacks)
 		EnemyIntent.Kind.WAIT:
 			pass
 
@@ -251,6 +270,8 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 		incoming = target.behavior.absorbs(self, handle, offered)
 		target.behavior.on_absorbed(self, handle, offered - incoming)
 	var shielded := mini(incoming, target.block)
+	if incoming > shielded:
+		incoming -= _diverted(handle, from, incoming - shielded)
 	var dealt := target.take_damage(incoming)
 	if target.behavior != null and dealt > 0:
 		target.behavior.on_damaged(self, handle, dealt)
@@ -267,6 +288,15 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 		for relic in _run.relic_defs():
 			relic.on_enemy_defeated(_run, self, target)
 	return dealt
+
+
+func _diverted(handle: int, from: int, through: int) -> int:
+	if handle != WARDEN or from <= WARDEN or from >= combatants.size():
+		return 0
+	var attacker: Combatant = combatants[from]
+	if attacker.behavior == null:
+		return 0
+	return clampi(attacker.behavior.diverts_hit(self, from, through), 0, through)
 
 
 func _check_end() -> void:

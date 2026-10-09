@@ -391,3 +391,13 @@ keyword.spill,흘림,Spill
 keyword.spill.help,막지 못한 타격마다 회수한 시간을 흘린다. 흘린 시간은 세계로 돌아간다.,Every blow that gets through spills recovered time back into the world.
 askew.spill.tell,막지 못한 타격마다 회수한 시간을 1시간씩 흘린다.,Every blow that gets through spills an hour of recovered time.
 enemy.throng.name,북새통,The Throng
+askew.gnaw.tell,막지 못한 피해는 체력 대신 회수한 시간을 그만큼 좀먹는다. 피해 1마다 1시간. 쓰러뜨려도 돌아오지 않는다.,Damage that gets through eats recovered time instead of health: an hour a point. Felling it returns nothing.
+enemy.bottomless.name,밑 빠진 것,The Bottomless
+askew.daybound.tell,날이 바뀌면 처음 상태로 돌아간다.,Returns to how it began when the day turns.
+enemy.yesterday.name,어제였던 것,What Was Yesterday
+askew.heavy.tell,1시간 이하를 들인 카드의 피해는 절반만 받는다.,Takes half damage from a card that cost an hour or less.
+enemy.sunken.name,가라앉은 것,The Sunken
+ui.battle.intent_grow,▲ 성장 {n},▲ Growth {n}
+ui.compendium.intent_grow,성장 {n},Growth {n}
+effect.grows_per_day,날이 바뀔 때마다 +{n},+{n} each time the day turns
+card.long_kept.name,오래 묵힌 것,Long Kept

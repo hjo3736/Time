@@ -273,6 +273,130 @@ func _init() -> void:
 	check("the Warden hitting it spills nothing — only its blows do",
 		swing_run.clock.restored, 10 * 60)
 
+	print("\n-- 좀먹음: a blow that gets through is paid in what is carried, not in hp --")
+	var carried_run := strikes()
+	carried_run.clock.restore(10 * 60)
+	var carried_bt := battle(carried_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
+		BehaviorGnawing.new())])
+	var hp_before := carried_bt.warden().hp
+	carried_bt.end_turn()
+	check("an unblocked 5 ate five hours of what was carried",
+		carried_run.clock.restored, 5 * 60)
+	check("and left the Warden alone", carried_bt.warden().hp, hp_before)
+
+	var held_run := strikes()
+	held_run.clock.restore(10 * 60)
+	var held_bt := battle(held_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
+		BehaviorGnawing.new())])
+	held_bt.warden().block = 5
+	held_bt.end_turn()
+	check("a blow fully blocked eats nothing", held_run.clock.restored, 10 * 60)
+
+	var short_run := strikes()
+	short_run.clock.restore(10 * 60)
+	var short_bt := battle(short_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
+		BehaviorGnawing.new())])
+	short_bt.warden().block = 3
+	short_bt.end_turn()
+	check("block two short costs two hours, not five", short_run.clock.restored, 8 * 60)
+
+	var thin_run := strikes()
+	thin_run.clock.restore(2 * 60)
+	var thin_bt := battle(thin_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
+		BehaviorGnawing.new())])
+	var thin_hp := thin_bt.warden().hp
+	thin_bt.end_turn()
+	check("a thin pool is emptied", thin_run.clock.restored, 0)
+	check("and what it could not cover lands on hp", thin_bt.warden().hp, thin_hp - 3)
+
+	var broke_run := strikes()
+	var broke_bt := battle(broke_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
+		BehaviorGnawing.new())])
+	var broke_hp := broke_bt.warden().hp
+	broke_bt.end_turn()
+	check("with nothing carried the blow lands on hp as written",
+		broke_bt.warden().hp, broke_hp - 5)
+
+	var kept_run := strikes()
+	kept_run.clock.restore(10 * 60)
+	var gnawer := enemy(6, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorGnawing.new())
+	var kept_bt := battle(kept_run, [gnawer])
+	kept_bt.end_turn()
+	var after_bite := kept_run.clock.restored
+	hit(kept_bt, 1)
+	check("it fell", gnawer.is_alive(), false)
+	check("and felling it paid its own gauge and nothing of what it took",
+		kept_run.clock.restored, after_bite + gnawer.restored_value)
+
+	print("\n-- 날 넘김: midnight puts it back as it began, and nothing else does --")
+	var noon_run := strikes()
+	var noon_foe := enemy(99, [EnemyIntent.attack(1), EnemyIntent.wait()] as Array[EnemyIntent],
+		BehaviorDaybound.new())
+	var noon_bt := battle(noon_run, [noon_foe])
+	hit(noon_bt, 1)
+	noon_bt.end_turn()
+	check("a turn that stays inside the day leaves the wound", noon_foe.hp, 93)
+	check("and the pattern moves on", noon_foe.intent_index, 1)
+
+	var late_run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 21))
+	for i in 10:
+		late_run.add_card(&"take")
+	var late_foe := enemy(99, [EnemyIntent.attack(1), EnemyIntent.wait()] as Array[EnemyIntent],
+		BehaviorDaybound.new())
+	var late_bt := battle(late_run, [late_foe])
+	hit(late_bt, 1)
+	late_foe.add_status(StatusRules.SOFTENED, 3)
+	check("it was wounded before midnight", late_foe.hp, 93)
+	late_bt.end_turn()
+	check("the turn crossed midnight", late_run.clock.day_index(), 1)
+	check("and it is whole again", late_foe.hp, 99)
+	check("with nothing left on it", late_foe.status(StatusRules.SOFTENED), 0)
+	check("but its pattern carries on from where it was", late_foe.intent_index, 1)
+	hit(late_bt, 1)
+	late_bt.end_turn()
+	check("the day after, a wound stays a wound", late_foe.hp, 93)
+	var woken := Combatant.from_dict(late_foe.to_dict())
+	check("and a resumed one remembers which day it is on",
+		(woken.behavior as BehaviorDaybound).to_dict(), {"_day": 1})
+
+	print("\n-- 성장 as an intent: the turn is spent on it and the Strength stays --")
+	var grower := enemy(99, [EnemyIntent.grow(1), EnemyIntent.attack(4)] as Array[EnemyIntent])
+	var grow_bt := battle(strikes(), [grower])
+	var grow_hp := grow_bt.warden().hp
+	grow_bt.end_turn()
+	check("it gained the Strength", grower.status(StatusRules.STRENGTH), 1)
+	check("and struck nobody that turn", grow_bt.warden().hp, grow_hp)
+	grow_bt.end_turn()
+	check("the next blow carries it", grow_bt.warden().hp, grow_hp - 5)
+	check("and the intent survives a save",
+		EnemyIntent.from_dict(EnemyIntent.grow(2).to_dict()).kind, EnemyIntent.Kind.GROW)
+
+	print("\n-- 무거움: a card that cost an hour lands half, a dearer one lands whole --")
+	var light_run := strikes()
+	var light_foe := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorHeavy.new())
+	var light_bt := battle(light_run, [light_foe])
+	check("the card says so before it is played",
+		light_bt.card_at(0).rules_text_live(light_bt, BattleState.WARDEN, 1).contains("3"), true)
+	check("and the weighing does not outlast the preview", light_bt.cost_in_play, -1)
+	hit(light_bt, 1)
+	check("a one-hour 6 landed as 3", light_foe.hp, 96)
+	check("and nothing is being weighed once it has resolved", light_bt.cost_in_play, -1)
+
+	var dear_run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
+	for i in 10:
+		dear_run.add_card(&"sever")
+	var dear_foe := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorHeavy.new())
+	var dear_bt := battle(dear_run, [dear_foe])
+	dear_bt.play_card(0, 1)
+	check("a two-hour 9 landed whole", dear_foe.hp, 90)
+
+	var odd_foe := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorHeavy.new())
+	var odd_bt := battle(strikes(), [odd_foe])
+	check("halving rounds up, so a light blow always does something",
+		odd_foe.behavior.absorbs(odd_bt, 1, 1), 1)
+	odd_bt.damage(1, 8)
+	check("and damage from no card at all is not light", odd_foe.hp, 91)
+
 	_the_sky_changes_the_pattern()
 	_the_pattern_is_fixed_at_the_turn_it_started()
 

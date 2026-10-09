@@ -27,6 +27,10 @@ func inflict(status: StringName, stacks: int) -> EnemyIntent:
 	return EnemyIntent.inflict(status, stacks)
 
 
+func grow(stacks: int) -> EnemyIntent:
+	return EnemyIntent.grow(stacks)
+
+
 func window(intent: EnemyIntent) -> EnemyIntent:
 	intent.is_break_window = true
 	return intent
@@ -94,6 +98,8 @@ func _cycle(intents: Array) -> String:
 				text = "방어 %d" % i.amount
 			EnemyIntent.Kind.STATUS:
 				text = "%s %d" % [i.status, i.stacks]
+			EnemyIntent.Kind.GROW:
+				text = "성장 %d" % i.stacks
 			EnemyIntent.Kind.WAIT:
 				text = "대기"
 		out.append(("[%s]" % text) if i.is_break_window else text)
@@ -144,7 +150,32 @@ func _act_one() -> void:
 
 
 func _act_two() -> void:
-	pass
+	print("\n2막 — 일반")
+
+	# 좀먹음. Never touches the Warden while there is anything carried to take
+	# instead, so the fight is safe and expensive: every point let through is an
+	# hour that no shop and no fire will see, and its own gauge pays back about
+	# seven. Authored low for that reason — a whole cycle unblocked is eleven hours.
+	write(enemy(&"bottomless", 34, 38,
+		[attack(5), attack(3, 2)] as Array[EnemyIntent],
+		BehaviorGnawing, EnemyData.Tier.NORMAL, {}, 2))
+
+	# 무거움. Half again as much gauge as it reads to a hand of one-hour cards, and
+	# exactly what it reads to a two-hour one. Kept small for that reason: what it
+	# asks is which cards, not how many turns.
+	write(enemy(&"sunken", 24, 27,
+		[attack(7), attack(10), block(8)] as Array[EnemyIntent],
+		BehaviorHeavy, EnemyData.Tier.NORMAL, {}, 2))
+
+	print("\n2막 — 정예")
+
+	# 날 넘김. A day is eight turns, so walked into at midnight it is a long fight
+	# with room to spare and walked into at nine in the evening it is one turn and
+	# then the whole thing again. It grows once a cycle, and midnight takes that
+	# back along with everything else — the one thing the reset gives the player.
+	write(enemy(&"yesterday", 90, 98,
+		[attack(9), block(10), attack(6, 2), grow(1)] as Array[EnemyIntent],
+		BehaviorDaybound, EnemyData.Tier.ELITE, {}, 2))
 
 
 func _act_three() -> void:

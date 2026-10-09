@@ -2,7 +2,8 @@ class_name EnemyIntent
 extends Resource
 
 
-enum Kind { ATTACK, BLOCK, STATUS, WAIT }
+## GROW is last on purpose: a saved fight stores the kind as its number.
+enum Kind { ATTACK, BLOCK, STATUS, WAIT, GROW }
 
 @export var kind := Kind.ATTACK
 @export var amount := 5
@@ -32,6 +33,15 @@ static func inflict(status_id: StringName, stacks: int) -> EnemyIntent:
 	var i := EnemyIntent.new()
 	i.kind = Kind.STATUS
 	i.status = status_id
+	i.stacks = stacks
+	return i
+
+
+## 성장 as a turn of its own: the enemy spends the turn and keeps the Strength.
+## Carried in `stacks`, like a status, so Threat does not scale it.
+static func grow(stacks: int) -> EnemyIntent:
+	var i := EnemyIntent.new()
+	i.kind = Kind.GROW
 	i.stacks = stacks
 	return i
 

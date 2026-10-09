@@ -313,6 +313,8 @@ func _intent_text(rc: RunController, handle: int, enemy: Combatant) -> String:
 		EnemyIntent.Kind.STATUS:
 			return tr("ui.battle.intent_status").format({
 				"name": tr("status.%s" % intent.status), "n": intent.stacks})
+		EnemyIntent.Kind.GROW:
+			return tr("ui.battle.intent_grow").format({"n": intent.stacks})
 		EnemyIntent.Kind.WAIT:
 			return tr("ui.battle.intent_wait")
 	return tr("ui.battle.intent_none")

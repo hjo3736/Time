@@ -48,11 +48,13 @@ func refund(hours: int) -> EffectRefundTime:
 	return e
 
 
-func grow_dmg(base: int, per_card: int = 0, per_turn: int = 0) -> EffectScalingDamage:
+func grow_dmg(base: int, per_card: int = 0, per_turn: int = 0,
+		per_day: int = 0) -> EffectScalingDamage:
 	var e := EffectScalingDamage.new()
 	e.base = base
 	e.per_card = per_card
 	e.per_turn = per_turn
+	e.per_day = per_day
 	return e
 
 
@@ -264,6 +266,13 @@ func _chronomancy() -> void:
 		card(&"reclaim", K.ATTACK, R.RARE, 2, T.SINGLE_ENEMY,
 			[dmg(8), reclaimed(2)], [L.CHRONOMANCY], KW.EXHAUST),
 		[dmg(10), reclaimed(3)]))
+	# Weaker than 거두기 on the day the run leaves and level with it two days
+	# on. It is the one card that pays for being late, which is the same
+	# lateness Threat charges for.
+	write(upgrade(
+		card(&"long_kept", K.ATTACK, R.RARE, 1, T.SINGLE_ENEMY,
+			[grow_dmg(4, 0, 0, 1)], [L.CHRONOMANCY]),
+		[grow_dmg(4, 0, 0, 2)]))
 
 
 func _curses() -> void:

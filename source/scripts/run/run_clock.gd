@@ -205,6 +205,12 @@ func minute_of_day() -> int:
 	return (opening_minute() + _elapsed) % Balance.MINUTES_PER_DAY
 
 
+## Which day of the run it is, counted from midnight rather than from the hour
+## the run left — so it turns over when the date on the HUD does.
+func day_index() -> int:
+	return (opening_minute() + _elapsed) / Balance.MINUTES_PER_DAY
+
+
 func default_sky_bounds() -> PackedInt32Array:
 	return PackedInt32Array([
 		_balance.morning_starts_minute,

@@ -10,6 +10,7 @@ var statuses: Dictionary = {}
 var draw_pile_size := 99
 var turn := 1
 var played_this_turn := 0
+var days := 0
 var hand := 5
 
 var _rng := RandomNumberGenerator.new()
@@ -82,6 +83,10 @@ func turn_index() -> int:
 
 func cards_played_this_turn() -> int:
 	return played_this_turn
+
+
+func days_elapsed() -> int:
+	return days
 
 
 func hand_size() -> int:

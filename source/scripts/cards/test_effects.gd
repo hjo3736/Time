@@ -101,5 +101,22 @@ func _init() -> void:
 	bare.targets = PackedInt32Array([1])
 	check("returns a safe default", bare.deal_damage(1, 5), 0)
 
+	print("\n-- damage that grows with the days the run has passed --")
+	var kept := EffectScalingDamage.new()
+	kept.base = 4
+	kept.per_card = 0
+	kept.per_day = 2
+	var day_zero := RecordingEffectContext.new(0, PackedInt32Array([1]))
+	kept.apply(day_zero)
+	check("on the day the run leaves it is only its base", day_zero.calls[0]["amount"], 4)
+	var day_five := RecordingEffectContext.new(0, PackedInt32Array([1]))
+	day_five.days = 5
+	day_five.turn = 4
+	day_five.played_this_turn = 3
+	kept.apply(day_five)
+	check("five midnights on it is ten more", day_five.calls[0]["amount"], 14)
+	check("and the card says how it grows",
+		kept.describe().contains(tr("effect.grows_per_day").format({"n": 2})), true)
+
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
