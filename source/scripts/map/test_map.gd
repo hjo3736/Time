@@ -316,6 +316,7 @@ func _init() -> void:
 		was - int(projected["remaining"]), preview.cost_between(Vector2i.ZERO, door))
 
 	_rooms_are_stocked_for_both_skies()
+	_near_the_start_a_fight_is_alone()
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
@@ -403,3 +404,62 @@ func _rooms_are_stocked_for_both_skies() -> void:
 			if a[coord].encounter_for(sky) != b[coord].encounter_for(sky):
 				drifted += 1
 	check("nothing drifted", drifted, 0)
+
+
+func _near_the_start_a_fight_is_alone() -> void:
+	print("\n-- a fight near the start is one enemy, and further out it has company --")
+	var table := EncounterTable.new()
+	table.load_from()
+	for act in [1, 2]:
+		var corridor := _b.start_exits_in(act) == 1
+		var sure := _b.solo_steps_single_exit if corridor else _b.solo_steps
+		var near_with_company := 0
+		var ring_alone := 0
+		var ring_total := 0
+		var far_alone := 0
+		var far_total := 0
+		var strangers := 0
+		var twice := 0
+		for seed_value in 200:
+			var rooms := MapGenerator.generate(_b, table, rng(seed_value), act)
+			var steps := MapGenerator._distances(rooms, Vector2i.ZERO)
+			for coord in rooms:
+				var room: Room = rooms[coord]
+				if room.kind != Room.Kind.COMBAT:
+					if not room.companions.is_empty():
+						strangers += 1
+					continue
+				var seen := {}
+				for id in room.companions:
+					if not _enemies.has(id) or seen.has(id):
+						twice += 1
+					seen[id] = true
+				var d := int(steps[coord])
+				if d <= sure:
+					if not room.companions.is_empty():
+						near_with_company += 1
+				elif not corridor and d == sure + 1:
+					ring_total += 1
+					if room.companions.is_empty():
+						ring_alone += 1
+				else:
+					far_total += 1
+					if room.companions.is_empty():
+						far_alone += 1
+		check("act %d: no fight within %d rooms has company" % [act, sure],
+			near_with_company, 0)
+		check("act %d: every fight past that does" % act, [far_total > 100, far_alone],
+			[true, 0])
+		check("act %d: company is never a repeat or a stranger to the roster" % act, twice, 0)
+		check("act %d: and only fights are given any" % act, strangers, 0)
+		if corridor:
+			check("act %d: a corridor floor has no in-between ring" % act, ring_total, 0)
+		else:
+			var share := float(ring_alone) / maxf(1.0, float(ring_total))
+			check("act %d: the ring after is alone about as often as the profile says" % act,
+				absf(share - _b.solo_chance_next_step) < 0.08, true)
+
+	var round_trip := Room.new()
+	round_trip.companions.assign([&"squabble", &"doorsill"])
+	check("a room's company survives a save",
+		Room.from_dict(round_trip.to_dict()).companions, round_trip.companions)

@@ -12,6 +12,11 @@ var morning_encounter_id := &""
 var evening_encounter_id := &""
 var night_encounter_id := &""
 
+## Who joins this room's enemy when the room is far enough out not to be alone.
+## Empty for a room that is. One more than the fight needs — see
+## EncounterTable.draw_companions().
+var companions: Array[StringName] = []
+
 var exits := {}
 
 var visited := false
@@ -62,6 +67,7 @@ func to_dict() -> Dictionary:
 		"morning_encounter_id": String(morning_encounter_id),
 		"evening_encounter_id": String(evening_encounter_id),
 		"night_encounter_id": String(night_encounter_id),
+		"companions": companions.map(func(id: StringName) -> String: return String(id)),
 		"exits": _written_exits(),
 		"visited": visited,
 		"cleared": cleared,
@@ -76,6 +82,8 @@ static func from_dict(data: Dictionary) -> Room:
 	out.morning_encounter_id = StringName(data.get("morning_encounter_id", ""))
 	out.evening_encounter_id = StringName(data.get("evening_encounter_id", ""))
 	out.night_encounter_id = StringName(data.get("night_encounter_id", ""))
+	for id in data.get("companions", []):
+		out.companions.append(StringName(id))
 	for entry in data.get("exits", []):
 		if entry.size() >= 3:
 			out.exits[Vector2i(int(entry[0]), int(entry[1]))] = int(entry[2])

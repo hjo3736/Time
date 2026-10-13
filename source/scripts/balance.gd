@@ -91,6 +91,24 @@ const MINUTES_PER_DAY := 1440
 ## 4 is the most a square can touch, so 4 means unconstrained.
 @export var start_exits_per_act: Array[int] = [1, 4, 4]
 
+## A fight near the start is one enemy; further out the room draws company from
+## the same pool. How near is counted in rooms, and depends on how the floor
+## opens: on a corridor the first two rooms are alone, on a junction only the
+## first is, and the ring after it is alone this often. The junction has to be
+## stricter — it puts twice as many rooms inside any given distance.
+@export var solo_steps_single_exit := 2
+@export var solo_steps := 1
+@export_range(0.0, 1.0) var solo_chance_next_step := 0.5
+
+## How many stand in a fight that is not alone. Authored groups ignore this —
+## they are as many as they were written to be.
+@export var mixed_fight_size := 2
+
+## What each gauge in a mixed fight is cut to. Solo enemies are written for
+## fights they are alone in; this is what keeps tuning one of them from quietly
+## retuning every pair it can turn up in. Authored groups are untouched.
+@export_range(0.1, 1.0) var mixed_fight_hp_scale := 0.7
+
 @export var elite_min_travel_from_start := 10 * MINUTES_PER_HOUR
 
 @export var elite_min_travel_apart := 5 * MINUTES_PER_HOUR
@@ -153,6 +171,17 @@ func elites_in(act: int) -> int:
 
 func start_exits_in(act: int) -> int:
 	return clampi(_per_act(start_exits_per_act, act), 1, 4)
+
+
+## How likely a fight this many rooms from the start is to be one enemy alone.
+func solo_chance_at(act: int, steps: int) -> float:
+	var corridor := start_exits_in(act) == 1
+	var sure := solo_steps_single_exit if corridor else solo_steps
+	if steps <= sure:
+		return 1.0
+	if not corridor and steps == sure + 1:
+		return solo_chance_next_step
+	return 0.0
 
 
 func rooms_in(act: int) -> int:

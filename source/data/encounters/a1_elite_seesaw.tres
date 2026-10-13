@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_c0v3e"]
+
+[resource]
+script = ExtResource("1_c0v3e")
+id = &"a1_elite_seesaw"
+tier = 1
+members = Array[StringName]([&"seesaw_near", &"seesaw_far"])
+link_pairs = true

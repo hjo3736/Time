@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_intent.gd" id="1_hybnk"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_data.gd" id="2_g76bl"]
+
+[sub_resource type="Resource" id="Resource_sd6ea"]
+script = ExtResource("1_hybnk")
+kind = 3
+
+[sub_resource type="Resource" id="Resource_ttiyj"]
+script = ExtResource("1_hybnk")
+kind = 3
+
+[sub_resource type="Resource" id="Resource_di33y"]
+script = ExtResource("1_hybnk")
+kind = 3
+
+[sub_resource type="Resource" id="Resource_ojlmb"]
+script = ExtResource("1_hybnk")
+amount = 16
+
+[resource]
+script = ExtResource("2_g76bl")
+id = &"hour_hand"
+name_key = &"enemy.hour_hand.name"
+tier = 1
+hp_min = 30
+hp_max = 33
+intents = Array[ExtResource("1_hybnk")]([SubResource("Resource_sd6ea"), SubResource("Resource_ttiyj"), SubResource("Resource_di33y"), SubResource("Resource_ojlmb")])

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_7utr1"]
+
+[resource]
+script = ExtResource("1_7utr1")
+id = &"a1_elite_wall_clock"
+tier = 1
+members = Array[StringName]([&"second_hand", &"minute_hand", &"hour_hand"])

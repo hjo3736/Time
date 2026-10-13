@@ -148,7 +148,9 @@ func _start_battle(room: Room) -> void:
 		data = _encounters.pick(_rng, run.act, EnemyData.Tier.NORMAL, true)
 		_opened_with_teaching_fight = true
 	if data == null:
-		data = _encounters.get_encounter(room.encounter_for(run.clock.daytime()))
+		data = _encounters.mixed(
+			_encounters.get_encounter(room.encounter_for(run.clock.daytime())),
+			room.companions, _balance.mixed_fight_size, _balance.mixed_fight_hp_scale)
 	if data == null:
 		map.clear_current()
 		_room_resolved(room)

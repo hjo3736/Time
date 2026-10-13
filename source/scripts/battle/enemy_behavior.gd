@@ -51,6 +51,31 @@ func diverts_hit(_battle: BattleState, _handle: int, _through: int) -> int:
 	return 0
 
 
+## Called once, as this enemy's gauge reaches nothing through a blow — after the
+## time it held has been recovered.
+func on_defeated(_battle: BattleState, _handle: int) -> void:
+	pass
+
+
+## Asked as the Warden's cards resolve: someone was given block, or a status.
+## `target` is who received it. Every living enemy is told, not only the one it
+## landed on — the thing listening is not always the thing struck.
+func on_block_gained(_battle: BattleState, _handle: int, _target: int, _amount: int) -> void:
+	pass
+
+
+func on_status_applied(_battle: BattleState, _handle: int, _target: int,
+		_status: StringName, _stacks: int) -> void:
+	pass
+
+
+## Anything this enemy does in a turn besides the intent it is showing. Performed
+## after that intent, in order, and drawn under it — a turn that does three
+## things has to say all three before it does any of them.
+func extra_intents(_battle: BattleState, _handle: int) -> Array[EnemyIntent]:
+	return []
+
+
 func advance_intent(_battle: BattleState, who: Combatant) -> void:
 	who.advance_intent()
 

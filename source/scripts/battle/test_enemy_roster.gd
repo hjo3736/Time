@@ -27,7 +27,7 @@ func rng(seed_value: int = 5) -> RandomNumberGenerator:
 ## Targets for the finished game, for when that day comes:
 ##   ~20 enemies, normals >= 6, elites >= 2, a boss per act, and every one of the
 ##   five Askew behaviours fielded by some boss.
-const HELD_NOW := {"all": 7, "normal": 4, "elite": 3, "boss": 0}
+const HELD_NOW := {"all": 29, "normal": 18, "elite": 9, "boss": 2}
 
 const ASKEW := ["BehaviorLooper", "BehaviorReversed", "BehaviorStilled",
 	"BehaviorOverlaid", "BehaviorWithered"]
@@ -75,11 +75,24 @@ func _init() -> void:
 	# numbers, so 끊어내기's 물러짐 boosting the 거두기 after it is counted.
 	var burst := _best_opening_turn()
 	check("the starting deck's best opening turn was measured", burst > 0, true)
+	# Asked of a fight, not of a body. An Askew that only ever stands in a group
+	# may be frail on its own, because one opening turn does not end that fight;
+	# what has to outlive the opening is everything the encounter fields.
+	var table := EncounterTable.new()
+	table.load_from()
 	var too_frail := []
-	for e in _db.of_act(1):
-		if e.hp_min <= burst:
-			too_frail.append("%s (%d)" % [e.id, e.hp_min])
-	check("every act one Askew outlives a %d-damage opening" % burst, too_frail, [])
+	var fights := 0
+	for tier in [EnemyData.Tier.NORMAL, EnemyData.Tier.ELITE, EnemyData.Tier.BOSS]:
+		for opening in [false, true]:
+			for encounter in table.candidates(1, tier, opening):
+				fights += 1
+				var gauge := 0
+				for member in encounter.members:
+					gauge += _db.get_enemy(member).hp_min
+				if gauge <= burst:
+					too_frail.append("%s (%d)" % [encounter.id, gauge])
+	check("there are act one fights to measure", fights > 0, true)
+	check("every act one fight outlives a %d-damage opening" % burst, too_frail, [])
 
 	print("\n-- hp rolls inside the authored range, and replays --")
 	# Generic over the roster: whatever is in it, the rules hold for all of it.

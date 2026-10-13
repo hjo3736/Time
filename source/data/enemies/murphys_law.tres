@@ -11,7 +11,7 @@ amount = 12
 
 [sub_resource type="Resource" id="Resource_ppbry"]
 script = ExtResource("2_tf0re")
-amount = 10
+amount = 12
 
 [sub_resource type="Resource" id="Resource_qqudy"]
 script = ExtResource("2_tf0re")
@@ -20,14 +20,14 @@ amount = 12
 
 [sub_resource type="Resource" id="Resource_17pgs"]
 script = ExtResource("2_tf0re")
-amount = 14
+amount = 16
 
 [resource]
 script = ExtResource("3_bix3v")
 id = &"murphys_law"
 name_key = &"enemy.murphys_law.name"
 tier = 1
-hp_min = 78
-hp_max = 86
+hp_min = 84
+hp_max = 92
 intents = Array[ExtResource("2_tf0re")]([SubResource("Resource_ksf6k"), SubResource("Resource_ppbry"), SubResource("Resource_qqudy"), SubResource("Resource_17pgs")])
 behavior_script = ExtResource("1_6wfhq")

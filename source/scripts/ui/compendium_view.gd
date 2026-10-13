@@ -365,6 +365,11 @@ func _intent_line(enemy: EnemyData) -> String:
 					"name": tr("status.%s" % intent.status), "n": intent.stacks}))
 			EnemyIntent.Kind.GROW:
 				parts.append(tr("ui.compendium.intent_grow").format({"n": intent.stacks}))
+			EnemyIntent.Kind.DRAG:
+				parts.append(tr("ui.compendium.intent_drag").format({"n": intent.amount}))
+			EnemyIntent.Kind.BEAR:
+				parts.append(tr("ui.compendium.intent_bear").format({
+					"name": tr("status.%s" % intent.status), "n": intent.stacks}))
 			EnemyIntent.Kind.WAIT:
 				parts.append(tr("ui.compendium.intent_wait"))
 	return "  →  ".join(parts) if not parts.is_empty() else "―"

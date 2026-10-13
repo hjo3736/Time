@@ -184,6 +184,11 @@ func _init() -> void:
 	var elite := controller(11)
 	if walk_to_kind(elite, Room.Kind.ELITE):
 		check("no relics before it", elite.run.relics.size(), 0)
+		# This checks what winning pays, not whether a hand played in order can
+		# win: which elite the seed lands on changes whenever the roster does, and
+		# several of them are not beaten by playing every card at the first enemy.
+		for handle in elite.battle.enemy_handles():
+			elite.battle.combatants[handle].hp = 1
 		_auto_fight(elite)
 		check("one after", elite.run.relics.size(), 1)
 		check("named for the screen", elite.last_relic, elite.run.relics[0])

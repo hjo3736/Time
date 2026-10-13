@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_6w8aa"]
+
+[resource]
+script = ExtResource("1_6w8aa")
+id = &"a1_group_shelter"
+members = Array[StringName]([&"shelter_front", &"shelter_behind"])
+link_pairs = true

@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_y0q1h"]
+
+[resource]
+script = ExtResource("1_y0q1h")
+id = &"a1_elite_prop"
+tier = 1
+members = Array[StringName]([&"prop"])

@@ -32,6 +32,10 @@ var cards_played_this_turn := 0
 ## -1 when no card is. Damage that arrives while this is -1 came from no card.
 var cost_in_play := -1
 
+## How many the card being resolved, or previewed, is aimed at; 0 when no card
+## is. More than one means it was not aimed at anyone in particular.
+var targets_in_play := 0
+
 var _run: RunState
 var _balance: Balance
 var _cards: CardDatabase
@@ -184,9 +188,11 @@ func play_card(hand_index: int, chosen_target: int = -1) -> bool:
 	if card.is_variable_cost():
 		ctx.variable_amount = cost / Balance.MINUTES_PER_HOUR
 	cost_in_play = cost
+	targets_in_play = targets.size()
 	for effect in card.effects:
 		effect.apply(ctx)
 	cost_in_play = -1
+	targets_in_play = 0
 
 	card_played.emit(deck_index)
 	_check_end()
@@ -229,6 +235,14 @@ func _resolve_enemies() -> void:
 		if intent != null:
 			_perform(handle, intent)
 		if enemy.behavior != null:
+			for extra in enemy.behavior.extra_intents(self, handle):
+				_perform(handle, extra)
+		# An enemy can spend the run's time as well as the Warden's gauge, and
+		# running out is running out whoever spent the last of it.
+		if _run.clock.is_expired():
+			_finish(false)
+			return
+		if enemy.behavior != null:
 			enemy.behavior.advance_intent(self, enemy)
 			enemy.behavior.on_turn_end(self, handle)
 		else:
@@ -256,6 +270,15 @@ func _perform(handle: int, intent: EnemyIntent) -> void:
 			warden().add_status(intent.status, intent.stacks)
 		EnemyIntent.Kind.GROW:
 			enemy.add_status(StatusRules.STRENGTH, intent.stacks)
+		EnemyIntent.Kind.BEAR:
+			enemy.add_status(intent.status, intent.stacks)
+		EnemyIntent.Kind.DRAG:
+			# `amount` is what is left of the grip. Nothing left, nothing pulled.
+			# The sun is dragged down, so it is always the evening it lands on —
+			# and already being there, late in the day, is a pull that moves nothing.
+			if amount > 0:
+				_run.clock.advance(_run.clock.minutes_until(RunClock.Daytime.EVENING),
+					RunClock.Source.TURN)
 		EnemyIntent.Kind.WAIT:
 			pass
 
@@ -287,7 +310,25 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 		_run.clock.restore(_run.relic_restored(target.restored_value))
 		for relic in _run.relic_defs():
 			relic.on_enemy_defeated(_run, self, target)
+		if target.behavior != null:
+			target.behavior.on_defeated(self, handle)
 	return dealt
+
+
+## Called by the effect context as a card hands out block or a status, so the
+## enemies that listen can hear it. Nothing here changes what the card did.
+func heard_block(target: int, amount: int) -> void:
+	for handle in enemy_handles():
+		var who: Combatant = combatants[handle]
+		if who.behavior != null:
+			who.behavior.on_block_gained(self, handle, target, amount)
+
+
+func heard_status(target: int, status: StringName, stacks: int) -> void:
+	for handle in enemy_handles():
+		var who: Combatant = combatants[handle]
+		if who.behavior != null:
+			who.behavior.on_status_applied(self, handle, target, status, stacks)
 
 
 func _diverted(handle: int, from: int, through: int) -> int:

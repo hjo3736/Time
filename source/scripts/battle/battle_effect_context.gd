@@ -25,12 +25,14 @@ func gain_block(target: int, amount: int) -> void:
 	var c := _at(target)
 	if c != null:
 		c.block += amount
+		_battle.heard_block(target, amount)
 
 
 func apply_status(target: int, status: StringName, stacks: int) -> void:
 	var c := _at(target)
 	if c != null:
 		c.add_status(status, stacks)
+		_battle.heard_status(target, status, stacks)
 
 
 func draw_cards(count: int) -> int:

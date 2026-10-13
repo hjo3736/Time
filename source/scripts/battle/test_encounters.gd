@@ -12,7 +12,7 @@ var _table: EncounterTable
 ##
 ## Targets for the finished game: an opening encounter per act, elites >= 2,
 ## a boss per act, and enough normals that a floor does not repeat itself.
-const HELD_NOW := {"all": 5, "normal": 2, "elite": 2, "boss": 0, "opening": 1}
+const HELD_NOW := {"all": 19, "normal": 11, "elite": 5, "boss": 2, "opening": 1}
 
 ## Complaints the linter is expected to make while the bestiary is unfinished.
 ## Act one has its teaching fight now, so there are none left.
@@ -91,6 +91,51 @@ func _init() -> void:
 	check("and what it fields is act one's", lent.act, 1)
 	check("but a combination act one never authored is still null",
 		_table.pick(rng(1), 2, EnemyData.Tier.BOSS, true), null)
+
+	print("\n-- a room with company fields its own enemy and enough of the rest --")
+	var mix_lone := _table.get_encounter(&"a1_lone_squabble")
+	var mix_company: Array[StringName] = [&"squabble", &"doorsill", &"draught"]
+	var mix_pair := _table.mixed(mix_lone, mix_company, 2)
+	check("two stand in it", mix_pair.members.size(), 2)
+	check("the room's own enemy first", mix_pair.members[0], &"squabble")
+	check("and the first of its company that is not the same one", mix_pair.members[1], &"doorsill")
+	check("the authored encounter was not touched", mix_lone.members.size(), 1)
+	check("and the mix is not in the table", _table.size(), HELD_NOW["all"])
+	var mix_none: Array[StringName] = []
+	check("with no company it is the encounter as written", _table.mixed(mix_lone, mix_none, 2), mix_lone)
+	var mix_group := EncounterData.new()
+	mix_group.id = &"test_group"
+	mix_group.members.assign([&"squabble", &"squabble"])
+	check("and a group is never added to", _table.mixed(mix_group, mix_company, 3), mix_group)
+	check("spawned, it is two combatants",
+		_table.spawn(mix_pair, _enemies, _b, rng(4)).size(), 2)
+
+	# A mixed fight's gauges are cut by the profile's figure; an authored one's
+	# are not. Same seed both times, so the only difference is the scale.
+	var cut := _table.mixed(mix_lone, mix_company, 2, 0.5)
+	var whole_hp := _table.spawn(mix_pair, _enemies, _b, rng(4)).map(
+		func(c: Combatant) -> int: return c.max_hp)
+	var cut_hp := _table.spawn(cut, _enemies, _b, rng(4)).map(
+		func(c: Combatant) -> int: return c.max_hp)
+	check("a mixed fight can be given smaller gauges",
+		cut_hp, whole_hp.map(func(hp: int) -> int: return roundi(hp * 0.5)))
+	check("and what they are worth shrinks with them",
+		_table.spawn(cut, _enemies, _b, rng(4))[0].restored_value,
+		roundi(cut_hp[0] * _b.restored_minutes_per_hp))
+	check("an authored encounter is never scaled", mix_lone.hp_scale, 1.0)
+	check("the profile's figure is a cut, not a boost", _b.mixed_fight_hp_scale <= 1.0, true)
+
+	var mix_drawn := _table.draw_companions(rng(9), 1, 3)
+	check("company is drawn all different", mix_drawn.size(), 3)
+	var mix_unique := {}
+	for id in mix_drawn:
+		mix_unique[id] = true
+	check("so three drawn are three kinds", mix_unique.size(), 3)
+	check("and the draw replays", _table.draw_companions(rng(9), 1, 3), mix_drawn)
+	check("it cannot draw more kinds than stand alone",
+		_table.draw_companions(rng(9), 1, 99).size(), _table.mixable(1).size())
+	check("a room that must be alone is given one enemy",
+		_table.pick(rng(2), 1, EnemyData.Tier.NORMAL, false, -1, true).members.size(), 1)
 
 	print("\n-- picking is seeded and replays --")
 	var a := fresh_table()
@@ -172,7 +217,9 @@ func _init() -> void:
 		var run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
 		for i in 8:
 			run.add_card(&"take")
-		var group2 := _table.spawn(one, _enemies, _b, rng(2), level)
+		# Named rather than taken from the top of the table: the blow has to be large
+		# enough for a tenth more of it to round up, and a 4 is not.
+		var group2 := _table.spawn(_table.get_encounter(&"a1_lone_squabble"), _enemies, _b, rng(2), level)
 		var bt := BattleState.new(run, cards, group2, rng(2))
 		bt.end_turn()
 		hits.append(_b.starting_max_hp - bt.warden().hp)

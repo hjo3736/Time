@@ -101,7 +101,7 @@ card.reclaim.name,되찾기,Reclaim
 card.unwind.name,태엽 풀기,Unwind
 card.drag.name,늘어짐,Drag
 card.drag.text,낼 수 없다. 손에 남아 자리를 차지한다.,Unplayable. It just sits in the hand.
-enemy.echo.name,되울림,Echo
+enemy.echo.name,메아리,The Echo
 enemy.late_one.name,늦은 것,The Late One
 enemy.stood_still.name,선 자리,Where It Stood
 enemy.footsteps.name,겹친 발소리,Overlaid Footsteps
@@ -401,3 +401,37 @@ ui.battle.intent_grow,▲ 성장 {n},▲ Growth {n}
 ui.compendium.intent_grow,성장 {n},Growth {n}
 effect.grows_per_day,날이 바뀔 때마다 +{n},+{n} each time the day turns
 card.long_kept.name,오래 묵힌 것,Long Kept
+enemy.tossing.name,뒤척임,Tossing
+enemy.draught.name,외풍,The Draught
+enemy.breakfast.name,아침밥,Breakfast
+enemy.nap.name,낮잠,The Nap
+enemy.sundown.name,저녁놀,Sundown
+enemy.supper.name,밤참,The Late Supper
+askew.seesaw.tell,턴이 시작될 때 체력이 더 많은 쪽이 치고 적은 쪽은 막는다. 같으면 둘 다 친다.,Whichever end has more health when the turn begins strikes and the other guards. Level and both strike.
+enemy.seesaw_near.name,이쪽 끝,This End
+enemy.seesaw_far.name,저쪽 끝,That End
+enemy.second_hand.name,초침,The Second Hand
+enemy.minute_hand.name,분침,The Minute Hand
+enemy.hour_hand.name,시침,The Hour Hand
+askew.hourglass.tell,매 턴 윗칸의 체력 4가 아랫칸으로 흘러내리고 아랫칸은 성장한다.,Each turn 4 of the upper bulb's health runs down into the lower and the lower grows.
+enemy.hourglass_upper.name,윗칸,The Upper Bulb
+enemy.hourglass_lower.name,아랫칸,The Lower Bulb
+askew.echo.tell,이번 턴에 당한 것을 다음 턴에 되돌린다. 피해와 방어도는 3분의 2만큼 돌아오고 상태 이상은 그대로 돌아온다.,Returns next turn what was done this turn: two thirds of the damage and the block and every status as it was.
+ui.battle.intent_bear,✦ 자신에게 {name} {n},✦ {name} {n} on itself
+ui.compendium.intent_bear,자신에게 {name} {n},{name} {n} on itself
+askew.relay.tell,바통을 든 하나만 친다. 치고 나면 다음 주자에게 넘기고 넘길 때마다 3씩 세진다. 든 것이 쓰러지면 처음 세기로 돌아간다.,Only the one holding the baton strikes. It hands on after each blow and each handing adds 3. Bring down the holder and it starts over.
+enemy.runner.name,주자,The Runner
+askew.chorus.tell,함께 부르는 수만큼 세진다. 하나가 쓰러질 때마다 남은 것들의 타격이 약해진다.,Strikes harder for each one still singing. Every one that falls weakens the rest.
+enemy.chorister.name,목소리,A Voice
+askew.domino.tell,쓰러지면 바로 뒤의 것에게 피해 6을 준다.,Deals 6 to the one directly behind it when it falls.
+enemy.domino.name,도미노,The Domino
+askew.sheltered.tell,앞에 선 것이 서 있는 동안 이것을 겨눈 피해는 앞에 선 것이 대신 받는다. 전체를 치는 것은 그대로 닿는다.,While the one in front stands it takes any blow aimed at this one. What strikes everything still reaches it.
+enemy.shelter_front.name,앞에 선 것,The One in Front
+enemy.shelter_behind.name,뒤에 숨은 것,The One Behind
+askew.bulwark.tell,한 턴에 피해를 15까지만 받는다. 넘치는 피해는 사라진다.,Takes no more than 15 damage in a turn. Anything past that is lost.
+enemy.prop.name,버팀목,The Prop
+askew.sun_dragger.tell,아침과 낮 내내 해를 끌어내리려 한다. 그 턴에 표시된 만큼 피해를 받으면 놓치지만 놓칠 때마다 더 세게 붙든다. 놓치지 않으면 곧장 저녁이 되고 끌어내린 3시간마다 더 성장한다.,All morning and all day it drags at the sun. Take the shown damage off it that turn and it loses its grip but holds harder each time. Otherwise it is evening at once and it grows more for every three hours dragged.
+enemy.sun_dragger.name,해를 끄는 것,The One Who Drags the Sun
+ui.battle.intent_drag,☀ 해를 끌어내린다 · {n} 남음,☀ Dragging the sun · {n} to break
+ui.battle.intent_drag_lost,☀ 해를 놓쳤다,☀ Lost its grip
+ui.compendium.intent_drag,해를 끈다 {n},Drags the sun {n}

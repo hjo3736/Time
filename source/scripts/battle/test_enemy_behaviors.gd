@@ -371,6 +371,396 @@ func _init() -> void:
 	check("and the intent survives a save",
 		EnemyIntent.from_dict(EnemyIntent.grow(2).to_dict()).kind, EnemyIntent.Kind.GROW)
 
+	print("\n-- 시소: the heavier end strikes, and the turn's damage picks the next one --")
+	var near_end := enemy(40, [EnemyIntent.attack(13), EnemyIntent.block(10)] as Array[EnemyIntent],
+		BehaviorSeesaw.new())
+	var far_end := enemy(46, [EnemyIntent.attack(5), EnemyIntent.block(10)] as Array[EnemyIntent],
+		BehaviorSeesaw.new())
+	near_end.link = 2
+	far_end.link = 1
+	var saw_run := strikes()
+	var saw_bt := battle(saw_run, [near_end, far_end])
+	check("the heavier end opens striking", far_end.current_intent().kind, EnemyIntent.Kind.ATTACK)
+	check("and the lighter one guarding", near_end.current_intent().kind, EnemyIntent.Kind.BLOCK)
+	hit(saw_bt, 2)
+	hit(saw_bt, 2)
+	check("hit below the other, it still strikes this turn — what was read lands",
+		[far_end.hp, far_end.current_intent().kind], [34, EnemyIntent.Kind.ATTACK])
+	var saw_hp := saw_bt.warden().hp
+	saw_bt.end_turn()
+	check("it struck", saw_bt.warden().hp, saw_hp - 5)
+	check("and the other guarded", near_end.block, 10)
+	check("then the ends swap: the one that was hit now guards",
+		[near_end.current_intent().kind, far_end.current_intent().kind],
+		[EnemyIntent.Kind.ATTACK, EnemyIntent.Kind.BLOCK])
+	near_end.hp = far_end.hp
+	saw_bt.end_turn()
+	check("level, both strike",
+		[near_end.current_intent().kind, far_end.current_intent().kind],
+		[EnemyIntent.Kind.ATTACK, EnemyIntent.Kind.ATTACK])
+	far_end.hp = 0
+	saw_bt.end_turn()
+	check("and an end left alone only strikes", near_end.current_intent().kind,
+		EnemyIntent.Kind.ATTACK)
+	saw_bt.end_turn()
+	check("turn after turn", near_end.current_intent().kind, EnemyIntent.Kind.ATTACK)
+
+	print("\n-- 모래시계: the upper runs down into the lower, and its worth goes with it --")
+	var upper := enemy(20, [EnemyIntent.attack(6)] as Array[EnemyIntent], BehaviorHourglass.new())
+	var lower := enemy(14, [EnemyIntent.attack(4)] as Array[EnemyIntent], BehaviorHourglass.new())
+	upper.link = 2
+	lower.link = 1
+	var glass_bt := battle(strikes(), [upper, lower])
+	var glass_hp := glass_bt.warden().hp
+	glass_bt.end_turn()
+	check("both struck with what they were showing", glass_bt.warden().hp, glass_hp - 10)
+	check("four ran out of the upper", upper.hp, 16)
+	check("and into the lower, which is that much larger", [lower.hp, lower.max_hp], [18, 18])
+	check("the lower grew for it", lower.status(StatusRules.STRENGTH), 1)
+	check("and the time moved with the sand", [upper.restored_value, lower.restored_value],
+		[288, 432])
+	glass_hp = glass_bt.warden().hp
+	glass_bt.end_turn()
+	check("the growth is on the next blow, not the one already shown",
+		glass_bt.warden().hp, glass_hp - 11)
+	upper.hp = 3
+	glass_bt.end_turn()
+	check("the last of it runs out and the upper is gone", upper.is_alive(), false)
+	check("having kept nothing", upper.restored_value, 0)
+	check("all of it is below", [lower.hp, lower.restored_value], [25, 720])
+	var grown := lower.status(StatusRules.STRENGTH)
+	glass_bt.end_turn()
+	check("with nothing above it, the lower stops growing",
+		[lower.hp, lower.status(StatusRules.STRENGTH)], [25, grown])
+
+	var top_only := enemy(20, [EnemyIntent.attack(6)] as Array[EnemyIntent], BehaviorHourglass.new())
+	var gone := enemy(14, [EnemyIntent.attack(4)] as Array[EnemyIntent], BehaviorHourglass.new())
+	top_only.link = 2
+	gone.link = 1
+	var top_bt := battle(strikes(), [top_only, gone])
+	gone.hp = 0
+	top_bt.end_turn()
+	check("and with nothing below it, the upper keeps its sand", top_only.hp, 20)
+
+	print("\n-- 메아리: what was done this turn comes back the next --")
+	var echo := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorEcho.new())
+	var echo_bt := battle(strikes(), [echo])
+	check("it opens having heard nothing", echo.current_intent().kind, EnemyIntent.Kind.WAIT)
+	hit(echo_bt, 1)
+	hit(echo_bt, 1)
+	hit(echo_bt, 1)
+	check("while it is being struck, what it shows does not change",
+		echo.current_intent().kind, EnemyIntent.Kind.WAIT)
+	var echo_hp := echo_bt.warden().hp
+	echo_bt.end_turn()
+	check("and nothing comes back the same turn", echo_bt.warden().hp, echo_hp)
+	check("18 taken is 12 shown, for the whole turn before it lands",
+		[echo.current_intent().kind, echo.current_intent().amount],
+		[EnemyIntent.Kind.ATTACK, 12])
+	check("and it is the only thing it means to do", echo.behavior.extra_intents(echo_bt, 1), [])
+	check("a resumed one is still showing it",
+		Combatant.from_dict(echo.to_dict()).current_intent().amount, 12)
+	hit(echo_bt, 1)
+	echo_bt.end_turn()
+	check("the 12 landed", echo_bt.warden().hp, echo_hp - 12)
+	check("and the 6 taken meanwhile is the next 4", echo.current_intent().amount, 4)
+	echo_bt.end_turn()
+	echo_bt.end_turn()
+	check("left alone, it goes quiet", echo.current_intent().kind, EnemyIntent.Kind.WAIT)
+
+	var odd_echo := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorEcho.new())
+	var odd_echo_bt := battle(strikes(), [odd_echo])
+	odd_echo.block = 4
+	hit(odd_echo_bt, 1)
+	odd_echo_bt.end_turn()
+	check("what its block took was never heard, and a third of a point rounds up",
+		odd_echo.current_intent().amount, 2)
+
+	print("\n-- 메아리: guard and statuses come back too, all shown before any lands --")
+	var whole_run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
+	for id in [&"sever", &"brace", &"brace", &"brace", &"brace"]:
+		whole_run.add_card(id)
+	var whole := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorEcho.new())
+	var whole_bt := battle(whole_run, [whole])
+	var brace_block := 0
+	for id in [&"sever", &"brace"]:
+		for i in whole_bt.piles().hand.size():
+			if whole_bt.card_at(i).id == id:
+				whole_bt.play_card(i, 1)
+				break
+	brace_block = whole_bt.warden().block
+	check("a 끊어내기 and a 버티기 were played", [whole.hp, brace_block > 0], [90, true])
+	whole_bt.end_turn()
+	var plan: Array[EnemyIntent] = [whole.current_intent()]
+	plan.append_array(whole.behavior.extra_intents(whole_bt, 1))
+	check("it means to do three things", plan.size(), 3)
+	check("strike for two thirds of the 9",
+		[plan[0].kind, plan[0].amount], [EnemyIntent.Kind.ATTACK, 6])
+	check("guard for two thirds of the guard",
+		[plan[1].kind, plan[1].amount], [EnemyIntent.Kind.BLOCK, ceili(brace_block * 2.0 / 3.0)])
+	check("and soften the Warden exactly as it was softened",
+		[plan[2].kind, plan[2].status, plan[2].stacks],
+		[EnemyIntent.Kind.STATUS, StatusRules.SOFTENED, 2])
+	var kept_plan := Combatant.from_dict(whole.to_dict())
+	check("a resumed one still means all three", kept_plan.intents.size(), 3)
+	var whole_hp := whole_bt.warden().hp
+	whole_bt.end_turn()
+	check("the blow landed before the softening it carried", whole_bt.warden().hp, whole_hp - 6)
+	check("it is behind its guard", whole.block, plan[1].amount)
+	check("and the Warden is softened", whole_bt.warden().status(StatusRules.SOFTENED) > 0, true)
+
+	var self_echo := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorEcho.new())
+	var self_bt := battle(strikes(), [self_echo])
+	self_bt.cost_in_play = 60
+	self_bt.heard_status(BattleState.WARDEN, StatusRules.STRENGTH, 2)
+	self_bt.cost_in_play = -1
+	self_bt.heard_status(1, StatusRules.SOFTENED, 2)
+	self_bt.heard_block(BattleState.WARDEN, 9)
+	self_bt.end_turn()
+	check("what the Warden put on itself, it puts on itself",
+		[self_echo.current_intent().kind, self_echo.current_intent().status],
+		[EnemyIntent.Kind.BEAR, StatusRules.STRENGTH])
+	check("and what no card did was not heard", self_echo.behavior.extra_intents(self_bt, 1), [])
+	self_bt.end_turn()
+	check("it bore it", self_echo.status(StatusRules.STRENGTH), 2)
+
+	print("\n-- 이어달리기: one blow a turn, handed on and heavier each time --")
+	var team: Array[Combatant] = []
+	for i in 3:
+		team.append(enemy(40, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorRelay.new()))
+	var relay_bt := battle(strikes(), team)
+	var showing := func() -> Array:
+		return team.map(func(c: Combatant) -> int:
+			var i := c.current_intent()
+			return i.amount if i.kind == EnemyIntent.Kind.ATTACK else 0)
+	check("the first runner opens with it and the others wait", showing.call(), [5, 0, 0])
+	var relay_hits := []
+	var relay_shown := []
+	for i in 4:
+		var before := relay_bt.warden().hp
+		relay_bt.end_turn()
+		relay_hits.append(before - relay_bt.warden().hp)
+		relay_shown.append(showing.call())
+	check("one blow a turn: 5, 8, 11, 14", relay_hits, [5, 8, 11, 14])
+	check("and who strikes next is on show the whole turn before",
+		relay_shown, [[0, 8, 0], [0, 0, 11], [14, 0, 0], [0, 17, 0]])
+
+	var dropped: Array[Combatant] = []
+	for i in 3:
+		dropped.append(enemy(40, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorRelay.new()))
+	var drop_bt := battle(strikes(), dropped)
+	drop_bt.end_turn()
+	drop_bt.end_turn()
+	check("the third runner is holding an 11", dropped[2].current_intent().amount, 11)
+	dropped[2].hp = 0
+	var drop_hp := drop_bt.warden().hp
+	drop_bt.end_turn()
+	check("brought down holding it, the blow never comes", drop_bt.warden().hp, drop_hp)
+	check("and it is picked up at the weight it started",
+		dropped.slice(0, 2).map(func(c: Combatant) -> int:
+			var i := c.current_intent()
+			return i.amount if i.kind == EnemyIntent.Kind.ATTACK else 0), [5, 0])
+	dropped[1].hp = 0
+	drop_bt.end_turn()
+	drop_bt.end_turn()
+	check("the last one left hands it to itself, and it still grows",
+		dropped[0].current_intent().amount, 11)
+	var resumed := Combatant.from_dict(dropped[0].to_dict())
+	check("a resumed runner still has it",
+		[(resumed.behavior as BehaviorRelay).holds(), resumed.current_intent().amount], [true, 11])
+
+	print("\n-- 합창: each strikes for every one still singing --")
+	var choir: Array[Combatant] = []
+	for i in 3:
+		choir.append(enemy(40, [EnemyIntent.attack(2)] as Array[EnemyIntent], BehaviorChorus.new()))
+	var choir_bt := battle(strikes(), choir)
+	var choir_hp := choir_bt.warden().hp
+	choir_bt.end_turn()
+	check("three of them are 6 each", choir_bt.warden().hp, choir_hp - 18)
+	choir[0].hp = 0
+	check("one down, and what the others show drops in the same turn",
+		choir[1].behavior.outgoing_amount(choir_bt, 2, choir[1].current_intent()), 4)
+	choir_hp = choir_bt.warden().hp
+	choir_bt.end_turn()
+	check("two are 4 each", choir_bt.warden().hp, choir_hp - 8)
+	choir[1].hp = 0
+	choir_hp = choir_bt.warden().hp
+	choir_bt.end_turn()
+	check("and the last is the 2 it was written with", choir_bt.warden().hp, choir_hp - 2)
+
+	print("\n-- 도미노: one falls onto the next, for as long as that is enough --")
+	var line_run := strikes()
+	var line: Array[Combatant] = []
+	for i in 4:
+		line.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
+	var line_bt := battle(line_run, line)
+	for d in line:
+		d.hp = 6
+	hit(line_bt, 1)
+	check("worn to six, all four go from one blow",
+		line.map(func(c: Combatant) -> bool: return c.is_alive()), [false, false, false, false])
+	check("and every one of them was recovered", line_run.clock.restored, 4 * 360)
+	check("which ends the fight", line_bt.is_over(), true)
+
+	var stopped: Array[Combatant] = []
+	for i in 3:
+		stopped.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
+	var stop_bt := battle(strikes(), stopped)
+	stopped[0].hp = 6
+	stopped[1].hp = 7
+	hit(stop_bt, 1)
+	check("one point too many and it stops there",
+		stopped.map(func(c: Combatant) -> int: return c.hp), [0, 1, 10])
+
+	var gapped: Array[Combatant] = []
+	for i in 3:
+		gapped.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
+	var gap_bt := battle(strikes(), gapped)
+	gapped[0].hp = 6
+	gapped[1].hp = 0
+	gapped[2].hp = 3
+	hit(gap_bt, 1)
+	check("and it does not fall across a gap", gapped[2].hp, 3)
+
+	print("\n-- 방패막이: what is aimed at the one behind lands on the one in front --")
+	var front := enemy(30, [EnemyIntent.wait()] as Array[EnemyIntent])
+	var behind := enemy(12, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorSheltered.new())
+	front.link = 2
+	behind.link = 1
+	var cover_bt := battle(strikes(), [front, behind])
+	hit(cover_bt, 2)
+	check("a blow aimed behind is taken in front", [front.hp, behind.hp], [24, 12])
+	check("and the one behind reads as out of reach", cover_bt.reaches(2), false)
+	hit(cover_bt, 1)
+	check("the front is struck as usual", front.hp, 18)
+	front.hp = 0
+	check("with the front down it can be reached", cover_bt.reaches(2), true)
+	hit(cover_bt, 2)
+	check("and is", behind.hp, 6)
+
+	var wide_run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
+	for i in 10:
+		wide_run.add_card(&"wear_down")
+	var wide_front := enemy(30, [EnemyIntent.wait()] as Array[EnemyIntent])
+	var wide_behind := enemy(12, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorSheltered.new())
+	wide_front.link = 2
+	wide_behind.link = 1
+	var wide_bt := battle(wide_run, [wide_front, wide_behind])
+	wide_bt.play_card(0, 1)
+	check("a card that strikes everything is aimed at nobody, and reaches both",
+		[wide_front.hp, wide_behind.hp], [26, 8])
+	check("and nothing is being aimed once it has resolved", wide_bt.targets_in_play, 0)
+
+	print("\n-- 버팀목: fifteen a turn and not a point more --")
+	var prop := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorBulwark.new())
+	var prop_bt := battle(strikes(), [prop])
+	hit(prop_bt, 1)
+	hit(prop_bt, 1)
+	check("two blows land whole", prop.hp, 87)
+	check("the card says the third will only do 3 before it is played",
+		prop_bt.preview_damage(1, 6, BattleState.WARDEN), 3)
+	hit(prop_bt, 1)
+	check("and it does", prop.hp, 84)
+	check("after that nothing gets through", prop_bt.preview_damage(1, 6, BattleState.WARDEN), 0)
+	prop_bt.end_turn()
+	check("a new turn is a new fifteen", prop_bt.preview_damage(1, 20, BattleState.WARDEN), 15)
+	check("and a resumed one knows how much of it is spent",
+		(Combatant.from_dict(prop.to_dict()).behavior as BehaviorBulwark).taken(), 0)
+
+	var guarded_prop := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorBulwark.new())
+	var guarded_prop_bt := battle(strikes(), [guarded_prop])
+	guarded_prop.block = 4
+	hit(guarded_prop_bt, 1)
+	check("what its block takes uses none of the allowance up",
+		[guarded_prop.hp, (guarded_prop.behavior as BehaviorBulwark).taken()], [97, 2])
+	guarded_prop.block = 4
+	check("so past its block the full remainder is still there",
+		guarded_prop_bt.preview_damage(1, 30, BattleState.WARDEN), 17)
+
+	print("\n-- 해를 끄는 것: a pull that holds lands on the evening, and it grows for the hours --")
+	var sun_dragger := func() -> Combatant:
+		var c := enemy(400, [EnemyIntent.drag(18)] as Array[EnemyIntent], BehaviorSunDragger.new())
+		var at_dawn: Array[EnemyIntent] = [EnemyIntent.drag(18)]
+		var at_dusk: Array[EnemyIntent] = [EnemyIntent.grow(1)]
+		var at_night: Array[EnemyIntent] = [EnemyIntent.attack(12)]
+		c.morning_intents = at_dawn
+		c.evening_intents = at_dusk
+		c.night_intents = at_night
+		return c
+	var sun_dawn := func() -> RunState:
+		var run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 5))
+		for i in 10:
+			run.add_card(&"take")
+		return run
+	var owed := func(bt: BattleState, who: Combatant) -> int:
+		return who.behavior.outgoing_amount(bt, 1, who.current_intent())
+
+	var pulled_run: RunState = sun_dawn.call()
+	var puller: Combatant = sun_dragger.call()
+	var pulled_bt := battle(pulled_run, [puller])
+	check("at five in the morning it means to pull",
+		puller.current_intent().kind, EnemyIntent.Kind.DRAG)
+	hit(pulled_bt, 1)
+	hit(pulled_bt, 1)
+	check("12 of the 18 paid, and the intent says 6 are owed", owed.call(pulled_bt, puller), 6)
+	pulled_bt.end_turn()
+	check("short of the grip, the day is gone: it is five in the evening",
+		pulled_run.clock.minute_of_day(), 17 * 60)
+	check("which cost the turn and nine hours more", pulled_run.clock.elapsed, 12 * 60)
+	check("the evening it made shows its growth before it lands: 1 and 4 for the twelve hours",
+		[puller.current_intent().kind, puller.current_intent().stacks],
+		[EnemyIntent.Kind.GROW, 5])
+	check("holding did not tighten anything",
+		(puller.behavior as BehaviorSunDragger).tightened(), 0)
+	pulled_bt.end_turn()
+	check("it grew by that", puller.status(StatusRules.STRENGTH), 5)
+	check("and the next evening is back to its own 1", puller.evening_intents[0].stacks, 1)
+	var night_hp := pulled_bt.warden().hp
+	pulled_bt.end_turn()
+	check("the night's 12 lands as 17", pulled_bt.warden().hp, night_hp - 17)
+
+	print("\n-- 해를 끄는 것: a pull that is broken costs nothing now and more next time --")
+	var held_sun_run: RunState = sun_dawn.call()
+	var loser: Combatant = sun_dragger.call()
+	var held_sun_bt := battle(held_sun_run, [loser])
+	held_sun_bt.damage(1, 18)
+	check("the grip's worth taken, nothing is owed", owed.call(held_sun_bt, loser), 0)
+	held_sun_bt.end_turn()
+	check("the turn costs only itself: it is eight", held_sun_run.clock.minute_of_day(), 8 * 60)
+	check("it pulls again, the day's first, and holds on harder: 22",
+		[loser.current_intent().kind, owed.call(held_sun_bt, loser)],
+		[EnemyIntent.Kind.DRAG, 22])
+	check("a resumed one remembers how hard",
+		(Combatant.from_dict(loser.to_dict()).behavior as BehaviorSunDragger).tightened(), 4)
+	held_sun_bt.damage(1, 22)
+	held_sun_bt.end_turn()
+	check("broken again, it is eleven and the grip is 26",
+		[held_sun_run.clock.minute_of_day(), owed.call(held_sun_bt, loser)], [11 * 60, 26])
+	held_sun_bt.end_turn()
+	check("let go this time, it is evening with three hours pulled",
+		[held_sun_run.clock.minute_of_day(), held_sun_run.clock.elapsed], [17 * 60, 12 * 60])
+	check("the turn counts too, so it grows 1 and 2 more", loser.current_intent().stacks, 3)
+
+	var late_sun_run: RunState = sun_dawn.call()
+	var dud: Combatant = sun_dragger.call()
+	var late_sun_bt := battle(late_sun_run, [dud])
+	for grip in [18, 22, 26]:
+		late_sun_bt.damage(1, grip)
+		late_sun_bt.end_turn()
+	check("on the day's last turn it still pulls", dud.current_intent().kind, EnemyIntent.Kind.DRAG)
+	late_sun_bt.end_turn()
+	check("the turn itself reaches the evening, so the clock is not moved any further",
+		[late_sun_run.clock.minute_of_day(), late_sun_run.clock.elapsed], [17 * 60, 12 * 60])
+	check("but the turn was pulled all the same: 1 and 1 more", dud.current_intent().stacks, 2)
+
+	var last_run: RunState = sun_dawn.call()
+	last_run.clock.advance(_b.starting_remaining - 200, RunClock.Source.TRAVEL)
+	var ender := enemy(200, [EnemyIntent.drag(18)] as Array[EnemyIntent], BehaviorSunDragger.new())
+	var last_bt := battle(last_run, [ender])
+	last_bt.end_turn()
+	check("a pull that takes the last of the run's time ends the run",
+		[last_run.clock.is_expired(), last_bt.phase], [true, BattleState.Phase.DEFEAT])
+
 	print("\n-- 무거움: a card that cost an hour lands half, a dearer one lands whole --")
 	var light_run := strikes()
 	var light_foe := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorHeavy.new())

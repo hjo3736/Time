@@ -19,6 +19,11 @@ enum When { ANY, MORNING, DAY, EVENING, NIGHT }
 
 @export var link_pairs := false
 
+## Applied to every member's gauge on top of Threat. 1.0 for anything authored;
+## a fight mixed from the solo pool is given the balance profile's figure, because
+## two enemies each written to stand alone are more than twice one of them.
+@export var hp_scale := 1.0
+
 
 func validate(enemies: EnemyDatabase) -> PackedStringArray:
 	var problems := PackedStringArray()

@@ -226,7 +226,13 @@ static func _assign(
 	for i in mini(combat_rooms, order.size()):
 		var room: Room = rooms[order[i]]
 		room.kind = Room.Kind.COMBAT
-		_stock(room, encounters, rng, act, EnemyData.Tier.NORMAL)
+		# Rolled only when there is something to roll, so a floor that opens on a
+		# corridor spends no randomness deciding what was never in doubt.
+		var chance := balance.solo_chance_at(act, int(distances.get(order[i], 0)))
+		var alone := chance >= 1.0 or (chance > 0.0 and rng.randf() < chance)
+		_stock(room, encounters, rng, act, EnemyData.Tier.NORMAL, alone)
+		if not alone:
+			room.companions = encounters.draw_companions(rng, act, balance.mixed_fight_size)
 
 
 static func _leaves_room(pool: Array, spacing: Dictionary, chosen: Vector2i,
@@ -255,17 +261,17 @@ static func _clear_of(spacing: Dictionary, settled: Array, coord: Vector2i,
 
 
 static func _stock(room: Room, encounters: EncounterTable, rng: RandomNumberGenerator,
-		act: int, tier: EnemyData.Tier) -> void:
-	var by_day := encounters.pick(rng, act, tier, false, RunClock.Daytime.DAY)
+		act: int, tier: EnemyData.Tier, alone: bool = false) -> void:
+	var by_day := encounters.pick(rng, act, tier, false, RunClock.Daytime.DAY, alone)
 	if by_day != null:
 		room.encounter_id = by_day.id
-	var by_morning := encounters.pick(rng, act, tier, false, RunClock.Daytime.MORNING)
+	var by_morning := encounters.pick(rng, act, tier, false, RunClock.Daytime.MORNING, alone)
 	if by_morning != null:
 		room.morning_encounter_id = by_morning.id
-	var by_evening := encounters.pick(rng, act, tier, false, RunClock.Daytime.EVENING)
+	var by_evening := encounters.pick(rng, act, tier, false, RunClock.Daytime.EVENING, alone)
 	if by_evening != null:
 		room.evening_encounter_id = by_evening.id
-	var by_night := encounters.pick(rng, act, tier, false, RunClock.Daytime.NIGHT)
+	var by_night := encounters.pick(rng, act, tier, false, RunClock.Daytime.NIGHT, alone)
 	if by_night != null:
 		room.night_encounter_id = by_night.id
 

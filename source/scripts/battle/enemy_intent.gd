@@ -2,8 +2,8 @@ class_name EnemyIntent
 extends Resource
 
 
-## GROW is last on purpose: a saved fight stores the kind as its number.
-enum Kind { ATTACK, BLOCK, STATUS, WAIT, GROW }
+## New kinds go on the end: a saved fight stores the kind as its number.
+enum Kind { ATTACK, BLOCK, STATUS, WAIT, GROW, BEAR, DRAG }
 
 @export var kind := Kind.ATTACK
 @export var amount := 5
@@ -43,6 +43,26 @@ static func grow(stacks: int) -> EnemyIntent:
 	var i := EnemyIntent.new()
 	i.kind = Kind.GROW
 	i.stacks = stacks
+	return i
+
+
+## A status the enemy puts on itself. STATUS is always aimed at the Warden, and
+## GROW is only ever Strength; this is the rest.
+static func bear(status_id: StringName, stacks: int) -> EnemyIntent:
+	var i := EnemyIntent.new()
+	i.kind = Kind.BEAR
+	i.status = status_id
+	i.stacks = stacks
+	return i
+
+
+## Pulls the run's clock on to the next sky. `amount` is the grip: how much it
+## has to take in the turn it is showing this for the pull to fail. Whether it
+## failed is the behaviour's to say — with none, nothing can stop it.
+static func drag(grip: int) -> EnemyIntent:
+	var i := EnemyIntent.new()
+	i.kind = Kind.DRAG
+	i.amount = grip
 	return i
 
 

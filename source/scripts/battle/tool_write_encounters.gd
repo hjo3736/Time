@@ -69,12 +69,39 @@ func _act_one(enemies: EnemyDatabase) -> void:
 	print("1막 — 일반")
 	write(encounter(&"a1_lone_squabble", 10, [&"squabble"]), enemies)
 	write(encounter(&"a1_lone_doorsill", 10, [&"doorsill"]), enemies)
+	write(encounter(&"a1_lone_swallowed_word", 10, [&"swallowed_word"]), enemies)
+	write(encounter(&"a1_lone_tossing", 10, [&"tossing"]), enemies)
+	write(encounter(&"a1_lone_draught", 10, [&"draught"]), enemies)
+
+	print("1막 — 무리")
+	write(encounter(&"a1_group_day", 10,
+		[&"breakfast", &"nap", &"sundown", &"supper"]), enemies)
+	write(encounter(&"a1_group_hourglass", 10, [&"hourglass_upper", &"hourglass_lower"],
+		EnemyData.Tier.NORMAL, false, true), enemies)
+	write(encounter(&"a1_group_relay", 10, [&"runner", &"runner", &"runner"]), enemies)
+	write(encounter(&"a1_group_chorus", 10,
+		[&"chorister", &"chorister", &"chorister"]), enemies)
+	write(encounter(&"a1_group_domino", 10,
+		[&"domino", &"domino", &"domino", &"domino"]), enemies)
+	write(encounter(&"a1_group_shelter", 10, [&"shelter_front", &"shelter_behind"],
+		EnemyData.Tier.NORMAL, false, true), enemies)
 
 	print("1막 — 정예")
 	write(encounter(&"a1_elite_murphys_law", 10, [&"murphys_law"],
 		EnemyData.Tier.ELITE), enemies)
 	write(encounter(&"a1_elite_throng", 10, [&"throng"],
 		EnemyData.Tier.ELITE), enemies)
+	write(encounter(&"a1_elite_wall_clock", 10,
+		[&"second_hand", &"minute_hand", &"hour_hand"], EnemyData.Tier.ELITE), enemies)
+	write(encounter(&"a1_elite_seesaw", 10, [&"seesaw_near", &"seesaw_far"],
+		EnemyData.Tier.ELITE, false, true), enemies)
+	write(encounter(&"a1_elite_prop", 10, [&"prop"],
+		EnemyData.Tier.ELITE), enemies)
+
+	print("1막 — 보스")
+	write(encounter(&"a1_boss_echo", 10, [&"echo"], EnemyData.Tier.BOSS), enemies)
+	write(encounter(&"a1_boss_sun_dragger", 10, [&"sun_dragger"],
+		EnemyData.Tier.BOSS), enemies)
 
 
 func _act_two(_enemies: EnemyDatabase) -> void:

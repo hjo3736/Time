@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="EncounterData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/encounter_data.gd" id="1_cq2qb"]
+
+[resource]
+script = ExtResource("1_cq2qb")
+id = &"a1_group_chorus"
+members = Array[StringName]([&"chorister", &"chorister", &"chorister"])

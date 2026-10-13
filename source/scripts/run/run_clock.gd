@@ -245,6 +245,18 @@ func minutes_until_sky_turns() -> int:
 	return Balance.MINUTES_PER_DAY - now + sky_bounds[0]
 
 
+## Minutes until the given sky next begins. Nothing if it is beginning now — the
+## start of a sky is in it, not before it.
+func minutes_until(sky: int) -> int:
+	var starts := {
+		Daytime.MORNING: sky_bounds[0],
+		Daytime.DAY: sky_bounds[1],
+		Daytime.EVENING: sky_bounds[2],
+		Daytime.NIGHT: sky_bounds[3],
+	}
+	return posmod(int(starts[sky]) - minute_of_day(), Balance.MINUTES_PER_DAY)
+
+
 func date_at(minutes_from_start: int) -> Dictionary:
 	var total: int = opening_minute() + maxi(0, minutes_from_start)
 	var days_in := total / Balance.MINUTES_PER_DAY

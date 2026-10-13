@@ -235,6 +235,14 @@ func _enemy_panel(rc: RunController, handle: int) -> Control:
 	intent.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(intent)
 
+	# Whatever else it does this turn, one line each, under the intent it leads
+	# with. Everything it is about to do is on screen before it does any of it.
+	if enemy.behavior != null:
+		for extra in enemy.behavior.extra_intents(rc.battle, handle):
+			var also := UiTheme.label(_intent_text(rc, handle, enemy, extra), 17, UiTheme.BLOOD)
+			also.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			box.add_child(also)
+
 	if enemy.behavior != null and enemy.behavior.tell_key() != &"":
 		var tell := UiTheme.label(tr(enemy.behavior.tell_key()), 12, UiTheme.INK_DIM)
 		tell.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -298,8 +306,9 @@ func _intent_amount(rc: RunController, handle: int, enemy: Combatant, intent: En
 	return amount
 
 
-func _intent_text(rc: RunController, handle: int, enemy: Combatant) -> String:
-	var intent := enemy.current_intent()
+func _intent_text(rc: RunController, handle: int, enemy: Combatant,
+		shown: EnemyIntent = null) -> String:
+	var intent := shown if shown != null else enemy.current_intent()
 	if intent == null:
 		return tr("ui.battle.intent_none")
 	var amount := _intent_amount(rc, handle, enemy, intent)
@@ -315,6 +324,17 @@ func _intent_text(rc: RunController, handle: int, enemy: Combatant) -> String:
 				"name": tr("status.%s" % intent.status), "n": intent.stacks})
 		EnemyIntent.Kind.GROW:
 			return tr("ui.battle.intent_grow").format({"n": intent.stacks})
+		EnemyIntent.Kind.DRAG:
+			# Not `amount`: that has Threat on it, and the grip is not a blow.
+			var left := intent.amount
+			if enemy.behavior != null:
+				left = enemy.behavior.outgoing_amount(rc.battle, handle, intent)
+			if left <= 0:
+				return tr("ui.battle.intent_drag_lost")
+			return tr("ui.battle.intent_drag").format({"n": left})
+		EnemyIntent.Kind.BEAR:
+			return tr("ui.battle.intent_bear").format({
+				"name": tr("status.%s" % intent.status), "n": intent.stacks})
 		EnemyIntent.Kind.WAIT:
 			return tr("ui.battle.intent_wait")
 	return tr("ui.battle.intent_none")

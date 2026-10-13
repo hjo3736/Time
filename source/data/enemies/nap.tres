@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_intent.gd" id="1_t7i7k"]
+[ext_resource type="Script" path="res://source/scripts/battle/enemy_data.gd" id="2_tr6km"]
+
+[sub_resource type="Resource" id="Resource_3ft6s"]
+script = ExtResource("1_t7i7k")
+
+[sub_resource type="Resource" id="Resource_b04bv"]
+script = ExtResource("1_t7i7k")
+kind = 1
+amount = 4
+
+[sub_resource type="Resource" id="Resource_si7bp"]
+script = ExtResource("1_t7i7k")
+amount = 6
+
+[sub_resource type="Resource" id="Resource_i6hu8"]
+script = ExtResource("1_t7i7k")
+kind = 3
+
+[resource]
+script = ExtResource("2_tr6km")
+id = &"nap"
+name_key = &"enemy.nap.name"
+hp_min = 13
+hp_max = 15
+intents = Array[ExtResource("1_t7i7k")]([SubResource("Resource_i6hu8")])
+day_intents = Array[ExtResource("1_t7i7k")]([SubResource("Resource_3ft6s"), SubResource("Resource_b04bv"), SubResource("Resource_si7bp")])

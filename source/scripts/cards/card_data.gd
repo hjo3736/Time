@@ -115,6 +115,8 @@ func rules_text_live(battle, source: int, target: int) -> String:
 	# the card is not the number that lands.
 	if battle != null:
 		battle.cost_in_play = battle.cost_of(self)
+		battle.targets_in_play = (battle.enemy_handles().size()
+			if targeting == CardTargeting.Mode.ALL_ENEMIES else 1)
 	for effect in effects:
 		var line: String = effect.describe_live(battle, source, target, targeting, not named)
 		if effect.faces_enemies():
@@ -123,6 +125,7 @@ func rules_text_live(battle, source: int, target: int) -> String:
 			parts.append(line)
 	if battle != null:
 		battle.cost_in_play = -1
+		battle.targets_in_play = 0
 	return " ".join(parts)
 
 

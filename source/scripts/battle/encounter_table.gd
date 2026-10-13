@@ -96,12 +96,19 @@ func _shows_under(e: EncounterData, sky: int) -> bool:
 
 
 func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: bool = false,
-		sky: int = -1) -> EncounterData:
+		sky: int = -1, alone: bool = false) -> EncounterData:
 	var pool := candidates(act, tier, opening, sky)
 	if pool.is_empty() and sky >= 0:
 		pool = candidates(act, tier, opening)
 	if pool.is_empty():
 		return null
+
+	# A room that has to be one enemy cannot draw an authored group. If the act
+	# has written nothing that stands alone, a group is better than an empty room.
+	if alone:
+		var singles := pool.filter(func(e: EncounterData) -> bool: return e.members.size() == 1)
+		if not singles.is_empty():
+			pool = singles
 
 	var fresh := pool.filter(func(e: EncounterData) -> bool: return not _recent.has(e.id))
 	if not fresh.is_empty():
@@ -118,6 +125,61 @@ func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: b
 			return e
 	_remember(pool[-1].id)
 	return pool[-1]
+
+
+## Who may be drawn as company: whoever the act fields alone, at the weight it
+## fields them. An Askew written only into a group is that group's and nobody
+## else's, so it never turns up beside a stranger.
+func mixable(act: int) -> Dictionary:
+	var out := {}
+	for e in candidates(act, EnemyData.Tier.NORMAL):
+		if e.members.size() == 1:
+			out[e.members[0]] = int(out.get(e.members[0], 0)) + e.weight
+	return out
+
+
+## Drawn without putting back, so a room's company is all different. Asked for
+## one more than a fight needs: the room's own enemy changes with the sky, and
+## whichever of these turns out to be the same one is stepped over.
+func draw_companions(rng: RandomNumberGenerator, act: int, count: int) -> Array[StringName]:
+	var pool := mixable(act)
+	var ids := pool.keys()
+	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
+	var out: Array[StringName] = []
+	while out.size() < count and not ids.is_empty():
+		var total := 0
+		for id in ids:
+			total += int(pool[id])
+		var roll := rng.randi_range(1, total)
+		for id in ids:
+			roll -= int(pool[id])
+			if roll <= 0:
+				out.append(id)
+				ids.erase(id)
+				break
+	return out
+
+
+## The fight a room actually holds: its one enemy and enough of its company to
+## make `size`. A group is left exactly as written, and so is a room with no
+## company. The result is built for the fight and never joins the table.
+func mixed(base: EncounterData, companions: Array[StringName], size: int,
+		hp_scale: float = 1.0) -> EncounterData:
+	if base == null or base.members.size() != 1 or companions.is_empty():
+		return base
+	var out := EncounterData.new()
+	out.id = base.id
+	out.act = base.act
+	out.tier = base.tier
+	out.weight = base.weight
+	out.members = base.members.duplicate()
+	out.hp_scale = hp_scale
+	for id in companions:
+		if out.members.size() >= size:
+			break
+		if not out.members.has(id):
+			out.members.append(id)
+	return out
 
 
 func _remember(id: StringName) -> void:
@@ -140,7 +202,8 @@ func spawn(
 	threat_level: int = 0,
 ) -> Array[Combatant]:
 	var out: Array[Combatant] = []
-	var hp_scale := balance.enemy_hp_scale * balance.threat_hp_multiplier(threat_level)
+	var hp_scale := (balance.enemy_hp_scale * balance.threat_hp_multiplier(threat_level)
+		* encounter.hp_scale)
 	var damage_scale := balance.enemy_damage_scale * balance.threat_damage_multiplier(threat_level)
 
 	for member in encounter.members:
