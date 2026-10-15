@@ -71,11 +71,9 @@ func _read(field: LineEdit) -> int:
 
 func _field(row: HBoxContainer, caption: String, value: String,
 		digits: int, width: float) -> LineEdit:
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 3)
-	var tag := UiTheme.label(caption, 13, UiTheme.INK_DIM)
-	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	column.add_child(tag)
+	# The unit sits after its number, the way the date is read: 9550년 28월.
+	var pair := HBoxContainer.new()
+	pair.add_theme_constant_override("separation", 4)
 
 	var edit := LineEdit.new()
 	edit.text = value
@@ -83,9 +81,14 @@ func _field(row: HBoxContainer, caption: String, value: String,
 	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	edit.custom_minimum_size = Vector2(width, 40)
 	edit.text_changed.connect(func(_t: String) -> void: _retell())
-	column.add_child(edit)
+	pair.add_child(edit)
 
-	row.add_child(column)
+	var tag := UiTheme.label(caption, 16, UiTheme.INK_DIM)
+	tag.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	pair.add_child(tag)
+
+	row.add_child(pair)
 	return edit
 
 

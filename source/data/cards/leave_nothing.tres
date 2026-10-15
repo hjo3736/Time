@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_lmv52"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_variable_block.gd" id="2_2quca"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="3_rsawt"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="4_togi8"]
+
+[sub_resource type="Resource" id="Resource_w2jc4"]
+script = ExtResource("2_2quca")
+per_hour = 6
+
+[sub_resource type="Resource" id="Resource_ghpnq"]
+script = ExtResource("2_2quca")
+per_hour = 8
+
+[sub_resource type="Resource" id="Resource_83n8v"]
+script = ExtResource("4_togi8")
+effects = Array[ExtResource("1_lmv52")]([SubResource("Resource_ghpnq")])
+
+[resource]
+script = ExtResource("3_rsawt")
+id = &"leave_nothing"
+name_key = &"card.leave_nothing.name"
+kind = 1
+lanes = Array[int]([2])
+cost_hours = -1
+targeting = 2
+effects = Array[ExtResource("1_lmv52")]([SubResource("Resource_w2jc4")])
+upgrade = SubResource("Resource_83n8v")

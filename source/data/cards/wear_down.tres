@@ -30,7 +30,6 @@ script = ExtResource("4_e4xrh")
 id = &"wear_down"
 name_key = &"card.wear_down.name"
 lanes = Array[int]([1])
-cost_hours = 2
 targeting = 1
 effects = Array[ExtResource("1_x4pg6")]([SubResource("Resource_7h2ao"), SubResource("Resource_ilwga")])
 upgrade = SubResource("Resource_8fbw4")

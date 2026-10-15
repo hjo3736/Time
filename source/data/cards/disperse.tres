@@ -22,7 +22,6 @@ script = ExtResource("3_pbi7x")
 id = &"disperse"
 name_key = &"card.disperse.name"
 lanes = Array[int]([0])
-cost_hours = 2
 targeting = 1
 effects = Array[ExtResource("1_cbbpo")]([SubResource("Resource_egoat")])
 upgrade = SubResource("Resource_5rftl")

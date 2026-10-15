@@ -243,11 +243,9 @@ func _enemy_panel(rc: RunController, handle: int) -> Control:
 			also.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			box.add_child(also)
 
-	if enemy.behavior != null and enemy.behavior.tell_key() != &"":
-		var tell := UiTheme.label(tr(enemy.behavior.tell_key()), 12, UiTheme.INK_DIM)
-		tell.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(tell)
-
+	# What an enemy's behaviour does is not written out here. The fight shows the
+	# intent and the numbers; the rule behind them is the compendium's to state,
+	# and the player's to work out.
 	var name_label := UiTheme.label(tr(enemy.name_key), 20, UiTheme.BONE)
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(name_label)

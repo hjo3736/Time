@@ -22,6 +22,9 @@ func screen(seed_value: int = 2) -> GameScreen:
 
 
 func _init() -> void:
+	# The pool is being rebuilt and holds almost nothing; the machinery under test
+	# is exercised with the shelved cards as well. See CardDatabase.SHELF_ROOT.
+	CardDatabase.fixture_roots = PackedStringArray(CardDatabase.TEST_ROOTS)
 	_go()
 
 
@@ -335,12 +338,17 @@ func _go() -> void:
 	check("battle is not", s._battle.visible, false)
 	check("standing on the start", s.rc.map.current, Vector2i.ZERO)
 
-	print("\n-- clicking an adjacent room walks there and costs an hour --")
+	print("\n-- clicking an adjacent room walks there and costs what that corridor is priced at --")
 	var before := s.rc.run.clock.remaining
 	var step: Vector2i = s.rc.map.reachable()[0]
+	# Read off the map rather than written here: which corridor the seed opens on
+	# changes whenever the floor does, and they are priced one to three hours.
+	var toll: int = s.rc.map.cost_between(Vector2i.ZERO, step)
 	s._on_move(step)
 	check("moved", s.rc.map.current, step)
-	check("charged", before - s.rc.run.clock.remaining, 60)
+	check("charged", before - s.rc.run.clock.remaining, toll)
+	check("which is a real corridor's price", toll >= s.rc.run.clock.balance.room_cost_min
+		and toll <= s.rc.run.clock.balance.room_cost_max, true)
 
 	print("\n-- walking into a fight swaps the view --")
 	var guard := 0
@@ -440,7 +448,7 @@ func _go() -> void:
 	print("\n-- a hovered card explains its keywords --")
 	var db := CardDatabase.new()
 	db.load_from()
-	var chrono := db.get_card(&"held_breath")
+	var chrono := db.get_card(&"fixture_refund")
 	var help := CardHelp.tooltip_for(chrono)
 	check("says it needs no target", help.contains(TranslationServer.translate("help.target.self")), true)
 	check("explains Exhaust", help.contains(TranslationServer.translate("keyword.exhaust.help")), true)

@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_xif82"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_refund_time.gd" id="2_cbfr0"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_draw.gd" id="3_dr706"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_bsbe2"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_upgrade.gd" id="5_hgwem"]
+
+[sub_resource type="Resource" id="Resource_6h7aj"]
+script = ExtResource("2_cbfr0")
+
+[sub_resource type="Resource" id="Resource_bji23"]
+script = ExtResource("3_dr706")
+
+[sub_resource type="Resource" id="Resource_g1fkx"]
+script = ExtResource("2_cbfr0")
+
+[sub_resource type="Resource" id="Resource_mt5m6"]
+script = ExtResource("3_dr706")
+count = 2
+
+[sub_resource type="Resource" id="Resource_sc7wa"]
+script = ExtResource("5_hgwem")
+effects = Array[ExtResource("1_xif82")]([SubResource("Resource_g1fkx"), SubResource("Resource_mt5m6")])
+
+[resource]
+script = ExtResource("4_bsbe2")
+id = &"catch_breath"
+name_key = &"card.catch_breath.name"
+kind = 1
+lanes = Array[int]([2])
+targeting = 2
+effects = Array[ExtResource("1_xif82")]([SubResource("Resource_6h7aj"), SubResource("Resource_bji23")])
+upgrade = SubResource("Resource_sc7wa")

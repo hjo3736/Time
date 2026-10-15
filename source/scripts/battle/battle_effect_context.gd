@@ -40,7 +40,7 @@ func draw_cards(count: int) -> int:
 
 
 func refund_turn_time(minutes: int) -> void:
-	_battle.turn_budget += minutes
+	_battle.borrow_turn_time(minutes)
 
 
 func restore_time(minutes: int) -> void:

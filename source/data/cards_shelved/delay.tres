@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_1skp8"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="2_j36g6"]
+
+[resource]
+script = ExtResource("2_j36g6")
+id = &"delay"
+name_key = &"card.delay.name"
+kind = 3
+rarity = 4
+targeting = 2
+text_key = &"card.delay.text"

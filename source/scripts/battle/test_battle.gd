@@ -44,6 +44,9 @@ func hand_index_of(bt: BattleState, id: StringName) -> int:
 
 
 func _init() -> void:
+	# The pool is being rebuilt and holds almost nothing; the machinery under test
+	# is exercised with the shelved cards as well. See CardDatabase.SHELF_ROOT.
+	CardDatabase.fixture_roots = PackedStringArray(CardDatabase.TEST_ROOTS)
 	TranslationServer.set_locale("en")
 	_b = Balance.default()
 	_cards = CardDatabase.new()
@@ -67,10 +70,12 @@ func _init() -> void:
 	check("enemy took 6", bt.combatants[1].hp, 24)
 
 	print("\n-- the budget is a hard stop --")
-	var poor := battle(run_with_deck([&"disperse", &"disperse", &"disperse"]), [dummy(30, [EnemyIntent.wait()])])
-	check("first 2h play", poor.play_card(hand_index_of(poor, &"disperse")), true)
+	# 끊어내기 for the two-hour card: it is in the starting deck, so it is the one
+	# whose cost is least likely to be retuned out from under this.
+	var poor := battle(run_with_deck([&"sever", &"sever", &"sever"]), [dummy(60, [EnemyIntent.wait()])])
+	check("first 2h play", poor.play_card(hand_index_of(poor, &"sever"), 1), true)
 	check("budget left", poor.turn_budget, 60)
-	check("second 2h play refused", poor.play_card(hand_index_of(poor, &"disperse")), false)
+	check("second 2h play refused", poor.play_card(hand_index_of(poor, &"sever"), 1), false)
 	check("nothing spent on the refusal", poor.turn_budget, 60)
 
 	print("\n-- unspent time is lost, and the hour passes either way --")
@@ -100,14 +105,45 @@ func _init() -> void:
 	check("6 became 9", vuln.combatants[1].hp, 31)
 
 	print("\n-- exhaust leaves the fight, discard does not --")
-	var ex := battle(run_with_deck([&"held_breath", &"brace", &"brace", &"brace", &"brace"]),
+	var ex := battle(run_with_deck([&"fixture_refund", &"brace", &"brace", &"brace", &"brace"]),
 		[dummy(50, [EnemyIntent.wait()])])
-	var hb := hand_index_of(ex, &"held_breath")
+	var hb := hand_index_of(ex, &"fixture_refund")
 	var budget_before := ex.turn_budget
 	ex.play_card(hb)
 	check("exhausted", ex.piles().exhausted.size(), 1)
 	check("not discarded", ex.piles().discard.size(), 0)
 	check("net +1h after paying 1h", ex.turn_budget - budget_before, 60)
+
+	print("\n-- time a card adds is borrowed from the run, and billed whether it is spent or not --")
+	check("two hours were borrowed", ex.borrowed_this_turn, 120)
+	check("and the turn is five hours from the moment the card is played", ex.turn_cost_now(), 300)
+	ex.play_card(hand_index_of(ex, &"brace"))
+	ex.play_card(hand_index_of(ex, &"brace"))
+	ex.play_card(hand_index_of(ex, &"brace"))
+	ex.play_card(hand_index_of(ex, &"brace"))
+	check("spending them changes nothing about what the turn costs",
+		[ex.turn_budget, ex.turn_cost_now()], [0, 300])
+	var clock_before := ex._run.clock.elapsed
+	ex.end_turn()
+	check("ending the turn bills all five to the run", ex._run.clock.elapsed - clock_before, 300)
+	check("and the next turn has borrowed nothing", [ex.borrowed_this_turn, ex.turn_cost_now()],
+		[0, 180])
+
+	var frugal := battle(run_with_deck([&"fixture_refund", &"brace", &"brace", &"brace", &"brace"]),
+		[dummy(50, [EnemyIntent.wait()])])
+	frugal.play_card(hand_index_of(frugal, &"fixture_refund"))
+	var frugal_clock := frugal._run.clock.elapsed
+	frugal.end_turn()
+	check("borrowed and left unspent, it is five hours all the same",
+		frugal._run.clock.elapsed - frugal_clock, 300)
+
+	print("\n-- an X card that guards spends what is left and blocks by the hour --")
+	var spare := battle(run_with_deck([&"leave_nothing", &"take", &"take", &"take", &"take"]),
+		[dummy(50, [EnemyIntent.wait()])])
+	spare.play_card(hand_index_of(spare, &"take"), 1)
+	spare.play_card(hand_index_of(spare, &"leave_nothing"))
+	check("two hours were left, so twelve block", spare.warden().block, 12)
+	check("and nothing is left of the turn", spare.turn_budget, 0)
 
 	print("\n-- killing the last enemy ends it and pays Restored --")
 	var kill := battle(run_with_deck([&"take", &"take", &"take", &"take", &"take"]),
@@ -168,7 +204,7 @@ func _init() -> void:
 	print("\n-- the same seed deals the same fight --")
 	var seen := []
 	for attempt in 2:
-		var r := run_with_deck([&"take", &"brace", &"disperse", &"soften", &"scatter", &"held_breath"])
+		var r := run_with_deck([&"take", &"brace", &"disperse", &"soften", &"scatter", &"fixture_refund"])
 		var bs := battle(r, [dummy(99, [EnemyIntent.wait()])], 99)
 		seen.append(bs.piles().hand.map(func(x: int) -> String: return String(bs.card_at(bs.piles().hand.find(x)).id)))
 	check("identical openings", seen[0], seen[1])

@@ -23,6 +23,7 @@ id = &"stillness"
 name_key = &"card.stillness.name"
 kind = 1
 rarity = 2
+cost_hours = 0
 targeting = 2
 effects = Array[ExtResource("1_tagvd")]([SubResource("Resource_i16qg")])
 keywords = 1

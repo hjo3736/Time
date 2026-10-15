@@ -87,7 +87,7 @@ func _init() -> void:
 	var d2 := EffectDraw.new()
 	d2.count = 2
 	check("draw plural", d2.describe(), "Draw 2 cards.")
-	check("refund reads in hours", refund.describe(), "Regain 1h this turn.")
+	check("refund reads in hours", refund.describe(), "Gain 1h more this turn.")
 
 	print("\n-- effects hold no state between uses --")
 	var r1 := RecordingEffectContext.new(0, PackedInt32Array([1]))

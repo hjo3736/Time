@@ -32,6 +32,11 @@ var cards_played_this_turn := 0
 ## -1 when no card is. Damage that arrives while this is -1 came from no card.
 var cost_in_play := -1
 
+## Minutes a card has added to this turn's budget. Time is not made by being
+## rearranged: what a card adds is borrowed from the run, and all of it is billed
+## to the clock when the turn ends, spent or not. See overtime_now().
+var borrowed_this_turn := 0
+
 ## How many the card being resolved, or previewed, is aimed at; 0 when no card
 ## is. More than one means it was not aimed at anyone in particular.
 var targets_in_play := 0
@@ -125,7 +130,25 @@ func turn_cost_now() -> int:
 		var who: Combatant = combatants[handle]
 		if who.behavior != null:
 			out = who.behavior.modify_turn_cost(self, handle, out)
-	return maxi(0, out)
+	return maxi(0, out) + overtime_now()
+
+
+## What this turn bills the run beyond its own length: everything a card added
+## to it, whether or not it was then spent. The hours were taken out of the run
+## when they were asked for — unspent time is lost here like any other, and a
+## borrowed hour is not an exception. In turn_cost_now(), so the HUD shows it
+## leaving the moment the card is played.
+func overtime_now() -> int:
+	return borrowed_this_turn
+
+
+## The one way a card adds to the turn. Not `turn_budget += n` from an effect:
+## that would be time from nowhere.
+func borrow_turn_time(minutes: int) -> void:
+	if minutes <= 0:
+		return
+	turn_budget += minutes
+	borrowed_this_turn += minutes
 
 
 func begin_turn() -> void:
@@ -136,6 +159,7 @@ func begin_turn() -> void:
 	phase = Phase.PLAYER_TURN
 	turn_budget = _run.relic_turn_budget(_balance.turn_cost)
 	turn_budget_max = turn_budget
+	borrowed_this_turn = 0
 	cards_played_this_turn = 0
 	warden().block = 0
 	_piles.draw_cards(_hand_size)
@@ -360,6 +384,7 @@ func to_dict() -> Dictionary:
 		"turn_budget": turn_budget,
 		"turn_budget_max": turn_budget_max,
 		"cards_played_this_turn": cards_played_this_turn,
+		"borrowed_this_turn": borrowed_this_turn,
 		"hand_size": _hand_size,
 		"rng_seed": _rng.seed,
 		"rng_state": _rng.state,
@@ -381,6 +406,7 @@ static func from_dict(data: Dictionary, run: RunState, cards: CardDatabase) -> B
 	out.turn_budget = int(data.get("turn_budget", 0))
 	out.turn_budget_max = int(data.get("turn_budget_max", out.turn_budget))
 	out.cards_played_this_turn = int(data.get("cards_played_this_turn", 0))
+	out.borrowed_this_turn = int(data.get("borrowed_this_turn", 0))
 	out._hand_size = int(data.get("hand_size", 5))
 	out.phase = int(data.get("phase", Phase.PLAYER_TURN))
 	out.follow_the_sky()

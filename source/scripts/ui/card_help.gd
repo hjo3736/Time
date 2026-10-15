@@ -51,7 +51,7 @@ static func _effect_note(effect: CardEffect) -> String:
 		return TranslationServer.translate("help.reroll")
 	if effect is EffectScalingDamage or effect is EffectScalingBlock:
 		return TranslationServer.translate("help.scaling")
-	if effect is EffectVariableDamage:
+	if effect is EffectVariableDamage or effect is EffectVariableBlock:
 		return TranslationServer.translate("help.variable")
 	if effect is EffectRestoreTime:
 		return TranslationServer.translate("help.restore")

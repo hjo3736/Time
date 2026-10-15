@@ -4,6 +4,24 @@ extends RefCounted
 
 const DEFAULT_ROOT := "res://source/data/cards"
 
+## Cards taken out of the pool while it is rebuilt. Nothing in the game loads
+## this. The tests do: they need a card that draws, one that strikes everything,
+## one that exhausts, and so on, to exercise the machinery, and the machinery is
+## not on the shelf even though the cards that showed it off are.
+const SHELF_ROOT := "res://source/data/cards_shelved"
+
+## Cards that exist only for the tests. See tool_write_cards.gd.
+const FIXTURE_ROOT := "res://source/data/cards_fixtures"
+
+## What a test suite reads besides the pool.
+const TEST_ROOTS: Array[String] = [SHELF_ROOT, FIXTURE_ROOT]
+
+## Extra directories read whenever the default one is. Empty in the game. A var
+## for the same reason SaveGame.path is: a suite sets it once and every database
+## built anywhere under that suite — a screen builds its own — sees the same
+## cards.
+static var fixture_roots: PackedStringArray = []
+
 var _by_id: Dictionary = {}
 var _sorted_ids: Array[StringName] = []
 var _upgrade_cache: Dictionary = {}
@@ -16,7 +34,11 @@ func load_from(root: String = DEFAULT_ROOT) -> void:
 	_upgrade_cache.clear()
 	_load_problems = PackedStringArray()
 
-	for path in _resource_paths(root):
+	var paths := _resource_paths(root)
+	if root == DEFAULT_ROOT:
+		for extra in fixture_roots:
+			paths.append_array(_resource_paths(extra))
+	for path in paths:
 		var res := ResourceLoader.load(path)
 		if res == null:
 			_load_problems.append("%s: failed to load." % path)

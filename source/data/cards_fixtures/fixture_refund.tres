@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CardData" format=3]
+
+[ext_resource type="Script" path="res://source/scripts/cards/card_effect.gd" id="1_ksdnn"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_refund_time.gd" id="2_ngp0t"]
+[ext_resource type="Script" path="res://source/scripts/cards/effects/effect_draw.gd" id="3_14n5u"]
+[ext_resource type="Script" path="res://source/scripts/cards/card_data.gd" id="4_b7bp1"]
+
+[sub_resource type="Resource" id="Resource_pe30o"]
+script = ExtResource("2_ngp0t")
+minutes = 120
+
+[sub_resource type="Resource" id="Resource_13bwk"]
+script = ExtResource("3_14n5u")
+
+[resource]
+script = ExtResource("4_b7bp1")
+id = &"fixture_refund"
+name_key = &"card.fixture_refund.name"
+kind = 1
+rarity = 4
+targeting = 2
+effects = Array[ExtResource("1_ksdnn")]([SubResource("Resource_pe30o"), SubResource("Resource_13bwk")])
+keywords = 1

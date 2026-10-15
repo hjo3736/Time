@@ -25,7 +25,6 @@ effects = Array[ExtResource("1_oqs2f")]([SubResource("Resource_xghdk")])
 script = ExtResource("3_0wo8y")
 id = &"scatter"
 name_key = &"card.scatter.name"
-rarity = 2
 lanes = Array[int]([0])
 targeting = 3
 effects = Array[ExtResource("1_oqs2f")]([SubResource("Resource_am312")])

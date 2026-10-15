@@ -7,10 +7,11 @@
 
 [sub_resource type="Resource" id="Resource_2e2ww"]
 script = ExtResource("2_7t6ea")
+per_hour = 7
 
 [sub_resource type="Resource" id="Resource_6nfqn"]
 script = ExtResource("2_7t6ea")
-per_hour = 7
+per_hour = 9
 
 [sub_resource type="Resource" id="Resource_hrsor"]
 script = ExtResource("4_wx01e")
@@ -20,7 +21,6 @@ effects = Array[ExtResource("1_2wx2e")]([SubResource("Resource_6nfqn")])
 script = ExtResource("3_53p4s")
 id = &"spend_it"
 name_key = &"card.spend_it.name"
-rarity = 3
 lanes = Array[int]([0])
 cost_hours = -1
 effects = Array[ExtResource("1_2wx2e")]([SubResource("Resource_2e2ww")])

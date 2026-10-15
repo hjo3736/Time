@@ -49,7 +49,7 @@ const MINUTES_PER_DAY := 1440
 
 @export var conversion_cap := 36 * MINUTES_PER_HOUR
 
-@export_range(0.0, 1.0) var fire_heal_fraction := 0.2
+@export_range(0.0, 1.0) var fire_heal_fraction := 0.3
 
 
 @export var reward_weight_common := 60
@@ -57,13 +57,13 @@ const MINUTES_PER_DAY := 1440
 @export var reward_weight_rare := 6
 @export var reward_card_choices := 3
 
-@export var price_common := 4 * MINUTES_PER_HOUR
-@export var price_uncommon := 6 * MINUTES_PER_HOUR
-@export var price_rare := 9 * MINUTES_PER_HOUR
+@export var price_common := 10 * MINUTES_PER_HOUR
+@export var price_uncommon := 15 * MINUTES_PER_HOUR
+@export var price_rare := 24 * MINUTES_PER_HOUR
 @export var shop_card_count := 4
 
-@export var price_removal := 6 * MINUTES_PER_HOUR
-@export var price_removal_increment := 3 * MINUTES_PER_HOUR
+@export var price_removal := 15 * MINUTES_PER_HOUR
+@export var price_removal_increment := 6 * MINUTES_PER_HOUR
 
 ## A relic costs this many times what a card of the same rarity costs. One dial
 ## rather than three prices, so the rarity ladder stays the ladder the cards use.
@@ -83,7 +83,7 @@ const MINUTES_PER_DAY := 1440
 @export var empty_rooms_per_act: Array[int] = [0, 0, 0]
 @export var rooms_per_act_affordable := 8
 
-@export var fires_per_act: Array[int] = [2, 3, 4]
+@export var fires_per_act: Array[int] = [3, 4, 5]
 @export var shops_per_act: Array[int] = [1, 2, 2]
 
 ## How many rooms the start may touch. 1 makes the floor open on a corridor

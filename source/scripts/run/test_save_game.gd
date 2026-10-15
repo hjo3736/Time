@@ -27,6 +27,9 @@ func through_disk(rc: RunController) -> RunController:
 
 
 func _init() -> void:
+	# The pool is being rebuilt and holds almost nothing; the machinery under test
+	# is exercised with the shelved cards as well. See CardDatabase.SHELF_ROOT.
+	CardDatabase.fixture_roots = PackedStringArray(CardDatabase.TEST_ROOTS)
 	TranslationServer.set_locale("en")
 	_balance = Balance.default()
 	_cards = CardDatabase.new()

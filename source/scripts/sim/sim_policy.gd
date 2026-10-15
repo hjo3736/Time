@@ -57,6 +57,8 @@ func worth(card: CardData, battle: BattleState = null, target: Combatant = null)
 			out += float(s.base) + float(s.per_card) + float(s.per_turn)
 		elif effect is EffectBlock:
 			out += float((effect as EffectBlock).amount)
+		elif effect is EffectVariableBlock:
+			out += float((effect as EffectVariableBlock).per_hour) * 2.0
 		elif effect is EffectScalingBlock:
 			out += 6.0
 		elif effect is EffectApplyStatus:
@@ -74,7 +76,7 @@ func worth(card: CardData, battle: BattleState = null, target: Combatant = null)
 
 func _is_defensive(card: CardData) -> bool:
 	for effect in card.effects:
-		if effect is EffectBlock or effect is EffectScalingBlock:
+		if effect is EffectBlock or effect is EffectScalingBlock or effect is EffectVariableBlock:
 			return true
 	return false
 

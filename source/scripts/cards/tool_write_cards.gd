@@ -3,6 +3,24 @@ extends SceneTree
 
 const OUT_DIR := "res://source/data/cards"
 
+## The pool is being rebuilt from nothing, the way the bestiary was. Everything
+## that is not the starting deck or 오래 묵힌 것 is shelved rather than deleted:
+## still authored below, still written out, but to a directory the game does not
+## load. Moving a card back is adding its id to KEPT.
+const SHELF_DIR := "res://source/data/cards_shelved"
+## Not cards. Written for the tests, which need something that refunds time,
+## draws and exhausts to exercise that machinery, and should not lose it every
+## time the real cards that happened to do so are redesigned.
+const FIXTURE_DIR := "res://source/data/cards_fixtures"
+
+const KEPT := [
+	&"take", &"brace", &"sever", &"long_kept",
+	&"soften", &"blunt", &"unmake", &"gather", &"harden", &"stillness",
+	&"quick_cut", &"double_cut", &"disperse", &"scatter", &"flurry", &"spend_it", &"all_at_once",
+	&"steady", &"wear_down", &"momentum", &"long_hour", &"unspool", &"regather",
+	&"catch_breath", &"leave_nothing",
+]
+
 const K := CardData.Kind
 const R := CardData.Rarity
 const L := CardData.Lane
@@ -72,6 +90,12 @@ func per_hour(amount: int) -> EffectVariableDamage:
 	return e
 
 
+func per_hour_blk(amount: int) -> EffectVariableBlock:
+	var e := EffectVariableBlock.new()
+	e.per_hour = amount
+	return e
+
+
 func reclaimed(hours: int) -> EffectRestoreTime:
 	var e := EffectRestoreTime.new()
 	e.hours = hours
@@ -121,16 +145,22 @@ func write(c: CardData) -> void:
 	var problems := c.validate()
 	if not problems.is_empty():
 		print("  LINT  %s: %s" % [c.id, problems])
-	var err := ResourceSaver.save(c, "%s/%s.tres" % [OUT_DIR, c.id])
+	var fixture := String(c.id).begins_with("fixture_")
+	var shelved := not fixture and not KEPT.has(c.id)
+	var dir := FIXTURE_DIR if fixture else (SHELF_DIR if shelved else OUT_DIR)
+	var err := ResourceSaver.save(c, "%s/%s.tres" % [dir, c.id])
 	if err == OK:
 		_written += 1
-	print("  %s  %-4s %-14s %s" % [
+	print("  %s%s  %-4s %-14s %s" % [
+		"(시험용) " if fixture else ("(보관) " if shelved else ""),
 		"ok  " if err == OK else "FAIL", c.cost_text(), c.display_name(), c.rules_text()])
 
 
 func _init() -> void:
 	TranslationServer.set_locale("ko")
 	DirAccess.make_dir_recursive_absolute(OUT_DIR)
+	DirAccess.make_dir_recursive_absolute(SHELF_DIR)
+	DirAccess.make_dir_recursive_absolute(FIXTURE_DIR)
 	print("writing cards to %s\n" % OUT_DIR)
 
 	_starters()
@@ -139,6 +169,7 @@ func _init() -> void:
 	_engine()
 	_chronomancy()
 	_curses()
+	_fixtures()
 
 	print("\n%d cards" % _written)
 	quit(0)
@@ -167,9 +198,6 @@ func _core() -> void:
 		card(&"unmake", K.ATTACK, R.COMMON, 1, T.SINGLE_ENEMY, [dmg(5), status(StatusRules.BLUNTED, 1)]),
 		[dmg(7), status(StatusRules.BLUNTED, 1)]))
 	write(upgrade(
-		card(&"bulwark", K.SKILL, R.COMMON, 2, T.SELF, [blk(12)]),
-		[blk(16)]))
-	write(upgrade(
 		card(&"gather", K.SKILL, R.COMMON, 1, T.SELF, [draw(2)], [], KW.EXHAUST),
 		[draw(3)]))
 	write(upgrade(
@@ -181,7 +209,7 @@ func _core() -> void:
 			[blk(6), status(StatusRules.BLUNTED, 1)]),
 		[blk(9), status(StatusRules.BLUNTED, 1)]))
 	write(upgrade(
-		card(&"stillness", K.SKILL, R.UNCOMMON, 1, T.SELF, [blk(10)], [], KW.EXHAUST),
+		card(&"stillness", K.SKILL, R.UNCOMMON, 0, T.SELF, [blk(10)], [], KW.EXHAUST),
 		[blk(14)]))
 
 
@@ -194,21 +222,18 @@ func _rush() -> void:
 		card(&"double_cut", K.ATTACK, R.COMMON, 1, T.SINGLE_ENEMY, [dmg(4, 2)], [L.RUSH]),
 		[dmg(5, 2)]))
 	write(upgrade(
-		card(&"press", K.ATTACK, R.COMMON, 2, T.SINGLE_ENEMY, [dmg(12)], [L.RUSH]),
-		[dmg(16)]))
-	write(upgrade(
-		card(&"disperse", K.ATTACK, R.COMMON, 2, T.ALL_ENEMIES, [dmg(5)], [L.RUSH]),
+		card(&"disperse", K.ATTACK, R.COMMON, 1, T.ALL_ENEMIES, [dmg(5)], [L.RUSH]),
 		[dmg(8)]))
 	write(upgrade(
-		card(&"scatter", K.ATTACK, R.UNCOMMON, 1, T.RANDOM_ENEMY, [dmg(3, 3, true)], [L.RUSH]),
+		card(&"scatter", K.ATTACK, R.COMMON, 1, T.RANDOM_ENEMY, [dmg(3, 3, true)], [L.RUSH]),
 		[dmg(3, 4, true)]))
 	write(upgrade(
 		card(&"flurry", K.ATTACK, R.UNCOMMON, 2, T.RANDOM_ENEMY, [dmg(4, 4, true)], [L.RUSH]),
 		[dmg(4, 5, true)]))
 	write(upgrade(
-		card(&"spend_it", K.ATTACK, R.RARE, CardData.COST_VARIABLE, T.SINGLE_ENEMY,
-			[per_hour(5)], [L.RUSH]),
-		[per_hour(7)]))
+		card(&"spend_it", K.ATTACK, R.COMMON, CardData.COST_VARIABLE, T.SINGLE_ENEMY,
+			[per_hour(7)], [L.RUSH]),
+		[per_hour(9)]))
 	write(upgrade(
 		card(&"all_at_once", K.ATTACK, R.RARE, 3, T.ALL_ENEMIES, [dmg(14)], [L.RUSH]),
 		[dmg(19)]))
@@ -220,11 +245,11 @@ func _engine() -> void:
 		card(&"steady", K.SKILL, R.COMMON, 1, T.SELF, [blk(4), draw(1)], [L.ENGINE]),
 		[blk(6), draw(1)]))
 	write(upgrade(
-		card(&"wear_down", K.ATTACK, R.COMMON, 2, T.ALL_ENEMIES,
+		card(&"wear_down", K.ATTACK, R.COMMON, 1, T.ALL_ENEMIES,
 			[dmg(4), status(StatusRules.SOFTENED, 1)], [L.ENGINE]),
 		[dmg(6), status(StatusRules.SOFTENED, 1)]))
 	write(upgrade(
-		card(&"momentum", K.ATTACK, R.UNCOMMON, 1, T.SINGLE_ENEMY,
+		card(&"momentum", K.ATTACK, R.COMMON, 1, T.SINGLE_ENEMY,
 			[grow_dmg(4, 3)], [L.ENGINE]),
 		[grow_dmg(4, 4)]))
 	write(upgrade(
@@ -232,40 +257,31 @@ func _engine() -> void:
 			[grow_blk(6, 0, 3)], [L.ENGINE]),
 		[grow_blk(8, 0, 3)]))
 	write(upgrade(
-		card(&"unspool", K.SKILL, R.UNCOMMON, 2, T.ALL_ENEMIES,
-			[status(StatusRules.SOFTENED, 2)], [L.ENGINE]),
-		[status(StatusRules.SOFTENED, 3)]))
+		card(&"unspool", K.ATTACK, R.UNCOMMON, 2, T.ALL_ENEMIES,
+			[dmg(6), status(StatusRules.SOFTENED, 2)], [L.ENGINE]),
+		[dmg(6), status(StatusRules.SOFTENED, 3)]))
 	write(upgrade(
 		card(&"regather", K.SKILL, R.RARE, 2, T.SELF, [blk(8), draw(2)], [L.ENGINE], KW.EXHAUST),
 		[], CardUpgrade.INHERIT, 0, KW.EXHAUST))
-	write(upgrade(
-		card(&"the_long_way", K.SKILL, R.RARE, 1, T.SELF,
-			[grow_blk(4, 0, 4)], [L.ENGINE], KW.RETAIN),
-		[grow_blk(6, 0, 4)]))
 
 
 func _chronomancy() -> void:
 	print("\n시간 조작")
+	# Pays for itself inside the turn and costs the run an hour: time a card adds
+	# is borrowed, and billed spent or not. So what this buys is a card, and what
+	# it costs is an hour off the run rather than an hour off the turn.
 	write(upgrade(
-		card(&"held_breath", K.SKILL, R.UNCOMMON, 1, T.SELF,
-			[refund(2), draw(1)], [L.CHRONOMANCY], KW.EXHAUST),
-		[], 0))
+		card(&"catch_breath", K.SKILL, R.COMMON, 1, T.SELF,
+			[refund(1), draw(1)], [L.CHRONOMANCY]),
+		[refund(1), draw(2)]))
+	# 다 쓰기 facing the other way. The two are a pair and are priced as one: an
+	# hour through either is worth a little more than an hour of 거두기 or 버티기,
+	# level with them once all four are forged, and both are what a turn that was
+	# made longer is spent on.
 	write(upgrade(
-		card(&"rewind", K.SKILL, R.UNCOMMON, 1, T.SELF,
-			[refund(1), draw(2)], [L.CHRONOMANCY], KW.EXHAUST),
-		[refund(2), draw(2)]))
-	write(upgrade(
-		card(&"unwind", K.SKILL, R.RARE, 2, T.SELF,
-			[refund(4)], [L.CHRONOMANCY], KW.EXHAUST),
-		[refund(5)]))
-	write(upgrade(
-		card(&"hourglass", K.SKILL, R.RARE, 2, T.SELF,
-			[refund(2), draw(3)], [L.CHRONOMANCY], KW.EXHAUST),
-		[refund(3), draw(3)]))
-	write(upgrade(
-		card(&"reclaim", K.ATTACK, R.RARE, 2, T.SINGLE_ENEMY,
-			[dmg(8), reclaimed(2)], [L.CHRONOMANCY], KW.EXHAUST),
-		[dmg(10), reclaimed(3)]))
+		card(&"leave_nothing", K.SKILL, R.COMMON, CardData.COST_VARIABLE, T.SELF,
+			[per_hour_blk(6)], [L.CHRONOMANCY]),
+		[per_hour_blk(8)]))
 	# Two hours for one 거두기 on the day the run leaves, and level
 	# with two of them six days on. The one card that pays for being late, the same
 	# lateness Threat charges for.
@@ -284,3 +300,9 @@ func _curses() -> void:
 	var drag := card(&"drag", K.CURSE, R.SPECIAL, 0, T.SELF, [], [], KW.UNPLAYABLE)
 	drag.text_key = &"card.drag.text"
 	write(drag)
+
+
+func _fixtures() -> void:
+	print("\n시험용")
+	write(card(&"fixture_refund", K.SKILL, R.SPECIAL, 1, T.SELF,
+		[refund(2), draw(1)], [], KW.EXHAUST))

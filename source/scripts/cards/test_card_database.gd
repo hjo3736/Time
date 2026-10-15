@@ -24,7 +24,30 @@ func _init() -> void:
 
 	print("\n-- the shipped content loads and passes its own linter --")
 	check("problems", db.validate(), PackedStringArray())
-	check("a real content set", db.size() >= 30, true)
+
+	print("\n-- what the pool holds while it is being rebuilt --")
+	# The pool was emptied on purpose, the way the bestiary was. This is what it
+	# holds today, not what the finished game wants: adding a card turns this red
+	# so that the list here is edited deliberately. The target for the one class
+	# is ~75-100 cards across three lanes.
+	check("everything but the curses is back, and chronomancy is being written again",
+		ids(db.all()), ["all_at_once", "blunt", "brace", "catch_breath", "disperse", "double_cut",
+			"flurry",
+			"gather", "harden", "leave_nothing", "long_hour", "long_kept", "momentum", "quick_cut",
+			"regather",
+			"scatter", "sever", "soften", "spend_it", "steady", "stillness", "take", "unmake",
+			"unspool", "wear_down"])
+	check("and the shelf is not part of it",
+		DirAccess.dir_exists_absolute(CardDatabase.SHELF_ROOT) and not db.has(&"delay"), true)
+
+	# Everything below checks how the database answers, not what is in it, and
+	# needs more than four cards to ask anything of. It reads the shelf as well.
+	CardDatabase.fixture_roots = PackedStringArray(CardDatabase.TEST_ROOTS)
+	db = CardDatabase.new()
+	db.load_from()
+	check("with the shelf and the fixtures read in, there is more to query",
+		db.size() > 23 and db.has(&"fixture_refund") and db.has(&"delay"), true)
+	check("which also passes the linter", db.validate(), PackedStringArray())
 
 	print("\n-- order is sorted by id, not by whatever the filesystem said --")
 	var sorted := ids(db.all())

@@ -4,7 +4,6 @@ card.brace.name,버티기,Brace
 card.disperse.name,분산,Disperse
 card.soften.name,무르게,Soften
 card.scatter.name,산개,Scatter
-card.held_breath.name,숨 참기,Held Breath
 card.regather.name,추스르기,Regather
 card.delay.name,지연,Delay
 card.delay.text,시간이 흐른다.,Time passes.
@@ -15,8 +14,8 @@ effect.block,{amount}의 방어도를 얻습니다.,Gain {amount} block.
 effect.status,{who}에게 {status} {stacks} 부여합니다.,Apply {stacks} {status} to {who}.
 effect.draw_one,카드 {count}장을 뽑습니다.,Draw {count} card.
 effect.draw_many,카드 {count}장을 뽑습니다.,Draw {count} cards.
-effect.refund_hours,이번 턴에 {hours}시간을 되찾습니다.,Regain {hours}h this turn.
-effect.refund_minutes,이번 턴에 {minutes}분을 되찾습니다.,Regain {minutes}m this turn.
+effect.refund_hours,이번 턴에 {hours}시간을 추가로 얻습니다.,Gain {hours}h more this turn.
+effect.refund_minutes,이번 턴에 {minutes}분을 추가로 얻습니다.,Gain {minutes}m more this turn.
 target.self,자신,yourself
 target.enemy,대상,the target
 target.single_enemy,적 하나,an enemy
@@ -60,7 +59,7 @@ help.target.all,살아 있는 적 전부에게 적용된다.,Hits every living e
 help.target.self,대상이 없다. 손패 위쪽으로 끌어올린다.,No target. Drag it upward.
 help.target.random,무작위 적에게 간다.,Goes to a random enemy.
 help.reroll,타격마다 대상을 다시 고른다.,Re-rolls its target for every hit.
-help.refund,이번 턴에만 돌아온다. 남은 시간과 흐른 시간은 건드리지 않는다.,Returns to this turn only — it never touches Remaining or Elapsed.
+help.refund,이번 턴에 쓸 시간이 늘어난다. 늘어난 만큼은 쓰든 안 쓰든 남은 시간에서 빠진다.,Adds to this turn. That much comes out of Remaining as well and whether or not it is spent.
 help.exhaust_reason,코스트보다 많은 시간을 돌려주는 카드는 소멸이 없으면 무한히 돈다.,Without Exhaust a card that returns more time than it costs would loop forever.
 time.hours,{n}시간,{n}h
 time.date,{year}년 {month}월 {day}일 {hour}시,{year}.{month}.{day} — {hour}h
@@ -76,10 +75,7 @@ effect.restore,{hours}시간을 회수합니다.,Reclaim {hours}h.
 help.scaling,이미 벌어진 일에 따라 커진다. 카드에 적힌 수는 지금 값이다.,Grows with what has already happened; the number shown is the current one.
 help.variable,남은 시간을 전부 쓴다.,Spends everything left in the turn.
 help.restore,회수한 시간이 늘어난다 — 돌려줄 몫도 상점에서 쓸 것도 함께 늘어난다.,More Restored — both what you can deliver and what you can spend.
-card.quick_cut.name,짧은 베기,Quick Cut
 card.double_cut.name,두 번 베기,Double Cut
-card.press.name,몰아치기,Press
-card.bulwark.name,방벽,Bulwark
 card.blunt.name,무디게,Blunt
 card.gather.name,추리기,Gather
 card.steady.name,다잡기,Steady
@@ -92,13 +88,8 @@ card.stillness.name,고요,Stillness
 card.unspool.name,풀어헤치기,Unspool
 card.momentum.name,탄력,Momentum
 card.long_hour.name,긴 시간,The Long Hour
-card.rewind.name,되감기,Rewind
 card.spend_it.name,다 쓰기,Spend It
-card.hourglass.name,모래시계,Hourglass
 card.all_at_once.name,한꺼번에,All At Once
-card.the_long_way.name,먼 길,The Long Way
-card.reclaim.name,되찾기,Reclaim
-card.unwind.name,태엽 풀기,Unwind
 card.drag.name,늘어짐,Drag
 card.drag.text,낼 수 없다. 손에 남아 자리를 차지한다.,Unplayable. It just sits in the hand.
 enemy.echo.name,메아리,The Echo
@@ -170,10 +161,10 @@ ui.title.continue,이어한다,Continue
 ui.title.new_run,내려간다,Go down
 ui.date.title,언제 떠나는가,When do you set out
 ui.date.body,하계의 달력은 어지럽혀져 있다. 없는 날에도 문은 열린다.,The calendar below is disordered. The door opens on days that never were.
-ui.date.year,해,Year
-ui.date.month,달,Month
-ui.date.day,날,Day
-ui.date.hour,때,Hour
+ui.date.year,년,Year
+ui.date.month,월,Month
+ui.date.day,일,Day
+ui.date.hour,시,Hour
 ui.date.depart,그날로 떠난다,Set out on that day
 ui.title.compendium,도감,Compendium
 ui.title.settings,설정,Settings
@@ -391,11 +382,11 @@ keyword.spill,흘림,Spill
 keyword.spill.help,막지 못한 타격마다 회수한 시간을 흘린다. 흘린 시간은 세계로 돌아간다.,Every blow that gets through spills recovered time back into the world.
 askew.spill.tell,막지 못한 타격마다 회수한 시간을 1시간씩 흘린다.,Every blow that gets through spills an hour of recovered time.
 enemy.throng.name,북새통,The Throng
-askew.gnaw.tell,막지 못한 피해는 체력 대신 회수한 시간을 그만큼 좀먹는다. 피해 1마다 1시간. 쓰러뜨려도 돌아오지 않는다.,Damage that gets through eats recovered time instead of health: an hour a point. Felling it returns nothing.
+askew.gnaw.tell,막지 못한 피해만큼 회수한 시간을 잃는다.,Unblocked damage comes out of recovered time.
 enemy.bottomless.name,밑 빠진 것,The Bottomless
 askew.daybound.tell,날이 바뀌면 처음 상태로 돌아간다.,Returns to how it began when the day turns.
 enemy.yesterday.name,어제였던 것,What Was Yesterday
-askew.heavy.tell,1시간 이하를 들인 카드의 피해는 절반만 받는다.,Takes half damage from a card that cost an hour or less.
+askew.heavy.tell,1시간 이하 카드의 피해는 절반만 받는다.,Half damage from cards that cost an hour or less.
 enemy.sunken.name,가라앉은 것,The Sunken
 ui.battle.intent_grow,▲ 성장 {n},▲ Growth {n}
 ui.compendium.intent_grow,성장 {n},Growth {n}
@@ -407,31 +398,35 @@ enemy.breakfast.name,아침밥,Breakfast
 enemy.nap.name,낮잠,The Nap
 enemy.sundown.name,저녁놀,Sundown
 enemy.supper.name,밤참,The Late Supper
-askew.seesaw.tell,턴이 시작될 때 체력이 더 많은 쪽이 치고 적은 쪽은 막는다. 같으면 둘 다 친다.,Whichever end has more health when the turn begins strikes and the other guards. Level and both strike.
+askew.seesaw.tell,체력이 많은 쪽이 치고 적은 쪽은 막는다.,The healthier end strikes. The other guards.
 enemy.seesaw_near.name,이쪽 끝,This End
 enemy.seesaw_far.name,저쪽 끝,That End
 enemy.second_hand.name,초침,The Second Hand
 enemy.minute_hand.name,분침,The Minute Hand
 enemy.hour_hand.name,시침,The Hour Hand
-askew.hourglass.tell,매 턴 윗칸의 체력 4가 아랫칸으로 흘러내리고 아랫칸은 성장한다.,Each turn 4 of the upper bulb's health runs down into the lower and the lower grows.
+askew.hourglass.tell,매 턴 윗칸의 체력 4가 아랫칸으로 흐른다.,Each turn 4 health runs from the upper to the lower.
 enemy.hourglass_upper.name,윗칸,The Upper Bulb
 enemy.hourglass_lower.name,아랫칸,The Lower Bulb
-askew.echo.tell,이번 턴에 당한 것을 다음 턴에 되돌린다. 피해와 방어도는 3분의 2만큼 돌아오고 상태 이상은 그대로 돌아온다.,Returns next turn what was done this turn: two thirds of the damage and the block and every status as it was.
+askew.echo.tell,이번 턴에 당한 것을 다음 턴에 되돌린다.,Returns next turn what was done to it this turn.
 ui.battle.intent_bear,✦ 자신에게 {name} {n},✦ {name} {n} on itself
 ui.compendium.intent_bear,자신에게 {name} {n},{name} {n} on itself
-askew.relay.tell,바통을 든 하나만 친다. 치고 나면 다음 주자에게 넘기고 넘길 때마다 3씩 세진다. 든 것이 쓰러지면 처음 세기로 돌아간다.,Only the one holding the baton strikes. It hands on after each blow and each handing adds 3. Bring down the holder and it starts over.
+askew.relay.tell,바통을 든 것만 친다. 넘길 때마다 +3.,Only the baton holder strikes. +3 each pass.
 enemy.runner.name,주자,The Runner
-askew.chorus.tell,함께 부르는 수만큼 세진다. 하나가 쓰러질 때마다 남은 것들의 타격이 약해진다.,Strikes harder for each one still singing. Every one that falls weakens the rest.
+askew.chorus.tell,함께 부르는 수만큼 세진다.,Stronger for each one still singing.
 enemy.chorister.name,목소리,A Voice
-askew.domino.tell,쓰러지면 바로 뒤의 것에게 피해 6을 준다.,Deals 6 to the one directly behind it when it falls.
+askew.domino.tell,쓰러지면 뒤의 것에게 피해 6.,Deals 6 to the one behind when it falls.
 enemy.domino.name,도미노,The Domino
-askew.sheltered.tell,앞에 선 것이 서 있는 동안 이것을 겨눈 피해는 앞에 선 것이 대신 받는다. 전체를 치는 것은 그대로 닿는다.,While the one in front stands it takes any blow aimed at this one. What strikes everything still reaches it.
+askew.sheltered.tell,겨눈 피해는 앞에 선 것이 대신 받는다.,The one in front takes blows aimed at this.
 enemy.shelter_front.name,앞에 선 것,The One in Front
 enemy.shelter_behind.name,뒤에 숨은 것,The One Behind
-askew.bulwark.tell,한 턴에 피해를 15까지만 받는다. 넘치는 피해는 사라진다.,Takes no more than 15 damage in a turn. Anything past that is lost.
+askew.bulwark.tell,한 턴에 피해를 15까지만 받는다.,Takes at most 15 damage a turn.
 enemy.prop.name,버팀목,The Prop
-askew.sun_dragger.tell,아침과 낮 내내 해를 끌어내리려 한다. 그 턴에 표시된 만큼 피해를 받으면 놓치지만 놓칠 때마다 더 세게 붙든다. 놓치지 않으면 곧장 저녁이 되고 끌어내린 3시간마다 더 성장한다.,All morning and all day it drags at the sun. Take the shown damage off it that turn and it loses its grip but holds harder each time. Otherwise it is evening at once and it grows more for every three hours dragged.
+askew.sun_dragger.tell,표시된 만큼 피해를 주면 해를 놓친다.,Deal the shown damage and it loses the sun.
 enemy.sun_dragger.name,해를 끄는 것,The One Who Drags the Sun
 ui.battle.intent_drag,☀ 해를 끌어내린다 · {n} 남음,☀ Dragging the sun · {n} to break
 ui.battle.intent_drag_lost,☀ 해를 놓쳤다,☀ Lost its grip
 ui.compendium.intent_drag,해를 끈다 {n},Drags the sun {n}
+card.quick_cut.name,짧은 베기,Quick Cut
+card.catch_breath.name,숨 고르기,Catch a Breath
+effect.per_hour_block,쓴 시간 1시간마다 {amount}의 방어도를 얻습니다.,Gain {amount} block for each hour spent.
+card.leave_nothing.name,남김없이,Leave Nothing
