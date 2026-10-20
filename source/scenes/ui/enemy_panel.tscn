@@ -1,0 +1,86 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/ui/enemy_panel.gd" id="1_enemy"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_back"]
+bg_color = Color(0.5411765, 0.50980395, 0.4627451, 0.22)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
+bg_color = Color(0.9490196, 0.93333334, 0.9019608, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="EnemyPanel" type="VBoxContainer"]
+custom_minimum_size = Vector2(200, 0)
+offset_right = 200.0
+theme_override_constants/separation = 5
+script = ExtResource("1_enemy")
+
+[node name="Intent" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelBlood"
+text = "ui.battle.intent_wait"
+horizontal_alignment = 1
+
+[node name="Extras" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelBone"
+text = "enemy.nap.name"
+horizontal_alignment = 1
+
+[node name="Health" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_back")
+theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
+value = 60.0
+show_percentage = false
+
+[node name="HealthText" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "30 / 30"
+horizontal_alignment = 1
+
+[node name="OutOfReach" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"LabelBlood"
+text = "ui.battle.out_of_reach"
+horizontal_alignment = 1
+
+[node name="Block" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "ui.battle.block"
+horizontal_alignment = 1
+
+[node name="Statuses" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="UseHere" type="Button" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "ui.battle.use_here"

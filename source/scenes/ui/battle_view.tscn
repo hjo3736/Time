@@ -1,0 +1,260 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/ui/battle_view.gd" id="1_battle"]
+[ext_resource type="Script" path="res://source/scripts/ui/punch.gd" id="2_punch"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_back"]
+bg_color = Color(0.5411765, 0.50980395, 0.4627451, 0.22)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fill"]
+bg_color = Color(0.6392157, 0.29411766, 0.29411766, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_orb"]
+bg_color = Color(0.16470589, 0.16470589, 0.21176471, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.8509804, 0.6431373, 0.25490198, 1)
+corner_radius_top_left = 52
+corner_radius_top_right = 52
+corner_radius_bottom_right = 52
+corner_radius_bottom_left = 52
+
+[node name="BattleView" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_battle")
+
+[node name="Stage" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -250.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WardenSlot" type="Control" parent="Stage"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Warden" type="VBoxContainer" parent="Stage/WardenSlot"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 40.0
+offset_top = -60.0
+offset_right = 220.0
+offset_bottom = -60.0
+grow_vertical = 1
+theme_override_constants/separation = 5
+
+[node name="Title" type="Label" parent="Stage/WardenSlot/Warden"]
+layout_mode = 2
+theme_type_variation = &"LabelBone"
+text = "warden.name"
+
+[node name="Health" type="ProgressBar" parent="Stage/WardenSlot/Warden"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 16)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_back")
+theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
+value = 60.0
+show_percentage = false
+
+[node name="HealthText" type="Label" parent="Stage/WardenSlot/Warden"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "60 / 60"
+
+[node name="Block" type="Label" parent="Stage/WardenSlot/Warden"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"LabelBone"
+text = "ui.battle.block"
+
+[node name="Statuses" type="VBoxContainer" parent="Stage/WardenSlot/Warden"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="EnemySlot" type="Control" parent="Stage"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="EnemyRow" type="HBoxContainer" parent="Stage/EnemySlot"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -40.0
+offset_top = -70.0
+offset_right = -40.0
+offset_bottom = -70.0
+grow_horizontal = 0
+grow_vertical = 1
+theme_override_constants/separation = 30
+
+[node name="HandLayer" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -250.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="Punch" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("2_punch")
+
+[node name="OrbColumn" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = -6.0
+offset_right = 6.0
+offset_bottom = -6.0
+grow_vertical = 0
+theme_override_constants/separation = 14
+
+[node name="Orb" type="Panel" parent="OrbColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(104, 104)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_orb")
+
+[node name="OrbBox" type="VBoxContainer" parent="OrbColumn/Orb"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="OrbValue" type="Label" parent="OrbColumn/Orb/OrbBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelBone"
+theme_override_font_sizes/font_size = 32
+text = "3/3"
+horizontal_alignment = 1
+
+[node name="Caption" type="Label" parent="OrbColumn/Orb/OrbBox"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.battle.this_turn"
+horizontal_alignment = 1
+
+[node name="DrawPile" type="Button" parent="OrbColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(176, 34)
+layout_mode = 2
+focus_mode = 0
+text = "ui.battle.pile_draw"
+
+[node name="EndColumn" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -186.0
+offset_top = -6.0
+offset_right = -186.0
+offset_bottom = -6.0
+grow_horizontal = 1
+grow_vertical = 0
+theme_override_constants/separation = 4
+
+[node name="TurnLabel" type="Label" parent="EndColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.battle.turn_n"
+horizontal_alignment = 1
+
+[node name="EndTurn" type="Button" parent="EndColumn"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(176, 52)
+layout_mode = 2
+text = "ui.battle.end_turn"
+
+[node name="Warning" type="Label" parent="EndColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelBlood"
+text = "ui.battle.unspent_warning"
+horizontal_alignment = 1
+
+[node name="Spent" type="HBoxContainer" parent="EndColumn"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="DiscardPile" type="Button" parent="EndColumn/Spent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(85, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "ui.battle.pile_discard"
+
+[node name="ExhaustPile" type="Button" parent="EndColumn/Spent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(85, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+text = "ui.battle.pile_exhaust"

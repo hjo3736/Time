@@ -13,82 +13,25 @@ const SETTINGS_PLATE := Vector2(900, 560)
 
 const PAUSE_PLATE := Vector2(470, 340)
 
-var _frame: PanelContainer
-var _column: VBoxContainer
-var _scroll: ScrollContainer
+## The frame is overlay_view.tscn, and each overlay's own scene inherits it. What
+## goes in the body is built by the overlay, from whatever it is showing.
+@onready var _frame := %Frame as PanelContainer
+@onready var _column := %Column as VBoxContainer
+@onready var _scroll := %Scroll as ScrollContainer
 
-var _heading: Label
-var _close: Button
-var _tabs: HBoxContainer
-var _body: VBoxContainer
-var _side: VBoxContainer
+@onready var _heading := %Heading as Label
+@onready var _close := %Close as Button
+@onready var _tabs := %Tabs as HBoxContainer
+@onready var _body := %Body as VBoxContainer
+@onready var _side := %Side as VBoxContainer
 
 
 func _ready() -> void:
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.72)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_STOP
-	shade.gui_input.connect(func(event: InputEvent) -> void:
+	(%Shade as ColorRect).gui_input.connect(func(event: InputEvent) -> void:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			closed.emit())
-	add_child(shade)
-
-	_frame = PanelContainer.new()
-	_frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_frame.offset_left = 80
-	_frame.offset_right = -80
-	_frame.offset_top = 50
-	_frame.offset_bottom = -50
-	add_child(_frame)
-
-	_column = VBoxContainer.new()
-	_column.add_theme_constant_override("separation", 14)
-	_frame.add_child(_column)
-	var column := _column
-
-	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 16)
-	column.add_child(top)
-
-	_heading = UiTheme.label("", 32, UiTheme.BONE)
-	top.add_child(_heading)
-
-	_tabs = HBoxContainer.new()
-	_tabs.add_theme_constant_override("separation", 6)
-	_tabs.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(_tabs)
-
-	_close = Button.new()
-	_close.custom_minimum_size = Vector2(140, 44)
 	_close.pressed.connect(func() -> void: closed.emit())
-	top.add_child(_close)
 	relabel_chrome()
-
-	var middle := HBoxContainer.new()
-	middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	middle.add_theme_constant_override("separation", 20)
-	column.add_child(middle)
-
-	_scroll = ScrollContainer.new()
-	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	middle.add_child(_scroll)
-
-	_side = VBoxContainer.new()
-	_side.custom_minimum_size = Vector2(SIDE_WIDTH, 0)
-	_side.add_theme_constant_override("separation", 12)
-	_side.visible = false
-	middle.add_child(_side)
-
-	_body = VBoxContainer.new()
-	_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_body.add_theme_constant_override("separation", 10)
-	_scroll.add_child(_body)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -104,8 +47,7 @@ func heading(text: String) -> void:
 
 
 func relabel_chrome() -> void:
-	if _close != null:
-		_close.text = tr("ui.overlay.close")
+	UiTheme.localize(self)
 
 
 func body() -> VBoxContainer:

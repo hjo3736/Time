@@ -2,6 +2,15 @@ class_name RelicView
 extends OverlayView
 
 
+const SCENE := preload("res://source/scenes/ui/relic_view.tscn")
+
+
+## Always make one through here, never RelicView.new(): new() is the script
+## without the scene it shares with the other overlays.
+static func create() -> RelicView:
+	return SCENE.instantiate() as RelicView
+
+
 ## What the Warden is carrying, as opposed to the compendium's list of everything
 ## that exists. A relic the player cannot read is a passive they cannot plan
 ## around, and every one of these changes a number they are being asked to budget.

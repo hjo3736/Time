@@ -4,40 +4,20 @@ extends Control
 
 signal chosen(id: Variant)
 
-var _title: Label
-var _subtitle: Label
-var _options: VBoxContainer
-var _cards_row: HBoxContainer
+## The frame is the scene. Cards and options come with each choice, so they are
+## built here.
+const SCENE := preload("res://source/scenes/ui/choice_view.tscn")
+
+@onready var _title := %Title as Label
+@onready var _subtitle := %Subtitle as Label
+@onready var _options := %Options as VBoxContainer
+@onready var _cards_row := %Cards as HBoxContainer
 
 
-func _ready() -> void:
-	var centre := CenterContainer.new()
-	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(centre)
-
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 14)
-	box.custom_minimum_size = Vector2(760, 0)
-	centre.add_child(box)
-
-	_title = UiTheme.label("", 30, UiTheme.BONE)
-	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(_title)
-
-	_subtitle = UiTheme.label("", 16, UiTheme.INK_DIM)
-	_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(_subtitle)
-
-	_cards_row = HBoxContainer.new()
-	_cards_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	_cards_row.add_theme_constant_override("separation", 18)
-	_cards_row.custom_minimum_size = Vector2(0, 220)
-	box.add_child(_cards_row)
-
-	_options = VBoxContainer.new()
-	_options.add_theme_constant_override("separation", 8)
-	box.add_child(_options)
+## Always make one through here, never ChoiceView.new(): new() is the script
+## without the scene.
+static func create() -> ChoiceView:
+	return SCENE.instantiate() as ChoiceView
 
 
 func present(title: String, subtitle: String, options: Array, cards: Array = []) -> void:
@@ -49,8 +29,7 @@ func present(title: String, subtitle: String, options: Array, cards: Array = [])
 	_cards_row.visible = not cards.is_empty()
 	for i in cards.size():
 		var entry: Dictionary = cards[i]
-		var node := CardNode.new()
-		node.setup(entry["card"], i, not bool(entry.get("disabled", false)))
+		var node := CardNode.create(entry["card"], i, not bool(entry.get("disabled", false)))
 		var id: Variant = entry["id"]
 		node.clicked.connect(func(_i: int) -> void: chosen.emit(id))
 		_cards_row.add_child(node)

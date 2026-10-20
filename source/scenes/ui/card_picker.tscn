@@ -1,0 +1,81 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/ui/card_picker.gd" id="1_picker"]
+
+[node name="CardPicker" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 1
+grow_vertical = 1
+script = ExtResource("1_picker")
+
+[node name="Shade" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 1
+grow_vertical = 1
+color = Color(0, 0, 0, 0.72)
+
+[node name="Frame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 60.0
+offset_top = 40.0
+offset_right = -60.0
+offset_bottom = -40.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="Body" type="VBoxContainer" parent="Frame"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="Frame/Body"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="Frame/Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelBone"
+theme_override_font_sizes/font_size = 32
+
+[node name="Spacer" type="Control" parent="Frame/Body/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Close" type="Button" parent="Frame/Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.picker.close"
+
+[node name="Subtitle" type="Label" parent="Frame/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+
+[node name="Empty" type="Label" parent="Frame/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+horizontal_alignment = 1
+
+[node name="Scroll" type="ScrollContainer" parent="Frame/Body"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Grid" type="GridContainer" parent="Frame/Body/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 12
+columns = 7

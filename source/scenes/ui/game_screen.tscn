@@ -1,0 +1,99 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/ui/game_screen.gd" id="1_game"]
+[ext_resource type="Theme" path="res://source/assets/theme/ui_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/top_menu.tscn" id="4_menu"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/room_view.tscn" id="5_room"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/battle_view.tscn" id="6_battle"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/choice_view.tscn" id="7_choice"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/map_view.tscn" id="8_map"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/card_picker.tscn" id="9_picker"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/relic_view.tscn" id="10_relics"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/pause_view.tscn" id="11_pause"]
+
+[node name="GameScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 1
+grow_vertical = 1
+theme = ExtResource("2_theme")
+script = ExtResource("1_game")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 1
+grow_vertical = 1
+mouse_filter = 2
+color = Color(0.08235294, 0.08235294, 0.105882354, 1)
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 1
+grow_vertical = 1
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Column" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Top" type="HBoxContainer" parent="Margin/Column"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Hud" parent="Margin/Column/Top" instance=ExtResource("3_hud")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TopMenu" parent="Margin/Column/Top" instance=ExtResource("4_menu")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Content" type="Control" parent="Margin/Column"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RoomView" parent="Margin/Column/Content" instance=ExtResource("5_room")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="BattleView" parent="Margin/Column/Content" instance=ExtResource("6_battle")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="ChoiceView" parent="Margin/Column/Content" instance=ExtResource("7_choice")]
+unique_name_in_owner = true
+layout_mode = 1
+
+[node name="MapView" parent="." instance=ExtResource("8_map")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="CardPicker" parent="." instance=ExtResource("9_picker")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="RelicView" parent="." instance=ExtResource("10_relics")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="PauseView" parent="." instance=ExtResource("11_pause")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

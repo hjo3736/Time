@@ -6,53 +6,41 @@ signal chosen(seed_value: int)
 
 const PLATE := Vector2(560, 310)
 
-var _year: LineEdit
-var _month: LineEdit
-var _day: LineEdit
-var _hour: LineEdit
-var _reads: Label
+## The form is the scene, on the overlay frame it inherits. Opening it only puts
+## a date in the fields.
+const SCENE := preload("res://source/scenes/ui/date_view.tscn")
+
+# The unit sits after its number, the way the date is read: 9550년 28월.
+@onready var _year := %Year as LineEdit
+@onready var _month := %Month as LineEdit
+@onready var _day := %Day as LineEdit
+@onready var _hour := %Hour as LineEdit
+@onready var _reads := %Reads as Label
+
+
+## Always make one through here, never DateView.new(): new() is the script
+## without the scene it shares with the other overlays.
+static func create() -> DateView:
+	return SCENE.instantiate() as DateView
+
+
+func _ready() -> void:
+	super._ready()
+	for field in [_year, _month, _day, _hour]:
+		(field as LineEdit).text_changed.connect(func(_t: String) -> void: _retell())
+	(%Depart as Button).pressed.connect(func() -> void: chosen.emit(entered_seed()))
 
 
 func open_on(seed_value: int) -> void:
 	var marks := RunClock.date_from_seed(seed_value)
 	set_compact(true, PLATE)
 	heading(tr("ui.date.title"))
-	clear_body()
 	relabel_chrome()
 
-	var box := body()
-	box.add_theme_constant_override("separation", 14)
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-
-	var told := UiTheme.label(tr("ui.date.body"), 15, UiTheme.INK_DIM)
-	told.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	told.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	told.custom_minimum_size = Vector2(420, 0)
-	told.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	box.add_child(told)
-
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	box.add_child(row)
-	_year = _field(row, tr("ui.date.year"), "%04d" % int(marks["year"]), 4, 110)
-	_month = _field(row, tr("ui.date.month"), "%02d" % int(marks["month"]), 2, 80)
-	_day = _field(row, tr("ui.date.day"), "%02d" % int(marks["day"]), 2, 80)
-	_hour = _field(row, tr("ui.date.hour"), "%02d" % int(marks["hour"]), 2, 80)
-
-	_reads = UiTheme.label("", 22, UiTheme.BONE)
-	_reads.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_reads.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	box.add_child(_reads)
-
-	var go := Button.new()
-	go.text = tr("ui.date.depart")
-	go.custom_minimum_size = Vector2(240, 46)
-	go.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	go.pressed.connect(func() -> void: chosen.emit(entered_seed()))
-	box.add_child(go)
-
+	_year.text = "%04d" % int(marks["year"])
+	_month.text = "%02d" % int(marks["month"])
+	_day.text = "%02d" % int(marks["day"])
+	_hour.text = "%02d" % int(marks["hour"])
 	_retell()
 
 
@@ -67,29 +55,6 @@ func _read(field: LineEdit) -> int:
 		if c >= "0" and c <= "9":
 			digits += c
 	return 0 if digits.is_empty() else digits.to_int()
-
-
-func _field(row: HBoxContainer, caption: String, value: String,
-		digits: int, width: float) -> LineEdit:
-	# The unit sits after its number, the way the date is read: 9550년 28월.
-	var pair := HBoxContainer.new()
-	pair.add_theme_constant_override("separation", 4)
-
-	var edit := LineEdit.new()
-	edit.text = value
-	edit.max_length = digits
-	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	edit.custom_minimum_size = Vector2(width, 40)
-	edit.text_changed.connect(func(_t: String) -> void: _retell())
-	pair.add_child(edit)
-
-	var tag := UiTheme.label(caption, 16, UiTheme.INK_DIM)
-	tag.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	pair.add_child(tag)
-
-	row.add_child(pair)
-	return edit
 
 
 func _retell() -> void:

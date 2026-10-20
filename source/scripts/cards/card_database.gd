@@ -10,7 +10,9 @@ const DEFAULT_ROOT := "res://source/data/cards"
 ## not on the shelf even though the cards that showed it off are.
 const SHELF_ROOT := "res://source/data/cards_shelved"
 
-## Cards that exist only for the tests. See tool_write_cards.gd.
+## Cards that exist only for the tests: something that refunds time, draws and
+## exhausts, kept apart so redesigning a real card never takes the machinery's
+## test case with it. Ids begin with `fixture_`.
 const FIXTURE_ROOT := "res://source/data/cards_fixtures"
 
 ## What a test suite reads besides the pool.

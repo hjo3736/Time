@@ -1,6 +1,16 @@
 class_name SettingsView
 extends OverlayView
 
+
+const SCENE := preload("res://source/scenes/ui/settings_view.tscn")
+
+
+## Always make one through here, never SettingsView.new(): new() is the script
+## without the scene it shares with the other overlays.
+static func create() -> SettingsView:
+	return SCENE.instantiate() as SettingsView
+
+
 signal language_changed
 
 enum Tab { SCREEN, KEYS }

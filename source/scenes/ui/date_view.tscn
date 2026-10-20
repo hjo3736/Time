@@ -1,0 +1,112 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://source/scenes/ui/overlay_view.tscn" id="1_base"]
+[ext_resource type="Script" path="res://source/scripts/ui/date_view.gd" id="2_view"]
+
+[node name="DateView" instance=ExtResource("1_base")]
+script = ExtResource("2_view")
+
+[node name="Body" parent="Frame/Column/Middle/Scroll" index="0"]
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="Told" type="Label" parent="Frame/Column/Middle/Scroll/Body" index="0"]
+custom_minimum_size = Vector2(420, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"LabelDim"
+text = "ui.date.body"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Fields" type="HBoxContainer" parent="Frame/Column/Middle/Scroll/Body" index="1"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="YearPair" type="HBoxContainer" parent="Frame/Column/Middle/Scroll/Body/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Year" type="LineEdit" parent="Frame/Column/Middle/Scroll/Body/Fields/YearPair"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 40)
+layout_mode = 2
+alignment = 1
+max_length = 4
+
+[node name="Unit" type="Label" parent="Frame/Column/Middle/Scroll/Body/Fields/YearPair"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"LabelDim"
+text = "ui.date.year"
+vertical_alignment = 1
+
+[node name="MonthPair" type="HBoxContainer" parent="Frame/Column/Middle/Scroll/Body/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Month" type="LineEdit" parent="Frame/Column/Middle/Scroll/Body/Fields/MonthPair"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 40)
+layout_mode = 2
+alignment = 1
+max_length = 2
+
+[node name="Unit" type="Label" parent="Frame/Column/Middle/Scroll/Body/Fields/MonthPair"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"LabelDim"
+text = "ui.date.month"
+vertical_alignment = 1
+
+[node name="DayPair" type="HBoxContainer" parent="Frame/Column/Middle/Scroll/Body/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Day" type="LineEdit" parent="Frame/Column/Middle/Scroll/Body/Fields/DayPair"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 40)
+layout_mode = 2
+alignment = 1
+max_length = 2
+
+[node name="Unit" type="Label" parent="Frame/Column/Middle/Scroll/Body/Fields/DayPair"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"LabelDim"
+text = "ui.date.day"
+vertical_alignment = 1
+
+[node name="HourPair" type="HBoxContainer" parent="Frame/Column/Middle/Scroll/Body/Fields"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Hour" type="LineEdit" parent="Frame/Column/Middle/Scroll/Body/Fields/HourPair"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 40)
+layout_mode = 2
+alignment = 1
+max_length = 2
+
+[node name="Unit" type="Label" parent="Frame/Column/Middle/Scroll/Body/Fields/HourPair"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_type_variation = &"LabelDim"
+text = "ui.date.hour"
+vertical_alignment = 1
+
+[node name="Reads" type="Label" parent="Frame/Column/Middle/Scroll/Body" index="2"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_type_variation = &"LabelBone"
+horizontal_alignment = 1
+
+[node name="Depart" type="Button" parent="Frame/Column/Middle/Scroll/Body" index="3"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 46)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "ui.date.depart"

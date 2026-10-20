@@ -2,6 +2,15 @@ class_name PauseView
 extends OverlayView
 
 
+const SCENE := preload("res://source/scenes/ui/pause_view.tscn")
+
+
+## Always make one through here, never PauseView.new(): new() is the script
+## without the scene it shares with the other overlays.
+static func create() -> PauseView:
+	return SCENE.instantiate() as PauseView
+
+
 signal resume_requested
 signal title_requested
 signal settings_requested

@@ -1,0 +1,124 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/ui/hud.gd" id="1_hud"]
+
+[node name="Hud" type="PanelContainer"]
+script = ExtResource("1_hud")
+
+[node name="Row" type="HBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="When" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Now" type="Label" parent="Row/When"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.now"
+
+[node name="Date" type="Label" parent="Row/When"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelBone"
+theme_override_font_sizes/font_size = 32
+
+[node name="Deadline" type="Label" parent="Row/When"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+
+[node name="SkyColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Caption" type="Label" parent="Row/SkyColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.sky"
+
+[node name="Sky" type="Label" parent="Row/SkyColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RemainingColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Caption" type="Label" parent="Row/RemainingColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.remaining"
+
+[node name="Remaining" type="Label" parent="Row/RemainingColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+
+[node name="HpColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Caption" type="Label" parent="Row/HpColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.hp"
+
+[node name="Hp" type="Label" parent="Row/HpColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RestoredColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Caption" type="Label" parent="Row/RestoredColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.restored"
+
+[node name="Restored" type="Label" parent="Row/RestoredColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelGold"
+
+[node name="ThreatColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Caption" type="Label" parent="Row/ThreatColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.threat"
+
+[node name="Threat" type="Label" parent="Row/ThreatColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ActColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Caption" type="Label" parent="Row/ActColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.act"
+
+[node name="Act" type="Label" parent="Row/ActColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RelicsColumn" type="VBoxContainer" parent="Row"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Caption" type="Label" parent="Row/RelicsColumn"]
+layout_mode = 2
+theme_type_variation = &"LabelDim"
+text = "ui.hud.relics"
+
+[node name="Relics" type="Label" parent="Row/RelicsColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"LabelGold"

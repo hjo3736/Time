@@ -5,70 +5,27 @@ extends Control
 signal picked(deck_index: int)
 signal cancelled
 
-var _title: Label
-var _subtitle: Label
-var _grid: GridContainer
-var _empty: Label
+## The frame is the scene; the cards in it are whatever is being picked from.
+const SCENE := preload("res://source/scenes/ui/card_picker.tscn")
+
+@onready var _title := %Title as Label
+@onready var _subtitle := %Subtitle as Label
+@onready var _grid := %Grid as GridContainer
+@onready var _empty := %Empty as Label
+
+
+## Always make one through here, never CardPicker.new(): new() is the script
+## without the scene.
+static func create() -> CardPicker:
+	return SCENE.instantiate() as CardPicker
 
 
 func _ready() -> void:
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.72)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_STOP
-	shade.gui_input.connect(func(event: InputEvent) -> void:
+	UiTheme.localize(self)
+	(%Shade as ColorRect).gui_input.connect(func(event: InputEvent) -> void:
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 			cancelled.emit())
-	add_child(shade)
-
-	var frame := PanelContainer.new()
-	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	frame.offset_left = 60
-	frame.offset_right = -60
-	frame.offset_top = 40
-	frame.offset_bottom = -40
-	add_child(frame)
-
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
-	frame.add_child(box)
-
-	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 8)
-	box.add_child(header)
-
-	_title = UiTheme.label("", 24, UiTheme.BONE)
-	header.add_child(_title)
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(spacer)
-
-	var close := Button.new()
-	close.text = tr("ui.picker.close")
-	close.pressed.connect(func() -> void: cancelled.emit())
-	header.add_child(close)
-
-	_subtitle = UiTheme.label("", 14, UiTheme.INK_DIM)
-	box.add_child(_subtitle)
-
-	_empty = UiTheme.label("", 16, UiTheme.INK_DIM)
-	_empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(_empty)
-
-	var scroll := ScrollContainer.new()
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(scroll)
-
-	_grid = GridContainer.new()
-	_grid.columns = 7
-	_grid.add_theme_constant_override("h_separation", 12)
-	_grid.add_theme_constant_override("v_separation", 12)
-	_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	_grid.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	scroll.add_child(_grid)
+	(%Close as Button).pressed.connect(func() -> void: cancelled.emit())
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -93,8 +50,7 @@ func present(title: String, subtitle: String, entries: Array, empty_text: String
 
 	for entry in entries:
 		var choosable := bool(entry.get("choosable", false))
-		var node := CardNode.new()
-		node.setup(entry["card"], int(entry["index"]), choosable or not picking)
+		var node := CardNode.create(entry["card"], int(entry["index"]), choosable or not picking)
 		node.draggable = false
 		if choosable:
 			var deck_index := int(entry["index"])

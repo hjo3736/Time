@@ -1,0 +1,89 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/ui/card_node.gd" id="1_card"]
+
+[node name="CardNode" type="Control"]
+custom_minimum_size = Vector2(148, 206)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 148.0
+offset_bottom = 206.0
+pivot_offset = Vector2(74, 103)
+script = ExtResource("1_card")
+
+[node name="Frame" type="Panel" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="Body" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Header" type="HBoxContainer" parent="Margin/Body"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Cost" type="Label" parent="Margin/Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+text = "1"
+
+[node name="Spacer" type="Control" parent="Margin/Body/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="Kind" type="Label" parent="Margin/Body/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+text = "ui.card.kind.attack"
+
+[node name="Title" type="Label" parent="Margin/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+text = "card.take.name"
+autowrap_mode = 3
+
+[node name="Rule" type="HSeparator" parent="Margin/Body"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Text" type="RichTextLabel" parent="Margin/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+autowrap_mode = 3
+
+[node name="Exhaust" type="Label" parent="Margin/Body"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+text = "ui.card.exhaust"

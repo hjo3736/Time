@@ -7,6 +7,10 @@ signal drag_started(index: int)
 signal drag_moved(index: int, at: Vector2)
 signal dropped(index: int, at: Vector2)
 
+## The layout is the scene; this script only fills it. The frame's look is the
+## `CardFrame` type in ui_theme.tres.
+const SCENE := preload("res://source/scenes/ui/card_node.tscn")
+
 const SIZE := Vector2(148, 206)
 const LIFT := 34.0
 
@@ -26,9 +30,16 @@ var draggable := true
 var _dragging := false
 var _grab_offset := Vector2.ZERO
 var _press_at := Vector2.ZERO
-var _panel: Panel
 var _tween: Tween
-var _text: RichTextLabel
+
+
+## Always make one through here, never CardNode.new(): new() is the script
+## without the scene, a card with no face.
+static func create(p_card: CardData, p_index: int, p_playable: bool,
+		p_selected: bool = false) -> CardNode:
+	var node := SCENE.instantiate() as CardNode
+	node.setup(p_card, p_index, p_playable, p_selected)
+	return node
 
 
 func setup(p_card: CardData, p_index: int, p_playable: bool, p_selected: bool = false) -> void:
@@ -36,12 +47,8 @@ func setup(p_card: CardData, p_index: int, p_playable: bool, p_selected: bool = 
 	index = p_index
 	playable = p_playable
 	selected = p_selected
-	custom_minimum_size = SIZE
-	size = SIZE
-	pivot_offset = SIZE * 0.5
-	mouse_filter = Control.MOUSE_FILTER_STOP
 	tooltip_text = CardHelp.tooltip_for(p_card)
-	_build()
+	_fill()
 
 
 func settle(at: Vector2, angle: float) -> void:
@@ -52,72 +59,31 @@ func settle(at: Vector2, angle: float) -> void:
 	rotation = angle
 
 
-func _build() -> void:
-	for child in get_children():
-		child.queue_free()
+func _fill() -> void:
+	var frame := (&"unplayable_selected" if selected else &"unplayable") if not playable \
+		else (&"selected" if selected else &"normal")
+	(%Frame as Panel).add_theme_stylebox_override("panel",
+		UiTheme.build().get_stylebox(frame, &"CardFrame"))
 
-	_panel = Panel.new()
-	_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_panel.add_theme_stylebox_override("panel", _style())
-	add_child(_panel)
+	var cost := %Cost as Label
+	cost.text = card.cost_text()
+	cost.add_theme_color_override("font_color", UiTheme.GOLD if playable else UiTheme.INK_DIM)
 
-	var box := VBoxContainer.new()
-	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	box.add_theme_constant_override("separation", 6)
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in ["left", "right", "top", "bottom"]:
-		box.add_theme_constant_override("margin_%s" % side, 10)
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_%s" % side, 10)
-	margin.add_child(box)
-	add_child(margin)
+	var kind := %Kind as Label
+	kind.text = _kind_text()
+	kind.add_theme_color_override("font_color", UiTheme.INK_DIM)
 
-	var header := HBoxContainer.new()
-	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(header)
+	var title := %Title as Label
+	title.text = card.display_name()
+	title.add_theme_color_override("font_color", UiTheme.BONE if playable else UiTheme.INK_DIM)
 
-	var cost := UiTheme.label(card.cost_text(), 18, UiTheme.GOLD if playable else UiTheme.INK_DIM)
-	cost.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header.add_child(cost)
+	var text := %Text as RichTextLabel
+	text.add_theme_color_override("default_color", UiTheme.INK if playable else UiTheme.INK_DIM)
+	text.text = card.rules_text()
 
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header.add_child(spacer)
-
-	var kind := UiTheme.label(_kind_text(), 11, UiTheme.INK_DIM)
-	kind.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	header.add_child(kind)
-
-	var name_label := UiTheme.label(card.display_name(), 17, UiTheme.BONE if playable else UiTheme.INK_DIM)
-	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(name_label)
-
-	var rule := HSeparator.new()
-	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.add_child(rule)
-
-	_text = RichTextLabel.new()
-	_text.bbcode_enabled = true
-	_text.fit_content = true
-	_text.scroll_active = false
-	_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_text.add_theme_font_size_override("normal_font_size", UiTheme.size_for(13))
-	_text.add_theme_color_override("default_color", UiTheme.INK if playable else UiTheme.INK_DIM)
-	_text.text = card.rules_text()
-	box.add_child(_text)
-
-	if card.has_keyword(CardData.Keyword.EXHAUST):
-		var mark := UiTheme.label(tr("ui.card.exhaust"), 12, UiTheme.BLOOD)
-		mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		box.add_child(mark)
+	var exhaust := %Exhaust as Label
+	exhaust.visible = card.has_keyword(CardData.Keyword.EXHAUST)
+	exhaust.add_theme_color_override("font_color", UiTheme.BLOOD)
 
 
 static func kind_name(kind: int) -> String:
@@ -133,23 +99,8 @@ func _kind_text() -> String:
 	return kind_name(card.kind)
 
 
-func _style() -> StyleBoxFlat:
-	var s := StyleBoxFlat.new()
-	s.bg_color = UiTheme.PANEL_HI if selected else UiTheme.PANEL
-	if not playable:
-		s.bg_color = Color(UiTheme.PANEL, 0.55)
-	s.set_corner_radius_all(6)
-	s.set_border_width_all(2)
-	if selected:
-		s.border_color = UiTheme.GOLD
-	elif playable:
-		s.border_color = Color(UiTheme.INK_DIM, 0.65)
-	else:
-		s.border_color = Color(UiTheme.INK_DIM, 0.2)
-	return s
-
-
 func _ready() -> void:
+	UiTheme.localize(self)
 	set_process_input(false)
 	mouse_entered.connect(_hover.bind(true))
 	mouse_exited.connect(_hover.bind(false))
@@ -235,9 +186,8 @@ func return_home() -> void:
 
 
 func show_live_text(bbcode: String) -> void:
-	if _text != null:
-		_text.text = bbcode
+	(%Text as RichTextLabel).text = bbcode
 
 
 func get_rules_text() -> String:
-	return _text.text if _text != null else ""
+	return (%Text as RichTextLabel).text

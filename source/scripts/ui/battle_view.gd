@@ -9,19 +9,22 @@ signal pile_requested(pile: int)
 
 enum Pile { DRAW, DISCARD, EXHAUST }
 
+## The layout is the scene; this script fills it and runs the hand. Each Askew
+## is an EnemyPanel, made fresh with the stage.
+const SCENE := preload("res://source/scenes/ui/battle_view.tscn")
+
 const HAND_Y := 96.0
 const FAN_SPREAD := 0.055
 
 var _rc: RunController
-var _stage: Control
-var _hand_layer: Control
-var _orb_value: Label
-var _orb_panel: Panel
-var _draw_label: Button
-var _discard_label: Button
-var _exhaust_label: Button
-var _turn_label: Label
-var _end_turn: Button
+@onready var _hand_layer := %HandLayer as Control
+@onready var _orb_value := %OrbValue as Label
+@onready var _orb_panel := %Orb as Panel
+@onready var _draw_label := %DrawPile as Button
+@onready var _discard_label := %DiscardPile as Button
+@onready var _exhaust_label := %ExhaustPile as Button
+@onready var _turn_label := %TurnLabel as Label
+@onready var _end_turn := %EndTurn as Button
 var _selected := -1
 
 var _enemy_panels: Array[Dictionary] = []
@@ -32,137 +35,34 @@ var _cards: Array[CardNode] = []
 
 var _preview_target := -1
 
-var _punch: Punch
+@onready var _punch := %Punch as Punch
 var _watching: BattleState = null
 var _landed := 0
-var _warden_node: Control
-var _warden_slot: Control
-var _enemy_slot: Control
+@onready var _warden_node := %Warden as Control
+@onready var _warden_slot := %WardenSlot as Control
+@onready var _enemy_slot := %EnemySlot as Control
+
+
+## Always make one through here, never BattleView.new(): new() is the script
+## without the scene.
+static func create() -> BattleView:
+	return SCENE.instantiate() as BattleView
 
 
 func _ready() -> void:
-	_stage = Control.new()
-	_stage.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_stage.offset_bottom = -250
-	_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_stage)
-
-	_hand_layer = Control.new()
-	_hand_layer.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	_hand_layer.offset_top = -250
-	_hand_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_hand_layer)
-
-	_warden_slot = Control.new()
-	_warden_slot.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_warden_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_stage.add_child(_warden_slot)
-
-	_enemy_slot = Control.new()
-	_enemy_slot.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_enemy_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_stage.add_child(_enemy_slot)
-
-	_punch = Punch.new()
-	add_child(_punch)
-
-	_build_orb()
-	_build_end_turn()
-
+	UiTheme.localize(self)
+	_draw_label.pressed.connect(func() -> void: pile_requested.emit(Pile.DRAW))
+	_discard_label.pressed.connect(func() -> void: pile_requested.emit(Pile.DISCARD))
+	_exhaust_label.pressed.connect(func() -> void: pile_requested.emit(Pile.EXHAUST))
+	_end_turn.pressed.connect(func() -> void:
+		_selected = -1
+		turn_ended.emit())
 	resized.connect(_on_resized)
 
 
 func _on_resized() -> void:
 	if _rc != null and _rc.battle != null and visible:
 		_rebuild_hand(_rc)
-
-
-func _corner(preset: int, at: Vector2) -> VBoxContainer:
-	var column := VBoxContainer.new()
-	column.set_anchors_and_offsets_preset(preset)
-	column.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	column.position = at
-	column.add_theme_constant_override("separation", 6)
-	add_child(column)
-	return column
-
-
-func _build_orb() -> void:
-	var column := _corner(Control.PRESET_BOTTOM_LEFT, Vector2(6, -6))
-	column.add_theme_constant_override("separation", 14)
-
-	_orb_panel = Panel.new()
-	_orb_panel.custom_minimum_size = Vector2(104, 104)
-	_orb_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	var s := StyleBoxFlat.new()
-	s.bg_color = UiTheme.PANEL_HI
-	s.set_corner_radius_all(52)
-	s.set_border_width_all(3)
-	s.border_color = UiTheme.GOLD
-	_orb_panel.add_theme_stylebox_override("panel", s)
-	column.add_child(_orb_panel)
-
-	_draw_label = _pile_button(Pile.DRAW)
-	column.add_child(_draw_label)
-
-	var box := VBoxContainer.new()
-	box.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
-	box.add_theme_constant_override("separation", 0)
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_orb_panel.add_child(box)
-
-	_orb_value = UiTheme.label("", 30, UiTheme.BONE)
-	_orb_value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(_orb_value)
-
-	var caption := UiTheme.label(tr("ui.battle.this_turn"), 11, UiTheme.INK_DIM)
-	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(caption)
-
-
-func _pile_button(pile: int) -> Button:
-	var button := Button.new()
-	button.focus_mode = Control.FOCUS_NONE
-	button.custom_minimum_size = Vector2(176, 34)
-	button.add_theme_font_size_override("font_size", UiTheme.size_for(14))
-	button.pressed.connect(func() -> void: pile_requested.emit(pile))
-	return button
-
-
-func _build_end_turn() -> void:
-	var box := _corner(Control.PRESET_BOTTOM_RIGHT, Vector2(-186, -6))
-	box.add_theme_constant_override("separation", 4)
-
-	_turn_label = UiTheme.label("", 14, UiTheme.INK_DIM)
-	_turn_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(_turn_label)
-
-	_end_turn = Button.new()
-	_end_turn.text = tr("ui.battle.end_turn")
-	_end_turn.custom_minimum_size = Vector2(176, 52)
-	_end_turn.pressed.connect(func() -> void:
-		_selected = -1
-		turn_ended.emit())
-	box.add_child(_end_turn)
-
-	var warning := UiTheme.label(tr("ui.battle.unspent_warning"), 12, UiTheme.BLOOD)
-	warning.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(warning)
-
-	var spent := HBoxContainer.new()
-	spent.add_theme_constant_override("separation", 6)
-	box.add_child(spent)
-
-	_discard_label = _pile_button(Pile.DISCARD)
-	_discard_label.custom_minimum_size = Vector2(85, 34)
-	_discard_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spent.add_child(_discard_label)
-
-	_exhaust_label = _pile_button(Pile.EXHAUST)
-	_exhaust_label.custom_minimum_size = Vector2(85, 34)
-	_exhaust_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	spent.add_child(_exhaust_label)
 
 
 func show_battle(rc: RunController) -> void:
@@ -186,156 +86,34 @@ func show_battle(rc: RunController) -> void:
 
 
 func _rebuild_stage(rc: RunController) -> void:
-	ChoiceView._clear(_warden_slot)
-	ChoiceView._clear(_enemy_slot)
+	_fill_warden(rc)
 
-	var warden := _warden_panel(rc)
-	warden.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT)
-	warden.position = Vector2(40, -60)
-	_warden_slot.add_child(warden)
-	_warden_node = warden
-
+	var row := %EnemyRow as HBoxContainer
+	ChoiceView._clear(row)
 	_enemy_panels.clear()
-	var handles := rc.battle.enemy_handles()
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 30)
-	row.set_anchors_and_offsets_preset(Control.PRESET_CENTER_RIGHT)
-	row.position = Vector2(-40, -70)
-	row.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	_enemy_slot.add_child(row)
-	for handle in handles:
-		var panel := _enemy_panel(rc, handle)
+	for handle in rc.battle.enemy_handles():
+		var panel := EnemyPanel.create(rc, handle, _selected >= 0)
+		panel.target_chosen.connect(_target_chosen)
 		row.add_child(panel)
 		_enemy_panels.append({"handle": handle, "node": panel})
 
 
-func _warden_panel(rc: RunController) -> Control:
+func _fill_warden(rc: RunController) -> void:
 	var w := rc.battle.warden()
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 5)
-	box.custom_minimum_size = Vector2(180, 0)
+	var bar := %Health as ProgressBar
+	bar.max_value = maxi(1, w.max_hp)
+	bar.value = w.hp
+	(%HealthText as Label).text = "%d / %d" % [w.hp, w.max_hp]
 
-	box.add_child(UiTheme.label(tr("warden.name"), 20, UiTheme.BONE))
-	box.add_child(_bar(w.hp, w.max_hp, UiTheme.BLOOD, 180))
-	box.add_child(UiTheme.label("%d / %d" % [w.hp, w.max_hp], 14, UiTheme.INK_DIM))
-	if w.block > 0:
-		box.add_child(UiTheme.label(tr("ui.battle.block").format({"n": w.block}), 15, UiTheme.BONE))
+	var block := %Block as Label
+	block.text = tr("ui.battle.block").format({"n": w.block})
+	block.visible = w.block > 0
+
+	var statuses := %Statuses as VBoxContainer
+	ChoiceView._clear(statuses)
 	for status in w.statuses:
-		box.add_child(UiTheme.label("%s %d" % [tr("status.%s" % status), w.status(status)], 13, UiTheme.GOLD))
-	return box
-
-
-func _enemy_panel(rc: RunController, handle: int) -> Control:
-	var enemy: Combatant = rc.battle.combatants[handle]
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 5)
-	box.custom_minimum_size = Vector2(200, 0)
-
-	var intent := UiTheme.label(_intent_text(rc, handle, enemy), 17, _intent_colour(rc, handle, enemy))
-	intent.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(intent)
-
-	# Whatever else it does this turn, one line each, under the intent it leads
-	# with. Everything it is about to do is on screen before it does any of it.
-	if enemy.behavior != null:
-		for extra in enemy.behavior.extra_intents(rc.battle, handle):
-			var also := UiTheme.label(_intent_text(rc, handle, enemy, extra), 17, UiTheme.BLOOD)
-			also.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			box.add_child(also)
-
-	# What an enemy's behaviour does is not written out here. The fight shows the
-	# intent and the numbers; the rule behind them is the compendium's to state,
-	# and the player's to work out.
-	var name_label := UiTheme.label(tr(enemy.name_key), 20, UiTheme.BONE)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(name_label)
-
-	box.add_child(_bar(enemy.hp, enemy.max_hp, UiTheme.BONE, 200))
-	var hp := UiTheme.label("%d / %d" % [enemy.hp, enemy.max_hp], 14, UiTheme.INK_DIM)
-	hp.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(hp)
-
-	if not rc.battle.reaches(handle):
-		var shut := UiTheme.label(tr("ui.battle.out_of_reach"), 14, UiTheme.BLOOD)
-		shut.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(shut)
-
-	if enemy.block > 0:
-		var b := UiTheme.label(tr("ui.battle.block").format({"n": enemy.block}), 14)
-		b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(b)
-	for status in enemy.statuses:
-		var s := UiTheme.label("%s %d" % [tr("status.%s" % status), enemy.status(status)], 13, UiTheme.GOLD)
-		s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(s)
-
-	if _selected >= 0:
-		var pick := Button.new()
-		pick.text = tr("ui.battle.use_here")
-		pick.pressed.connect(func() -> void: _target_chosen(handle))
-		box.add_child(pick)
-	return box
-
-
-func _bar(value: int, maximum: int, colour: Color, width: int) -> ProgressBar:
-	var bar := ProgressBar.new()
-	bar.custom_minimum_size = Vector2(width, 16)
-	bar.max_value = maxi(1, maximum)
-	bar.value = value
-	bar.show_percentage = false
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = colour
-	fill.set_corner_radius_all(2)
-	var back := StyleBoxFlat.new()
-	back.bg_color = Color(UiTheme.INK_DIM, 0.22)
-	back.set_corner_radius_all(2)
-	bar.add_theme_stylebox_override("fill", fill)
-	bar.add_theme_stylebox_override("background", back)
-	return bar
-
-
-func _intent_amount(rc: RunController, handle: int, enemy: Combatant, intent: EnemyIntent) -> int:
-	var amount := intent.amount
-	if enemy.behavior != null:
-		amount = enemy.behavior.outgoing_amount(rc.battle, handle, intent)
-	amount = roundi(amount * enemy.outgoing_multiplier)
-	if intent.kind == EnemyIntent.Kind.ATTACK:
-		amount = StatusRules.modified_damage(enemy, rc.battle.warden(), amount)
-	return amount
-
-
-func _intent_text(rc: RunController, handle: int, enemy: Combatant,
-		shown: EnemyIntent = null) -> String:
-	var intent := shown if shown != null else enemy.current_intent()
-	if intent == null:
-		return tr("ui.battle.intent_none")
-	var amount := _intent_amount(rc, handle, enemy, intent)
-	match intent.kind:
-		EnemyIntent.Kind.ATTACK:
-			var times := "" if intent.times <= 1 else tr("ui.battle.intent_times").format(
-				{"n": intent.times})
-			return tr("ui.battle.intent_attack").format({"n": amount, "times": times})
-		EnemyIntent.Kind.BLOCK:
-			return tr("ui.battle.intent_block").format({"n": amount})
-		EnemyIntent.Kind.STATUS:
-			return tr("ui.battle.intent_status").format({
-				"name": tr("status.%s" % intent.status), "n": intent.stacks})
-		EnemyIntent.Kind.GROW:
-			return tr("ui.battle.intent_grow").format({"n": intent.stacks})
-		EnemyIntent.Kind.DRAG:
-			# Not `amount`: that has Threat on it, and the grip is not a blow.
-			var left := intent.amount
-			if enemy.behavior != null:
-				left = enemy.behavior.outgoing_amount(rc.battle, handle, intent)
-			if left <= 0:
-				return tr("ui.battle.intent_drag_lost")
-			return tr("ui.battle.intent_drag").format({"n": left})
-		EnemyIntent.Kind.BEAR:
-			return tr("ui.battle.intent_bear").format({
-				"name": tr("status.%s" % intent.status), "n": intent.stacks})
-		EnemyIntent.Kind.WAIT:
-			return tr("ui.battle.intent_wait")
-	return tr("ui.battle.intent_none")
+		statuses.add_child(UiTheme.label("%s %d" % [tr("status.%s" % status), w.status(status)], 13, UiTheme.GOLD))
+	statuses.visible = statuses.get_child_count() > 0
 
 
 func _rebuild_hand(rc: RunController) -> void:
@@ -357,8 +135,7 @@ func _rebuild_hand(rc: RunController) -> void:
 		var card := rc.battle.card_at(i)
 		if card == null:
 			continue
-		var node := CardNode.new()
-		node.setup(card, i, card.cost_minutes() <= rc.battle.turn_budget, i == _selected)
+		var node := CardNode.create(card, i, card.cost_minutes() <= rc.battle.turn_budget, i == _selected)
 		node.clicked.connect(_card_pressed)
 		node.drag_started.connect(_on_drag_started)
 		node.drag_moved.connect(_on_drag_moved)
@@ -514,20 +291,6 @@ func aimed_damage() -> int:
 			var d := effect as EffectDamage
 			total += StatusRules.modified_damage(attacker, victim, d.amount) * maxi(1, d.times)
 	return total
-
-
-func _intent_colour(rc: RunController, handle: int, enemy: Combatant) -> Color:
-	var intent := enemy.current_intent()
-	if intent == null or intent.kind != EnemyIntent.Kind.ATTACK:
-		return UiTheme.BLOOD
-	var raw := intent.amount
-	if enemy.behavior != null:
-		raw = enemy.behavior.outgoing_amount(rc.battle, handle, intent)
-	raw = roundi(raw * enemy.outgoing_multiplier)
-	var shown := _intent_amount(rc, handle, enemy, intent)
-	if shown < raw:
-		return UiTheme.GREEN
-	return UiTheme.BLOOD
 
 
 func _watch(battle: BattleState) -> void:

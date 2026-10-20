@@ -13,7 +13,7 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 
 
 func screen(seed_value: int = 2) -> GameScreen:
-	var s := GameScreen.new()
+	var s := GameScreen.create()
 	root.add_child(s)
 	await process_frame
 	s.start_run(seed_value)
@@ -43,7 +43,7 @@ func _go() -> void:
 	SaveGame.path = "user://test_ui_run.save"
 	Settings.path = "user://test_ui_settings.cfg"
 	SaveGame.clear()
-	var boot := RootScreen.new()
+	var boot := RootScreen.create()
 	root.add_child(boot)
 	await process_frame
 	check("the title is up", boot._title.visible, true)
@@ -626,17 +626,15 @@ func _go() -> void:
 	for i in 6:
 		telegraph.add_card(&"brace")
 	var tb := BattleState.new(telegraph, db, [w1] as Array[Combatant], rng2)
-	var tv := BattleView.new()
-	root.add_child(tv)
 	await process_frame
 	var stub := RunController.new(_b_of(s), db, EnemyDatabase.new(), EncounterTable.new(),
 		RelicDatabase.new(), 3)
 	stub.battle = tb
 
-	check("plain", tv._intent_amount(stub, 1, w1, w1.current_intent()), 12)
+	check("plain", EnemyPanel.intent_amount(stub, 1, w1, w1.current_intent()), 12)
 	w1.add_status(StatusRules.BLUNTED, 2)
-	check("blunted on screen", tv._intent_amount(stub, 1, w1, w1.current_intent()), 9)
-	check("and marked as reduced", tv._intent_colour(stub, 1, w1), UiTheme.GREEN)
+	check("blunted on screen", EnemyPanel.intent_amount(stub, 1, w1, w1.current_intent()), 9)
+	check("and marked as reduced", EnemyPanel.intent_colour(stub, 1, w1), UiTheme.GREEN)
 
 	var hp_pre: int = tb.warden().hp
 	tb.damage(BattleState.WARDEN, 12, 1)
@@ -645,9 +643,8 @@ func _go() -> void:
 	w1.add_status(StatusRules.BLUNTED, -2)
 	tb.warden().add_status(StatusRules.SOFTENED, 2)
 	check("softened pushes it the other way",
-		tv._intent_amount(stub, 1, w1, w1.current_intent()), 18)
-	check("and is not marked as reduced", tv._intent_colour(stub, 1, w1), UiTheme.BLOOD)
-	tv.queue_free()
+		EnemyPanel.intent_amount(stub, 1, w1, w1.current_intent()), 18)
+	check("and is not marked as reduced", EnemyPanel.intent_colour(stub, 1, w1), UiTheme.BLOOD)
 
 	print("\n-- the deck can be read from the corner --")
 	var d: GameScreen = await screen(2)
@@ -863,6 +860,26 @@ func _go() -> void:
 		print("\n-- the bundled pixel font, on its own grid --")
 		var face := UiTheme.font()
 		check("the bundled face loaded, not a system fallback", face is FontFile, true)
+		# On the import, not set at runtime: lose them and every glyph blurs.
+		check("imported without antialiasing", (face as FontFile).antialiasing,
+			TextServer.FONT_ANTIALIASING_NONE)
+		check("or hinting", (face as FontFile).hinting, TextServer.HINTING_NONE)
+		check("or subpixel positioning", (face as FontFile).subpixel_positioning,
+			TextServer.SUBPIXEL_POSITIONING_DISABLED)
+		check("the palette is read from the theme", UiTheme.GOLD,
+			UiTheme.build().get_color(&"gold", &"Palette"))
+
+		print("\n-- a card is its scene --")
+		var pool := CardDatabase.new()
+		pool.load_from()
+		var pilot := CardNode.create(pool.get_card(&"gather"), 0, true)
+		# The hand fan and the grids lay out by SIZE, not by asking the node.
+		check("the scene is the size the layouts assume",
+			pilot.custom_minimum_size, CardNode.SIZE)
+		check("its name is filled in", (pilot.get_node("%Title") as Label).text,
+			pilot.card.display_name())
+		check("and an exhausting card says so", pilot.get_node("%Exhaust").visible, true)
+		pilot.free()
 		var off_grid := 0
 		for asked in [11, 12, 13, 14, 15, 16, 17, 18, 20, 24, 26, 30, 34]:
 			if UiTheme.size_for(asked) % UiTheme.FONT_GRID != 0:

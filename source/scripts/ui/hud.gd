@@ -2,15 +2,18 @@ class_name Hud
 extends PanelContainer
 
 
-var _remaining: Label
-var _date: Label
-var _deadline: Label
-var _sky: Label
-var _hp: Label
-var _restored: Label
-var _threat: Label
-var _act: Label
-var _relics: Label
+## The layout is the scene; this script only fills it.
+const SCENE := preload("res://source/scenes/ui/hud.tscn")
+
+@onready var _remaining := %Remaining as Label
+@onready var _date := %Date as Label
+@onready var _deadline := %Deadline as Label
+@onready var _sky := %Sky as Label
+@onready var _hp := %Hp as Label
+@onready var _restored := %Restored as Label
+@onready var _threat := %Threat as Label
+@onready var _act := %Act as Label
+@onready var _relics := %Relics as Label
 
 const SKY_KEYS := {
 	RunClock.Daytime.MORNING: "time.sky_morning",
@@ -19,7 +22,7 @@ const SKY_KEYS := {
 	RunClock.Daytime.NIGHT: "time.sky_night",
 }
 
-const SKY_TINTS := {
+static var SKY_TINTS := {
 	RunClock.Daytime.MORNING: UiTheme.BONE,
 	RunClock.Daytime.DAY: UiTheme.GOLD,
 	RunClock.Daytime.EVENING: UiTheme.BLOOD,
@@ -31,48 +34,14 @@ var _running := false
 var _flow: Tween
 
 
+## Always make one through here, never Hud.new(): new() is the script without
+## the scene.
+static func create() -> Hud:
+	return SCENE.instantiate() as Hud
+
+
 func _ready() -> void:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 28)
-	add_child(row)
-
-	_date = UiTheme.label("", 28, UiTheme.BONE)
-	_deadline = UiTheme.label("", 13, UiTheme.INK_DIM)
-	var when := VBoxContainer.new()
-	when.add_theme_constant_override("separation", 2)
-	when.add_child(UiTheme.label(tr("ui.hud.now"), 13, UiTheme.INK_DIM))
-	when.add_child(_date)
-	when.add_child(_deadline)
-	row.add_child(when)
-
-	_sky = UiTheme.label("", 20)
-	row.add_child(_column(tr("ui.hud.sky"), _sky))
-
-	_remaining = UiTheme.label("", 20, UiTheme.INK_DIM)
-	row.add_child(_column(tr("ui.hud.remaining"), _remaining))
-
-	_hp = UiTheme.label("", 20)
-	row.add_child(_column(tr("ui.hud.hp"), _hp))
-
-	_restored = UiTheme.label("", 20, UiTheme.GOLD)
-	row.add_child(_column(tr("ui.hud.restored"), _restored))
-
-	_threat = UiTheme.label("", 20)
-	row.add_child(_column(tr("ui.hud.threat"), _threat))
-
-	_act = UiTheme.label("", 20)
-	row.add_child(_column(tr("ui.hud.act"), _act))
-
-	_relics = UiTheme.label("", 20, UiTheme.GOLD)
-	row.add_child(_column(tr("ui.hud.relics"), _relics))
-
-
-func _column(caption: String, value: Label) -> VBoxContainer:
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 2)
-	box.add_child(UiTheme.label(caption, 13, UiTheme.INK_DIM))
-	box.add_child(value)
-	return box
+	UiTheme.localize(self)
 
 
 func spent_so_far(rc: RunController) -> int:

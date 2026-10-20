@@ -25,10 +25,14 @@ const ZOOM_MAX := 2.4
 const ZOOM_STEP := 1.12
 const ZOOM_DEFAULT := 1.0
 
-var _viewport: Control
-var _canvas: Control
-var _hint: Label
-var _legend: Label
+## The frame is the scene. The floor itself — rooms and corridors — is laid out
+## from the map every time it opens, so it stays built here.
+const SCENE := preload("res://source/scenes/ui/map_view.tscn")
+
+@onready var _viewport := %Viewport as Control
+@onready var _canvas := %Canvas as Control
+@onready var _hint := %Hint as Label
+@onready var _legend := %Legend as Label
 var _zoom := ZOOM_DEFAULT
 var _panning := false
 var _places := {}
@@ -38,66 +42,21 @@ var _lines: MapLinks
 var _centre_pending := false
 
 
+## Always make one through here, never MapView.new(): new() is the script
+## without the scene.
+static func create() -> MapView:
+	return SCENE.instantiate() as MapView
+
+
 func _ready() -> void:
+	UiTheme.localize(self)
 	set_process(false)
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	var shade := ColorRect.new()
-	shade.color = Color(0, 0, 0, 0.72)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	shade.mouse_filter = Control.MOUSE_FILTER_STOP
-	shade.gui_input.connect(_on_shade_input)
-	add_child(shade)
-
-	var frame := PanelContainer.new()
-	frame.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	frame.offset_left = 60
-	frame.offset_right = -60
-	frame.offset_top = 40
-	frame.offset_bottom = -40
-	add_child(frame)
-
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 8)
-	frame.add_child(box)
-
-	var header := HBoxContainer.new()
-	header.add_theme_constant_override("separation", 8)
-	box.add_child(header)
-
-	header.add_child(UiTheme.label(tr("ui.map.title"), 24, UiTheme.BONE))
-
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(spacer)
-
-	var close := Button.new()
-	close.text = tr("ui.map.close")
-	close.pressed.connect(func() -> void: closed.emit())
-	header.add_child(close)
-
-	_hint = UiTheme.label("", 14, UiTheme.INK_DIM)
-	box.add_child(_hint)
-
-	_viewport = Control.new()
-	_viewport.clip_contents = true
-	_viewport.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_viewport.mouse_filter = Control.MOUSE_FILTER_STOP
+	(%Shade as ColorRect).gui_input.connect(_on_shade_input)
+	(%Close as Button).pressed.connect(func() -> void: closed.emit())
 	_viewport.gui_input.connect(_on_viewport_input)
 	_viewport.resized.connect(func() -> void:
 		if _centre_pending:
 			centre_on_current())
-	box.add_child(_viewport)
-
-	_canvas = Control.new()
-	_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_viewport.add_child(_canvas)
-
-	_legend = UiTheme.label("", 13, UiTheme.INK_DIM)
-	_legend.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	_legend.position = Vector2(10, -90)
-	_legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_viewport.add_child(_legend)
 
 
 func open(rc: RunController) -> void:

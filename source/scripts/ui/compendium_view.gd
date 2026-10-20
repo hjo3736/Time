@@ -2,6 +2,15 @@ class_name CompendiumView
 extends OverlayView
 
 
+const SCENE := preload("res://source/scenes/ui/compendium_view.tscn")
+
+
+## Always make one through here, never CompendiumView.new(): new() is the script
+## without the scene it shares with the other overlays.
+static func create() -> CompendiumView:
+	return SCENE.instantiate() as CompendiumView
+
+
 enum Tab { CARDS, ENEMIES, RELICS }
 
 const TAB_KEYS := ["ui.compendium.tab_cards", "ui.compendium.tab_enemies", "ui.compendium.tab_relics"]
@@ -227,8 +236,7 @@ func _build_cards() -> void:
 			tr("ui.compendium.nothing_matches"), 20, UiTheme.INK_DIM))
 		return
 	for card in shown:
-		var node := CardNode.new()
-		node.setup(card, -1, true)
+		var node := CardNode.create(card, -1, true)
 		node.draggable = false
 		node.clicked.connect(func(_index: int) -> void:
 			_focus = card
@@ -293,8 +301,7 @@ func _blown_up(card: CardData, caption: String) -> Control:
 	slot.custom_minimum_size = CardNode.SIZE * DETAIL_SCALE
 	column.add_child(slot)
 
-	var node := CardNode.new()
-	node.setup(card, -1, true)
+	var node := CardNode.create(card, -1, true)
 	node.pivot_offset = Vector2.ZERO
 	node.scale = Vector2(DETAIL_SCALE, DETAIL_SCALE)
 	node.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST

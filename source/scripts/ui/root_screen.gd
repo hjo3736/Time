@@ -2,11 +2,16 @@ class_name RootScreen
 extends Control
 
 
+## The title and the panels over it are the scene. The title is rebuilt on a
+## language change and a run's screen is made fresh for each run, so those two
+## are replaced from here rather than kept.
+const SCENE := preload("res://source/scenes/main_scene.tscn")
+
 var _title: TitleView
 var _game: GameScreen
-var _compendium: CompendiumView
-var _settings: SettingsView
-var _dates: DateView
+@onready var _compendium := %CompendiumView as CompendiumView
+@onready var _settings := %SettingsView as SettingsView
+@onready var _dates := %DateView as DateView
 
 var _balance: Balance
 var _cards: CardDatabase
@@ -15,53 +20,54 @@ var _encounters: EncounterTable
 var _relics: RelicDatabase
 
 
-func _ready() -> void:
-	theme = UiTheme.build()
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+## Always make one through here, never RootScreen.new(): new() is the script
+## without the scene.
+static func create() -> RootScreen:
+	return SCENE.instantiate() as RootScreen
 
-	_load_content()
+
+## Before any child is ready: the views in the scene translate themselves in their
+## own _ready, so the saved language has to be in force by then, or the title comes
+## up in whatever language the machine started in.
+func _enter_tree() -> void:
 	Settings.load_from()
 	Settings.apply()
 	Keybinds.load_from()
 
+
+func _ready() -> void:
+	_load_content()
+
 	_build_title()
 
-	_compendium = CompendiumView.new()
-	_compendium.visible = false
 	_compendium.closed.connect(func() -> void: _compendium.visible = false)
-	add_child(_compendium)
 
-	_settings = SettingsView.new()
-	_settings.visible = false
 	_settings.closed.connect(func() -> void: _settings.visible = false)
 	_settings.language_changed.connect(_on_language_changed)
-	add_child(_settings)
 
-	_dates = DateView.new()
-	_dates.visible = false
 	_dates.closed.connect(func() -> void: _dates.visible = false)
 	_dates.chosen.connect(func(seed_value: int) -> void:
 		_dates.visible = false
 		begin(seed_value))
-	add_child(_dates)
 
 	get_viewport().size_changed.connect(_on_viewport_resized)
 
 
 func _build_title() -> void:
-	var was_visible := _title == null or _title.visible
-	if _title != null:
+	if _title == null:
+		_title = $TitleView as TitleView
+	else:
+		var was_visible := _title.visible
 		remove_child(_title)
 		_title.queue_free()
-	_title = TitleView.new()
-	_title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		_title = TitleView.create()
+		add_child(_title)
+		move_child(_title, 0)
+		_title.visible = was_visible
 	_title.date_requested.connect(_open_dates)
 	_title.continue_requested.connect(resume)
 	_title.compendium_requested.connect(_open_compendium)
 	_title.settings_requested.connect(_open_settings)
-	add_child(_title)
-	move_child(_title, 0)
-	_title.visible = was_visible
 	_title.set_continue_available(SaveGame.has_save())
 
 
@@ -144,8 +150,7 @@ func _show_game() -> GameScreen:
 	if _game != null:
 		remove_child(_game)
 		_game.queue_free()
-	_game = GameScreen.new()
-	_game.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_game = GameScreen.create()
 	_game.title_requested.connect(show_title)
 	_game.settings_requested.connect(_open_settings)
 	add_child(_game)

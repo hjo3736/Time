@@ -644,7 +644,7 @@ content nobody would ever reach. Nine per act, six affordable.
 *length* was the whole story, and enemy health was scaled to 0.6 on that basis.
 It was an artifact of the measuring instrument — see below — and it was also a
 bad idea on its own terms, because a global health multiplier turns every number
-in `tool_write_enemies.gd` into a lie. `Balance.validate()` now rejects any
+on the enemy `.tres` files into a lie. `Balance.validate()` now rejects any
 `enemy_hp_scale` other than 1.0 so it cannot be reached for again. Enemy health
 is authored on the enemies.
 

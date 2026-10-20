@@ -7,19 +7,23 @@ signal settings_requested
 
 var rc: RunController
 
-var _hud: Hud
-var _menu: TopMenu
-var _room: RoomView
-var _map: MapView
-var _picker: CardPicker
-var _pause: PauseView
-var _relic_view: RelicView
+## The layout is the scene, which places every other view as an instance; this
+## script wires them to the run and decides which one is showing.
+const SCENE := preload("res://source/scenes/ui/game_screen.tscn")
+
+@onready var _hud := %Hud as Hud
+@onready var _menu := %TopMenu as TopMenu
+@onready var _room := %RoomView as RoomView
+@onready var _map := %MapView as MapView
+@onready var _picker := %CardPicker as CardPicker
+@onready var _pause := %PauseView as PauseView
+@onready var _relic_view := %RelicView as RelicView
 
 enum PickerJob { NONE, DECK, UPGRADE, REMOVE, DRAW, DISCARD, EXHAUST }
 var _picker_job := PickerJob.NONE
-var _battle: BattleView
-var _choice: ChoiceView
-var _content: Control
+@onready var _battle := %BattleView as BattleView
+@onready var _choice := %ChoiceView as ChoiceView
+@onready var _content := %Content as Control
 
 var _balance: Balance
 var _cards: CardDatabase
@@ -28,80 +32,33 @@ var _encounters: EncounterTable
 var _relics: RelicDatabase
 
 
+## Always make one through here, never GameScreen.new(): new() is the script
+## without the scene.
+static func create() -> GameScreen:
+	return SCENE.instantiate() as GameScreen
+
+
 func _ready() -> void:
-	theme = UiTheme.build()
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	var background := ColorRect.new()
-	background.color = UiTheme.BG
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(background)
-
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left", "right", "top", "bottom"]:
-		margin.add_theme_constant_override("margin_%s" % side, 24)
-	add_child(margin)
-
-	var column := VBoxContainer.new()
-	column.add_theme_constant_override("separation", 16)
-	margin.add_child(column)
-
-	var top := HBoxContainer.new()
-	top.add_theme_constant_override("separation", 16)
-	column.add_child(top)
-
-	_hud = Hud.new()
-	_hud.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	top.add_child(_hud)
-
-	_menu = TopMenu.new()
 	_menu.map_requested.connect(_toggle_map)
 	_menu.deck_requested.connect(_toggle_deck)
 	_menu.relics_requested.connect(_toggle_relics)
-	top.add_child(_menu)
 
-	_content = Control.new()
-	_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	column.add_child(_content)
-
-	_room = RoomView.new()
-	_room.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_room.move_requested.connect(_on_move)
-	_content.add_child(_room)
 
-	_battle = BattleView.new()
-	_battle.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_battle.card_chosen.connect(_on_card)
 	_battle.turn_ended.connect(_on_end_turn)
 	_battle.pile_requested.connect(_on_pile)
-	_content.add_child(_battle)
 
-	_choice = ChoiceView.new()
-	_choice.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_choice.chosen.connect(_on_choice)
-	_content.add_child(_choice)
 
-	_map = MapView.new()
 	_map.move_requested.connect(_on_map_move)
 	_map.closed.connect(_close_map)
-	_map.visible = false
-	add_child(_map)
 
-	_picker = CardPicker.new()
 	_picker.picked.connect(_on_picked)
 	_picker.cancelled.connect(_close_picker)
-	_picker.visible = false
-	add_child(_picker)
 
-	_relic_view = RelicView.new()
-	_relic_view.visible = false
 	_relic_view.closed.connect(_close_relics)
-	add_child(_relic_view)
 
-	_pause = PauseView.new()
-	_pause.visible = false
 	_pause.closed.connect(_close_pause)
 	_pause.resume_requested.connect(_close_pause)
 	_pause.title_requested.connect(func() -> void:
@@ -111,7 +68,6 @@ func _ready() -> void:
 		_close_pause()
 		settings_requested.emit())
 	_pause.abandon_requested.connect(_abandon_run)
-	add_child(_pause)
 
 	_load_content()
 

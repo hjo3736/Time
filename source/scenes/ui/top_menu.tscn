@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://source/scripts/ui/top_menu.gd" id="1_menu"]
+
+[node name="TopMenu" type="HBoxContainer"]
+theme_override_constants/separation = 8
+alignment = 2
+script = ExtResource("1_menu")
+
+[node name="Map" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+text = "ui.menu.map"
+
+[node name="Deck" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+text = "ui.menu.deck"
+
+[node name="Relics" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+text = "ui.menu.relics"

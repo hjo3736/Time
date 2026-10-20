@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://source/scripts/ui/root_screen.gd" id="1_root"]
+[ext_resource type="Theme" path="res://source/assets/theme/ui_theme.tres" id="2_theme"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/title_view.tscn" id="3_title"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/compendium_view.tscn" id="4_compendium"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/settings_view.tscn" id="5_settings"]
+[ext_resource type="PackedScene" path="res://source/scenes/ui/date_view.tscn" id="6_dates"]
 
 [node name="RootScreen" type="Control"]
 layout_mode = 3
@@ -9,4 +14,23 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_root")
+
+[node name="TitleView" parent="." instance=ExtResource("3_title")]
+layout_mode = 1
+
+[node name="CompendiumView" parent="." instance=ExtResource("4_compendium")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="SettingsView" parent="." instance=ExtResource("5_settings")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="DateView" parent="." instance=ExtResource("6_dates")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1

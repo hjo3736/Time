@@ -12,37 +12,18 @@ const DIRECTIONS := [
 	{"step": Vector2i.DOWN, "key": "ui.room.south"},
 ]
 
-var _here: Label
-var _here_note: Label
-var _doors: GridContainer
+## The frame is the scene. The doors depend on the room, so they are built here.
+const SCENE := preload("res://source/scenes/ui/room_view.tscn")
+
+@onready var _here := %Here as Label
+@onready var _here_note := %HereNote as Label
+@onready var _doors := %Doors as GridContainer
 
 
-func _ready() -> void:
-	var centre := CenterContainer.new()
-	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(centre)
-
-	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 18)
-	box.custom_minimum_size = Vector2(560, 0)
-	centre.add_child(box)
-
-	_here = UiTheme.label("", 34, UiTheme.BONE)
-	_here.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(_here)
-
-	_here_note = UiTheme.label("", 15, UiTheme.INK_DIM)
-	_here_note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(_here_note)
-
-	var rule := HSeparator.new()
-	box.add_child(rule)
-
-	_doors = GridContainer.new()
-	_doors.columns = 3
-	_doors.add_theme_constant_override("h_separation", 10)
-	_doors.add_theme_constant_override("v_separation", 10)
-	box.add_child(_doors)
+## Always make one through here, never RoomView.new(): new() is the script
+## without the scene.
+static func create() -> RoomView:
+	return SCENE.instantiate() as RoomView
 
 
 func show_room(rc: RunController) -> void:

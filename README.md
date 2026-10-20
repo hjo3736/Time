@@ -203,6 +203,14 @@ number is genuinely not damage; do not use it to make a line read better.
 ```
 source/
   scenes/    .tscn scene files
+    main_scene.tscn  the title and the panels over it
+    ui/      one scene per view. game_screen.tscn places the run's views as
+             instances; card_node.tscn takes a CardData, one enemy_panel.tscn
+             per Askew. The overlays (pause, relics, settings, compendium,
+             date) inherit overlay_view.tscn. Where a view's contents come
+             from data -- the floor in map_view, a room's doors, a
+             compendium tab -- the frame is the scene and the contents are
+             built in code. Build every view with its create(), not .new()
   scripts/   .gd scripts
     balance.gd     every tunable number, as a Resource
     run/           run_clock.gd, run_state.gd, run_controller.gd, tests
@@ -218,13 +226,19 @@ source/
     relics/        relic.gd, relic_database.gd, relics/
   data/
     balance.tres   the default tuning profile — edit this, not the code
-    cards/         card definitions (.tres)
+    cards/         card definitions (.tres) — the pool; see Content data
+    cards_shelved/ out of the pool, read by the tests
+    cards_fixtures/ test-only cards
     localization/  strings.csv — ko is source, en is the pivot
     enemies/       Askew definitions (.tres)
     encounters/    which Askew share a room
     relics/
+    events/
   assets/    art and audio
+    theme/   ui_theme.tres — font, boxes, palette, card frames
 docs/        design notes
+tools/
+  retired_generators/  the old tool_write_*.gd, archived; .gdignore'd
 ```
 
 ## Balance
@@ -242,10 +256,30 @@ these is a mistake this project actually made:
   them in;
 - `expected_threat_steps` drifting from the number of steps the budget actually
   holds, which is not just a wrong HUD label: the escalation curve divides by it;
-- a global `enemy_hp_scale` other than 1.0, which turns every number authored in
-  `tool_write_enemies.gd` into a lie.
+- a global `enemy_hp_scale` other than 1.0, which turns every number authored on
+  the enemy `.tres` files into a lie.
 
 Add an invariant here whenever a design rule turns out to depend on a number.
+
+## Content data
+
+**The `.tres` files are the source of truth.** Cards, Askew, encounters, events
+and relics are authored in `source/data/` and edited in the Godot inspector.
+Nothing regenerates them. They used to be written out by `tool_write_*.gd`
+scripts, which meant an inspector edit lasted only until the next run of the
+tool; those scripts are archived in
+[`tools/retired_generators/`](tools/retired_generators/) and Godot does not load
+them.
+
+What the generators checked, `validate()` and the tests still check: run the
+suite after editing data, not just the game.
+
+Card directories:
+
+- `cards/` — the pool the game loads.
+- `cards_shelved/` — taken out of the pool, kept for the tests. Moving a card
+  back is moving its file.
+- `cards_fixtures/` — not cards; test cases for the machinery, ids `fixture_*`.
 
 ## Running
 
@@ -315,9 +349,16 @@ shops and endings share one screen. No art yet — colours and text only, on the
 palette from `source/assets/art/warden_pixel_study.svg`.
 
 **The font is bundled and it is a pixel font.** `source/assets/font/DungGeunMo.ttf`
-(둥근모꼴), loaded by `UiTheme` from `res://` so a build draws Hangul on a machine
+(둥근모꼴), the default font of the theme, so a build draws Hangul on a machine
 that is not this one. The default Godot font has no Hangul at all, so without a
 bundled face every string in the game is a row of boxes.
+
+**The look is a resource.** [`source/assets/theme/ui_theme.tres`](source/assets/theme/ui_theme.tres)
+holds the font, the button and panel boxes, and the palette (under the `Palette`
+type), and is edited in the inspector. `UiTheme` only reads it: `UiTheme.GOLD`
+and the rest are that palette, read once at load. The theme's own boxes hold
+their colours as literals, so retuning a palette colour does not retint them —
+change both.
 
 **The view layer holds no display strings.** Every word the UI draws is a key in
 strings.csv, which is what makes the language setting real rather than
@@ -338,8 +379,8 @@ delete if an outline face ever replaces this one.
 Antialiasing, hinting and subpixel positioning are all switched off for the same
 reason — they exist to make a curve look smooth at a size it was not drawn for,
 and on glyphs that are already exactly the right pixels they only blur edges that
-were correct. Godot's importer reaches the same conclusion on its own and says so
-in the console.
+were correct. They are set on the font's import (`DungGeunMo.ttf.import`), so
+the editor draws it the way the game does; `test_ui` fails if they come back.
 
 **Licence: public domain.** 둥근모꼴 is released into the public domain, as are the
 faces it derives from (둥근모꼴 and Fixedsys Excelsior). Redistribution,
