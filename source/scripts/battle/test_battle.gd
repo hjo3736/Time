@@ -14,8 +14,8 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 		print("  FAIL  %s = %s, expected %s" % [label, actual, expected])
 
 
-func dummy(hp: int, intents: Array[EnemyIntent], restored: int = 360) -> Combatant:
-	var c := Combatant.new()
+func dummy(hp: int, intents: Array[EnemyIntent], restored: int = 360) -> Stats:
+	var c := Stats.new()
 	c.max_hp = hp
 	c.hp = hp
 	c.restored_value = restored
@@ -30,7 +30,7 @@ func run_with_deck(ids: Array) -> RunState:
 	return run
 
 
-func battle(run: RunState, enemies: Array[Combatant], seed_value: int = 7) -> BattleState:
+func battle(run: RunState, enemies: Array[Stats], seed_value: int = 7) -> BattleState:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	return BattleState.new(run, _cards, enemies, rng)

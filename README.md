@@ -217,7 +217,7 @@ source/
     cards/         card_data.gd, card_upgrade.gd, card_targeting.gd,
                    card_database.gd, effect_context.gd, card_effect.gd,
                    effects/, tests
-    battle/        battle_state.gd, combatant.gd, battle_piles.gd,
+    battle/        battle_state.gd, stats.gd, battle_piles.gd,
                    status_rules.gd, enemy_intent.gd, battle_effect_context.gd,
                    enemy_behavior.gd, behaviors/, enemy_data.gd, enemy_database.gd,
                    encounter_data.gd, encounter_table.gd

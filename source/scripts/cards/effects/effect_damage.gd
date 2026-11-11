@@ -40,7 +40,7 @@ func _line(shown: Variant, targeting: int, name_target := true) -> String:
 func describe_live(battle, source: int, target: int, targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
 	if battle == null:
 		return describe(targeting, name_target)
-	var victim: Combatant = battle.combatants[target] if target >= 0 and target < battle.combatants.size() else null
+	var victim: Stats = battle.combatants[target] if target >= 0 and target < battle.combatants.size() else null
 	if victim == null:
 		return describe(targeting, name_target)
 

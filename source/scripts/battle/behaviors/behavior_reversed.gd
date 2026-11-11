@@ -17,7 +17,7 @@ func on_damaged(_battle: BattleState, _handle: int, dealt: int) -> void:
 	_taken_this_turn += dealt
 
 
-func advance_intent(_battle: BattleState, who: Combatant) -> void:
+func advance_intent(_battle: BattleState, who: Stats) -> void:
 	who.intent_index -= 1
 
 

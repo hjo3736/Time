@@ -40,8 +40,8 @@ func run_with(relic_ids: Array, cards_in_deck: int = 8) -> RunState:
 	return run
 
 
-func dummy(hp: int) -> Combatant:
-	var c := Combatant.new()
+func dummy(hp: int) -> Stats:
+	var c := Stats.new()
 	c.max_hp = hp
 	c.hp = hp
 	c.restored_value = 100
@@ -50,7 +50,7 @@ func dummy(hp: int) -> Combatant:
 
 
 func battle_for(run: RunState, hp: int = 99) -> BattleState:
-	return BattleState.new(run, _cards, [dummy(hp)] as Array[Combatant], rng(3))
+	return BattleState.new(run, _cards, [dummy(hp)] as Array[Stats], rng(3))
 
 
 func hit(bt: BattleState) -> bool:

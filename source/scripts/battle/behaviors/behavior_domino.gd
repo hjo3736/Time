@@ -14,7 +14,7 @@ func on_defeated(battle: BattleState, handle: int) -> void:
 	var behind := handle + 1
 	if behind >= battle.combatants.size():
 		return
-	var next: Combatant = battle.combatants[behind]
+	var next: Stats = battle.combatants[behind]
 	if next.is_alive() and next.behavior is BehaviorDomino:
 		battle.damage(behind, push)
 

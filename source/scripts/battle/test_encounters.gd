@@ -114,9 +114,9 @@ func _init() -> void:
 	# are not. Same seed both times, so the only difference is the scale.
 	var cut := _table.mixed(mix_lone, mix_company, 2, 0.5)
 	var whole_hp := _table.spawn(mix_pair, _enemies, _b, rng(4)).map(
-		func(c: Combatant) -> int: return c.max_hp)
+		func(c: Stats) -> int: return c.max_hp)
 	var cut_hp := _table.spawn(cut, _enemies, _b, rng(4)).map(
-		func(c: Combatant) -> int: return c.max_hp)
+		func(c: Stats) -> int: return c.max_hp)
 	check("a mixed fight can be given smaller gauges",
 		cut_hp, whole_hp.map(func(hp: int) -> int: return roundi(hp * 0.5)))
 	check("and what they are worth shrinks with them",
@@ -178,7 +178,7 @@ func _init() -> void:
 	check("there is something to spawn", one != null, true)
 	var group := _table.spawn(one, _enemies, _b, rng(3))
 	check("one combatant per member", group.size(), one.members.size())
-	var spawned_keys := group.map(func(c: Combatant) -> StringName: return c.name_key)
+	var spawned_keys := group.map(func(c: Stats) -> StringName: return c.name_key)
 	var authored_keys := one.members.map(
 		func(m: StringName) -> StringName: return _enemies.get_enemy(m).name_key)
 	check("in the authored order", spawned_keys, authored_keys)

@@ -15,7 +15,7 @@ const DURATIONS := [SOFTENED, BLUNTED]
 
 ## Strength lands before the multipliers, so 무뎌짐 blunts the strength too. The
 ## other order would let a strong attacker shrug the debuff off by out-scaling it.
-static func modified_damage(attacker: Combatant, target: Combatant, amount: int) -> int:
+static func modified_damage(attacker: Stats, target: Stats, amount: int) -> int:
 	var out := float(amount)
 	if attacker != null:
 		out += float(attacker.status(STRENGTH))
@@ -26,7 +26,7 @@ static func modified_damage(attacker: Combatant, target: Combatant, amount: int)
 	return maxi(0, floori(out))
 
 
-static func tick_down(who: Combatant) -> void:
+static func tick_down(who: Stats) -> void:
 	for id in DURATIONS:
 		if who.status(id) > 0:
 			who.add_status(id, -1)

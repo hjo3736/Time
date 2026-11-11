@@ -6,7 +6,7 @@ extends Relic
 
 
 func on_turn_start(_run: RunState, battle) -> void:
-	var warden: Combatant = battle.warden()
+	var warden: Stats = battle.warden()
 	if warden.hp * 2 <= warden.max_hp:
 		battle.turn_budget += bonus_minutes
 		battle.turn_budget_max += bonus_minutes

@@ -14,8 +14,8 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 		print("  FAIL  %s = %s, expected %s" % [label, actual, expected])
 
 
-func enemy(hp: int, intents: Array[EnemyIntent], behavior: EnemyBehavior = null) -> Combatant:
-	var c := Combatant.new()
+func enemy(hp: int, intents: Array[EnemyIntent], behavior: EnemyBehavior = null) -> Stats:
+	var c := Stats.new()
 	c.max_hp = hp
 	c.hp = hp
 	c.restored_value = 360
@@ -37,7 +37,7 @@ func rng(seed_value: int) -> RandomNumberGenerator:
 	return r
 
 
-func battle(run: RunState, enemies: Array[Combatant]) -> BattleState:
+func battle(run: RunState, enemies: Array[Stats]) -> BattleState:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
 	return BattleState.new(run, _cards, enemies, rng)
@@ -358,7 +358,7 @@ func _init() -> void:
 	hit(late_bt, 1)
 	late_bt.end_turn()
 	check("the day after, a wound stays a wound", late_foe.hp, 93)
-	var woken := Combatant.from_dict(late_foe.to_dict())
+	var woken := Stats.from_dict(late_foe.to_dict())
 	check("and a resumed one remembers which day it is on",
 		(woken.behavior as BehaviorDaybound).to_dict(), {"_day": 1})
 
@@ -462,7 +462,7 @@ func _init() -> void:
 		[EnemyIntent.Kind.ATTACK, 12])
 	check("and it is the only thing it means to do", echo.behavior.extra_intents(echo_bt, 1), [])
 	check("a resumed one is still showing it",
-		Combatant.from_dict(echo.to_dict()).current_intent().amount, 12)
+		Stats.from_dict(echo.to_dict()).current_intent().amount, 12)
 	hit(echo_bt, 1)
 	echo_bt.end_turn()
 	check("the 12 landed", echo_bt.warden().hp, echo_hp - 12)
@@ -504,7 +504,7 @@ func _init() -> void:
 	check("and soften the Warden exactly as it was softened",
 		[plan[2].kind, plan[2].status, plan[2].stacks],
 		[EnemyIntent.Kind.STATUS, StatusRules.SOFTENED, 2])
-	var kept_plan := Combatant.from_dict(whole.to_dict())
+	var kept_plan := Stats.from_dict(whole.to_dict())
 	check("a resumed one still means all three", kept_plan.intents.size(), 3)
 	var whole_hp := whole_bt.warden().hp
 	whole_bt.end_turn()
@@ -528,12 +528,12 @@ func _init() -> void:
 	check("it bore it", self_echo.status(StatusRules.STRENGTH), 2)
 
 	print("\n-- 이어달리기: one blow a turn, handed on and heavier each time --")
-	var team: Array[Combatant] = []
+	var team: Array[Stats] = []
 	for i in 3:
 		team.append(enemy(40, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorRelay.new()))
 	var relay_bt := battle(strikes(), team)
 	var showing := func() -> Array:
-		return team.map(func(c: Combatant) -> int:
+		return team.map(func(c: Stats) -> int:
 			var i := c.current_intent()
 			return i.amount if i.kind == EnemyIntent.Kind.ATTACK else 0)
 	check("the first runner opens with it and the others wait", showing.call(), [5, 0, 0])
@@ -548,7 +548,7 @@ func _init() -> void:
 	check("and who strikes next is on show the whole turn before",
 		relay_shown, [[0, 8, 0], [0, 0, 11], [14, 0, 0], [0, 17, 0]])
 
-	var dropped: Array[Combatant] = []
+	var dropped: Array[Stats] = []
 	for i in 3:
 		dropped.append(enemy(40, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorRelay.new()))
 	var drop_bt := battle(strikes(), dropped)
@@ -560,7 +560,7 @@ func _init() -> void:
 	drop_bt.end_turn()
 	check("brought down holding it, the blow never comes", drop_bt.warden().hp, drop_hp)
 	check("and it is picked up at the weight it started",
-		dropped.slice(0, 2).map(func(c: Combatant) -> int:
+		dropped.slice(0, 2).map(func(c: Stats) -> int:
 			var i := c.current_intent()
 			return i.amount if i.kind == EnemyIntent.Kind.ATTACK else 0), [5, 0])
 	dropped[1].hp = 0
@@ -568,12 +568,12 @@ func _init() -> void:
 	drop_bt.end_turn()
 	check("the last one left hands it to itself, and it still grows",
 		dropped[0].current_intent().amount, 11)
-	var resumed := Combatant.from_dict(dropped[0].to_dict())
+	var resumed := Stats.from_dict(dropped[0].to_dict())
 	check("a resumed runner still has it",
 		[(resumed.behavior as BehaviorRelay).holds(), resumed.current_intent().amount], [true, 11])
 
 	print("\n-- 합창: each strikes for every one still singing --")
-	var choir: Array[Combatant] = []
+	var choir: Array[Stats] = []
 	for i in 3:
 		choir.append(enemy(40, [EnemyIntent.attack(2)] as Array[EnemyIntent], BehaviorChorus.new()))
 	var choir_bt := battle(strikes(), choir)
@@ -593,7 +593,7 @@ func _init() -> void:
 
 	print("\n-- 도미노: one falls onto the next, for as long as that is enough --")
 	var line_run := strikes()
-	var line: Array[Combatant] = []
+	var line: Array[Stats] = []
 	for i in 4:
 		line.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
 	var line_bt := battle(line_run, line)
@@ -601,11 +601,11 @@ func _init() -> void:
 		d.hp = 6
 	hit(line_bt, 1)
 	check("worn to six, all four go from one blow",
-		line.map(func(c: Combatant) -> bool: return c.is_alive()), [false, false, false, false])
+		line.map(func(c: Stats) -> bool: return c.is_alive()), [false, false, false, false])
 	check("and every one of them was recovered", line_run.clock.restored, 4 * 360)
 	check("which ends the fight", line_bt.is_over(), true)
 
-	var stopped: Array[Combatant] = []
+	var stopped: Array[Stats] = []
 	for i in 3:
 		stopped.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
 	var stop_bt := battle(strikes(), stopped)
@@ -613,9 +613,9 @@ func _init() -> void:
 	stopped[1].hp = 7
 	hit(stop_bt, 1)
 	check("one point too many and it stops there",
-		stopped.map(func(c: Combatant) -> int: return c.hp), [0, 1, 10])
+		stopped.map(func(c: Stats) -> int: return c.hp), [0, 1, 10])
 
-	var gapped: Array[Combatant] = []
+	var gapped: Array[Stats] = []
 	for i in 3:
 		gapped.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
 	var gap_bt := battle(strikes(), gapped)
@@ -668,7 +668,7 @@ func _init() -> void:
 	prop_bt.end_turn()
 	check("a new turn is a new fifteen", prop_bt.preview_damage(1, 20, BattleState.WARDEN), 15)
 	check("and a resumed one knows how much of it is spent",
-		(Combatant.from_dict(prop.to_dict()).behavior as BehaviorBulwark).taken(), 0)
+		(Stats.from_dict(prop.to_dict()).behavior as BehaviorBulwark).taken(), 0)
 
 	var guarded_prop := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorBulwark.new())
 	var guarded_prop_bt := battle(strikes(), [guarded_prop])
@@ -681,7 +681,7 @@ func _init() -> void:
 		guarded_prop_bt.preview_damage(1, 30, BattleState.WARDEN), 17)
 
 	print("\n-- 해를 끄는 것: a pull that holds lands on the evening, and it grows for the hours --")
-	var sun_dragger := func() -> Combatant:
+	var sun_dragger := func() -> Stats:
 		var c := enemy(400, [EnemyIntent.drag(18)] as Array[EnemyIntent], BehaviorSunDragger.new())
 		var at_dawn: Array[EnemyIntent] = [EnemyIntent.drag(18)]
 		var at_dusk: Array[EnemyIntent] = [EnemyIntent.grow(1)]
@@ -695,11 +695,11 @@ func _init() -> void:
 		for i in 10:
 			run.add_card(&"take")
 		return run
-	var owed := func(bt: BattleState, who: Combatant) -> int:
+	var owed := func(bt: BattleState, who: Stats) -> int:
 		return who.behavior.outgoing_amount(bt, 1, who.current_intent())
 
 	var pulled_run: RunState = sun_dawn.call()
-	var puller: Combatant = sun_dragger.call()
+	var puller: Stats = sun_dragger.call()
 	var pulled_bt := battle(pulled_run, [puller])
 	check("at five in the morning it means to pull",
 		puller.current_intent().kind, EnemyIntent.Kind.DRAG)
@@ -724,7 +724,7 @@ func _init() -> void:
 
 	print("\n-- 해를 끄는 것: a pull that is broken costs nothing now and more next time --")
 	var held_sun_run: RunState = sun_dawn.call()
-	var loser: Combatant = sun_dragger.call()
+	var loser: Stats = sun_dragger.call()
 	var held_sun_bt := battle(held_sun_run, [loser])
 	held_sun_bt.damage(1, 18)
 	check("the grip's worth taken, nothing is owed", owed.call(held_sun_bt, loser), 0)
@@ -734,7 +734,7 @@ func _init() -> void:
 		[loser.current_intent().kind, owed.call(held_sun_bt, loser)],
 		[EnemyIntent.Kind.DRAG, 22])
 	check("a resumed one remembers how hard",
-		(Combatant.from_dict(loser.to_dict()).behavior as BehaviorSunDragger).tightened(), 4)
+		(Stats.from_dict(loser.to_dict()).behavior as BehaviorSunDragger).tightened(), 4)
 	held_sun_bt.damage(1, 22)
 	held_sun_bt.end_turn()
 	check("broken again, it is eleven and the grip is 26",
@@ -745,7 +745,7 @@ func _init() -> void:
 	check("the turn counts too, so it grows 1 and 2 more", loser.current_intent().stacks, 3)
 
 	var late_sun_run: RunState = sun_dawn.call()
-	var dud: Combatant = sun_dragger.call()
+	var dud: Stats = sun_dragger.call()
 	var late_sun_bt := battle(late_sun_run, [dud])
 	for grip in [18, 22, 26]:
 		late_sun_bt.damage(1, grip)
@@ -870,9 +870,9 @@ func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
 	fixture.hp_min = 30
 	fixture.hp_max = 30
 	fixture.intents = [EnemyIntent.attack(5)] as Array[EnemyIntent]
-	var group: Array[Combatant] = [fixture.spawn(b, rng(2))]
+	var group: Array[Stats] = [fixture.spawn(b, rng(2))]
 	var bt := BattleState.new(run, cards, group, rng(2))
-	var enemy: Combatant = bt.combatants[1]
+	var enemy: Stats = bt.combatants[1]
 	check("the fight opens under the sky the run is under", enemy.sky, opened_under)
 
 	bt.end_turn()

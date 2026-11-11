@@ -14,7 +14,7 @@ const SKIES := [RunClock.Daytime.MORNING, RunClock.Daytime.EVENING]
 func on_turn_end(battle: BattleState, handle: int) -> void:
 	if battle == null:
 		return
-	var who: Combatant = battle.combatants[handle]
+	var who: Stats = battle.combatants[handle]
 	if SKIES.has(who.sky):
 		who.add_status(StatusRules.STRENGTH, gain)
 

@@ -27,8 +27,8 @@ enum Tier { NORMAL, ELITE, BOSS }
 @export var restored_multiplier := 1.0
 
 
-func spawn(balance: Balance, rng: RandomNumberGenerator) -> Combatant:
-	var c := Combatant.new()
+func spawn(balance: Balance, rng: RandomNumberGenerator) -> Stats:
+	var c := Stats.new()
 	c.name_key = name_key
 	c.max_hp = rng.randi_range(hp_min, maxi(hp_min, hp_max))
 	c.hp = c.max_hp

@@ -200,8 +200,8 @@ func spawn(
 	balance: Balance,
 	rng: RandomNumberGenerator,
 	threat_level: int = 0,
-) -> Array[Combatant]:
-	var out: Array[Combatant] = []
+) -> Array[Stats]:
+	var out: Array[Stats] = []
 	var hp_scale := (balance.enemy_hp_scale * balance.threat_hp_multiplier(threat_level)
 		* encounter.hp_scale)
 	var damage_scale := balance.enemy_damage_scale * balance.threat_damage_multiplier(threat_level)

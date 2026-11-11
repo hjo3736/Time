@@ -14,7 +14,7 @@ var _incoming := 0
 ## strikes, and having struck it hands it on, a little heavier each time. The
 ## runner written first starts with it, at the blow it was authored with.
 func on_battle_start(battle: BattleState, handle: int) -> void:
-	var who: Combatant = battle.combatants[handle]
+	var who: Stats = battle.combatants[handle]
 	_base = who.intents[0].amount if not who.intents.is_empty() else 0
 	if _first_runner(battle) == handle:
 		_take(who, _base)
@@ -30,7 +30,7 @@ func on_battle_start(battle: BattleState, handle: int) -> void:
 ## hand would be swung at once, unannounced. So it is only told one is coming,
 ## and takes it up as its own turn ends. A runner earlier in the line has already
 ## been, and can simply be given it.
-func advance_intent(battle: BattleState, who: Combatant) -> void:
+func advance_intent(battle: BattleState, who: Stats) -> void:
 	var handle := battle.combatants.find(who)
 	if _incoming > 0:
 		_take(who, _incoming)
@@ -43,7 +43,7 @@ func advance_intent(battle: BattleState, who: Combatant) -> void:
 			_take(who, heavier)
 			return
 		_rest(who)
-		var to: Combatant = battle.combatants[next]
+		var to: Stats = battle.combatants[next]
 		var theirs := to.behavior as BehaviorRelay
 		if next > handle:
 			theirs._incoming = heavier
@@ -57,7 +57,7 @@ func advance_intent(battle: BattleState, who: Combatant) -> void:
 		_take(who, _base)
 
 
-func _take(who: Combatant, power: int) -> void:
+func _take(who: Stats, power: int) -> void:
 	_holds = true
 	_power = power
 	var next: Array[EnemyIntent] = [EnemyIntent.attack(power)]
@@ -65,7 +65,7 @@ func _take(who: Combatant, power: int) -> void:
 	who.intent_index = 0
 
 
-func _rest(who: Combatant) -> void:
+func _rest(who: Stats) -> void:
 	_holds = false
 	_power = 0
 	var next: Array[EnemyIntent] = [EnemyIntent.wait()]

@@ -8,7 +8,7 @@ func _init(battle: BattleState) -> void:
 	_battle = battle
 
 
-func _at(handle: int) -> Combatant:
+func _at(handle: int) -> Stats:
 	if handle < 0 or handle >= _battle.combatants.size():
 		return null
 	return _battle.combatants[handle]

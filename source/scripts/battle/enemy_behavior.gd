@@ -76,7 +76,7 @@ func extra_intents(_battle: BattleState, _handle: int) -> Array[EnemyIntent]:
 	return []
 
 
-func advance_intent(_battle: BattleState, who: Combatant) -> void:
+func advance_intent(_battle: BattleState, who: Stats) -> void:
 	who.advance_intent()
 
 

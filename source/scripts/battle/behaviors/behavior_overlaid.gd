@@ -19,7 +19,7 @@ func _twin_of(battle: BattleState, handle: int) -> BehaviorOverlaid:
 	var who := battle.combatants[handle]
 	if who.link < 0 or who.link >= battle.combatants.size():
 		return null
-	var twin: Combatant = battle.combatants[who.link]
+	var twin: Stats = battle.combatants[who.link]
 	if not twin.is_alive():
 		return null
 	return twin.behavior as BehaviorOverlaid

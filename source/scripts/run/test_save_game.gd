@@ -181,7 +181,7 @@ func _init() -> void:
 		var spawned := withered.spawn(_balance, rng)
 		(spawned.behavior as BehaviorWithered).on_turn_end(null, 0)
 		(spawned.behavior as BehaviorWithered).on_turn_end(null, 0)
-		var copied := Combatant.from_dict(spawned.to_dict())
+		var copied := Stats.from_dict(spawned.to_dict())
 		check("the behaviour came back", copied.behavior != null, true)
 		check("as the same class", copied.behavior.get_script(), spawned.behavior.get_script())
 		check("with its age intact", (copied.behavior as BehaviorWithered).turns_elapsed(), 2)

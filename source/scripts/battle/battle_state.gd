@@ -19,7 +19,7 @@ var phase := Phase.PLAYER_TURN:
 			phase_changed.emit(value)
 
 var turn := 0
-var combatants: Array[Combatant] = []
+var combatants: Array[Stats] = []
 
 var turn_budget := 0
 
@@ -48,7 +48,7 @@ var _piles: BattlePiles
 var _hand_size := 5
 
 
-func _init(run: RunState, cards: CardDatabase, enemies: Array[Combatant],
+func _init(run: RunState, cards: CardDatabase, enemies: Array[Stats],
 		rng: RandomNumberGenerator, restoring := false) -> void:
 	_run = run
 	_balance = run.clock.balance
@@ -59,7 +59,7 @@ func _init(run: RunState, cards: CardDatabase, enemies: Array[Combatant],
 		_piles = BattlePiles.new(run.deck.size(), rng)
 		return
 
-	var warden := Combatant.new()
+	var warden := Stats.new()
 	warden.name_key = &"warden.name"
 	warden.max_hp = run.max_hp
 	warden.hp = run.hp
@@ -70,7 +70,7 @@ func _init(run: RunState, cards: CardDatabase, enemies: Array[Combatant],
 
 	follow_the_sky()
 	for handle in enemy_handles():
-		var who: Combatant = combatants[handle]
+		var who: Stats = combatants[handle]
 		if who.behavior != null:
 			who.behavior.on_battle_start(self, handle)
 	for relic in run.relic_defs():
@@ -94,7 +94,7 @@ func run() -> RunState:
 	return _run
 
 
-func warden() -> Combatant:
+func warden() -> Stats:
 	return combatants[WARDEN]
 
 
@@ -126,7 +126,7 @@ func is_over() -> bool:
 func turn_cost_now() -> int:
 	var out := _balance.turn_cost
 	for handle in enemy_handles():
-		var who: Combatant = combatants[handle]
+		var who: Stats = combatants[handle]
 		if who.behavior != null:
 			out = who.behavior.modify_turn_cost(self, handle, out)
 	return maxi(0, out) + overtime_now()
@@ -326,7 +326,7 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 	if dealt > 0:
 		combatant_damaged.emit(handle, dealt)
 	if handle == WARDEN and dealt > 0 and from > WARDEN and from < combatants.size():
-		var attacker: Combatant = combatants[from]
+		var attacker: Stats = combatants[from]
 		if attacker.behavior != null:
 			attacker.behavior.on_hit_warden(self, from, dealt)
 	if handle != WARDEN and not target.is_alive():
@@ -342,14 +342,14 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 ## enemies that listen can hear it. Nothing here changes what the card did.
 func heard_block(target: int, amount: int) -> void:
 	for handle in enemy_handles():
-		var who: Combatant = combatants[handle]
+		var who: Stats = combatants[handle]
 		if who.behavior != null:
 			who.behavior.on_block_gained(self, handle, target, amount)
 
 
 func heard_status(target: int, status: StringName, stacks: int) -> void:
 	for handle in enemy_handles():
-		var who: Combatant = combatants[handle]
+		var who: Stats = combatants[handle]
 		if who.behavior != null:
 			who.behavior.on_status_applied(self, handle, target, status, stacks)
 
@@ -357,7 +357,7 @@ func heard_status(target: int, status: StringName, stacks: int) -> void:
 func _diverted(handle: int, from: int, through: int) -> int:
 	if handle != WARDEN or from <= WARDEN or from >= combatants.size():
 		return 0
-	var attacker: Combatant = combatants[from]
+	var attacker: Stats = combatants[from]
 	if attacker.behavior == null:
 		return 0
 	return clampi(attacker.behavior.diverts_hit(self, from, through), 0, through)
@@ -388,7 +388,7 @@ func to_dict() -> Dictionary:
 		"rng_seed": _rng.seed,
 		"rng_state": _rng.state,
 		"piles": _piles.to_dict(),
-		"combatants": combatants.map(func(c: Combatant) -> Dictionary: return c.to_dict()),
+		"combatants": combatants.map(func(c: Stats) -> Dictionary: return c.to_dict()),
 	}
 
 
@@ -397,9 +397,9 @@ static func from_dict(data: Dictionary, run: RunState, cards: CardDatabase) -> B
 	rng.seed = int(data.get("rng_seed", 0))
 	rng.state = int(data.get("rng_state", 0))
 
-	var out := BattleState.new(run, cards, [] as Array[Combatant], rng, true)
+	var out := BattleState.new(run, cards, [] as Array[Stats], rng, true)
 	for entry in data.get("combatants", []):
-		out.combatants.append(Combatant.from_dict(entry))
+		out.combatants.append(Stats.from_dict(entry))
 	out._piles.from_dict(data.get("piles", {}))
 	out.turn = int(data.get("turn", 1))
 	out.turn_budget = int(data.get("turn_budget", 0))
@@ -414,7 +414,7 @@ static func from_dict(data: Dictionary, run: RunState, cards: CardDatabase) -> B
 
 func _after_status(handle: int, amount: int, from: int) -> int:
 	var target := combatants[handle]
-	var attacker: Combatant = combatants[from] if from >= 0 and from < combatants.size() else null
+	var attacker: Stats = combatants[from] if from >= 0 and from < combatants.size() else null
 	return StatusRules.modified_damage(attacker, target, amount)
 
 

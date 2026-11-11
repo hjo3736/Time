@@ -22,7 +22,7 @@ func incoming(battle: BattleState) -> int:
 
 
 func incoming_from(battle: BattleState, handle: int) -> int:
-	var enemy: Combatant = battle.combatants[handle]
+	var enemy: Stats = battle.combatants[handle]
 	if not enemy.is_alive():
 		return 0
 	var intent := enemy.current_intent()
@@ -36,13 +36,13 @@ func incoming_from(battle: BattleState, handle: int) -> int:
 	return amount * maxi(1, intent.times)
 
 
-func worth(card: CardData, battle: BattleState = null, target: Combatant = null) -> float:
+func worth(card: CardData, battle: BattleState = null, target: Stats = null) -> float:
 	if card == null:
 		return 0.0
 	if card.keywords & 16 != 0:
 		return -100.0
 	var out := 0.0
-	var warden: Combatant = battle.warden() if battle != null else null
+	var warden: Stats = battle.warden() if battle != null else null
 	for effect in card.effects:
 		if effect is EffectDamage:
 			var d: EffectDamage = effect
@@ -81,7 +81,7 @@ func _is_defensive(card: CardData) -> bool:
 	return false
 
 
-func _damage_of(card: CardData, battle: BattleState, target: Combatant) -> int:
+func _damage_of(card: CardData, battle: BattleState, target: Stats) -> int:
 	var out := 0
 	for effect in card.effects:
 		if effect is EffectDamage:
@@ -111,7 +111,7 @@ func _pick_target(battle: BattleState) -> int:
 	var best := -1
 	var best_score := -INF
 	for handle in handles:
-		var enemy: Combatant = battle.combatants[handle]
+		var enemy: Stats = battle.combatants[handle]
 		if not enemy.is_alive():
 			continue
 		var score := float(incoming_from(battle, handle)) * 2.0
@@ -124,7 +124,7 @@ func _pick_target(battle: BattleState) -> int:
 	return best if best >= 0 else handles[0]
 
 
-func _can_finish(battle: BattleState, target: Combatant) -> bool:
+func _can_finish(battle: BattleState, target: Stats) -> bool:
 	var entries := []
 	for i in battle.piles().hand.size():
 		var card := battle.card_at(i)
@@ -151,11 +151,11 @@ func _play_one(rc: RunController, battle: BattleState) -> bool:
 	var target_handle := _pick_target(battle)
 	if target_handle < 0:
 		return false
-	var target: Combatant = battle.combatants[target_handle]
+	var target: Stats = battle.combatants[target_handle]
 
 	var clearing := true
 	for handle in battle.enemy_handles():
-		var enemy: Combatant = battle.combatants[handle]
+		var enemy: Stats = battle.combatants[handle]
 		if enemy.is_alive() and not _can_finish(battle, enemy):
 			clearing = false
 			break
@@ -167,7 +167,7 @@ func _play_one(rc: RunController, battle: BattleState) -> bool:
 	return false
 
 
-func _hand_order(battle: BattleState, target: Combatant, defend: bool) -> Array:
+func _hand_order(battle: BattleState, target: Stats, defend: bool) -> Array:
 	var scored := []
 	for i in battle.piles().hand.size():
 		var card := battle.card_at(i)

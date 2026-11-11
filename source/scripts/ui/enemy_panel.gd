@@ -21,7 +21,7 @@ static func create(rc: RunController, p_handle: int, picking: bool) -> EnemyPane
 
 func fill(rc: RunController, p_handle: int, picking: bool) -> void:
 	handle = p_handle
-	var enemy: Combatant = rc.battle.combatants[handle]
+	var enemy: Stats = rc.battle.combatants[handle]
 
 	var intent := %Intent as Label
 	intent.text = intent_text(rc, handle, enemy)
@@ -74,7 +74,7 @@ func _ready() -> void:
 	(%UseHere as Button).pressed.connect(func() -> void: target_chosen.emit(handle))
 
 
-static func intent_amount(rc: RunController, p_handle: int, enemy: Combatant,
+static func intent_amount(rc: RunController, p_handle: int, enemy: Stats,
 		intent: EnemyIntent) -> int:
 	var amount := intent.amount
 	if enemy.behavior != null:
@@ -85,7 +85,7 @@ static func intent_amount(rc: RunController, p_handle: int, enemy: Combatant,
 	return amount
 
 
-static func intent_text(rc: RunController, p_handle: int, enemy: Combatant,
+static func intent_text(rc: RunController, p_handle: int, enemy: Stats,
 		shown: EnemyIntent = null) -> String:
 	var intent := shown if shown != null else enemy.current_intent()
 	if intent == null:
@@ -124,7 +124,7 @@ static func intent_text(rc: RunController, p_handle: int, enemy: Combatant,
 
 ## Green when what is shown is less than what it would strike for unmodified, so
 ## a blow the player has already softened reads as softened.
-static func intent_colour(rc: RunController, p_handle: int, enemy: Combatant) -> Color:
+static func intent_colour(rc: RunController, p_handle: int, enemy: Stats) -> Color:
 	var intent := enemy.current_intent()
 	if intent == null or intent.kind != EnemyIntent.Kind.ATTACK:
 		return UiTheme.BLOOD

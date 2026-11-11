@@ -43,7 +43,7 @@ func on_status_applied(battle: BattleState, handle: int, target: int,
 ## for the whole of the next one before any of it lands. The blow is written
 ## first so it is the intent everything else reads as this turn's; the rest
 ## follow it as extra_intents().
-func advance_intent(_battle: BattleState, who: Combatant) -> void:
+func advance_intent(_battle: BattleState, who: Stats) -> void:
 	var next: Array[EnemyIntent] = []
 	if _damage > 0:
 		next.append(EnemyIntent.attack(ceili(_damage * share)))
@@ -65,7 +65,7 @@ func advance_intent(_battle: BattleState, who: Combatant) -> void:
 
 
 func extra_intents(battle: BattleState, handle: int) -> Array[EnemyIntent]:
-	var who: Combatant = battle.combatants[handle]
+	var who: Stats = battle.combatants[handle]
 	return who.intents.slice(1)
 
 

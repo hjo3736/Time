@@ -151,7 +151,7 @@ func _init() -> void:
 	fixture.behavior_script = BehaviorWithered
 	var spawned := fixture.spawn(_b, rng(3))
 	(spawned.behavior as BehaviorWithered).on_turn_end(null, 0)
-	var copied := Combatant.from_dict(spawned.to_dict())
+	var copied := Stats.from_dict(spawned.to_dict())
 	check("the behaviour came back", copied.behavior != null, true)
 	check("with the count it had", (copied.behavior as BehaviorWithered).turns_elapsed(), 1)
 	check("and a fresh spawn is not ageing with it",
@@ -220,11 +220,11 @@ func _damage_of(order: Array, cards: CardDatabase) -> int:
 	var run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
 	for id in order:
 		run.add_card(id)
-	var dummy := Combatant.new()
+	var dummy := Stats.new()
 	dummy.max_hp = 999
 	dummy.hp = 999
 	dummy.intents = [EnemyIntent.wait()] as Array[EnemyIntent]
-	var bt := BattleState.new(run, cards, [dummy] as Array[Combatant], rng(1))
+	var bt := BattleState.new(run, cards, [dummy] as Array[Stats], rng(1))
 	for id in order:
 		var played := false
 		for i in bt.piles().hand.size():

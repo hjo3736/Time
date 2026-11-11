@@ -20,7 +20,7 @@ func on_absorbed(battle: BattleState, handle: int, amount: int) -> void:
 func _covered(battle: BattleState, handle: int) -> bool:
 	if battle == null or battle.targets_in_play > 1:
 		return false
-	var who: Combatant = battle.combatants[handle]
+	var who: Stats = battle.combatants[handle]
 	if who.link < 0 or who.link >= battle.combatants.size():
 		return false
 	return battle.combatants[who.link].is_alive()

@@ -284,7 +284,7 @@ func aimed_damage() -> int:
 		return 0
 
 	var attacker := _rc.battle.warden()
-	var victim: Combatant = _rc.battle.combatants[_drag_target]
+	var victim: Stats = _rc.battle.combatants[_drag_target]
 	var total := 0
 	for effect in card.effects:
 		if effect is EffectDamage:

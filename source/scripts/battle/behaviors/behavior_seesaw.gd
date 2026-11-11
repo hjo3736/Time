@@ -16,11 +16,11 @@ func on_battle_start(battle: BattleState, handle: int) -> void:
 ## intent on show through the player's turn is the one that lands, however the
 ## gauges move while it is on show. What the player does this turn chooses the
 ## turn after.
-func advance_intent(battle: BattleState, who: Combatant) -> void:
+func advance_intent(battle: BattleState, who: Stats) -> void:
 	_settle(battle, who)
 
 
-func _settle(battle: BattleState, who: Combatant) -> void:
+func _settle(battle: BattleState, who: Stats) -> void:
 	var other := _other_end(battle, who)
 	# Level is both down: neither end is the lighter one. And an end left on its
 	# own has nothing to be lighter than.
@@ -30,10 +30,10 @@ func _settle(battle: BattleState, who: Combatant) -> void:
 		who.intent_index = GUARDS
 
 
-func _other_end(battle: BattleState, who: Combatant) -> Combatant:
+func _other_end(battle: BattleState, who: Stats) -> Stats:
 	if battle == null or who.link < 0 or who.link >= battle.combatants.size():
 		return null
-	var other: Combatant = battle.combatants[who.link]
+	var other: Stats = battle.combatants[who.link]
 	return other if other.is_alive() else null
 
 

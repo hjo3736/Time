@@ -38,7 +38,7 @@ func describe_live(battle, source: int, target: int, targeting := CardTargeting.
 	if battle == null:
 		return describe(targeting, name_target)
 	var raw := amount_now(battle)
-	var victim: Combatant = battle.combatants[target] if target >= 0 and target < battle.combatants.size() else null
+	var victim: Stats = battle.combatants[target] if target >= 0 and target < battle.combatants.size() else null
 	var shown: int = battle.preview_damage(target, raw, source) if victim != null else raw
 
 	if shown == base:
