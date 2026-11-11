@@ -187,17 +187,20 @@ func projected_need(rc: RunController, balance: Balance) -> int:
 	return acts_left * 90 * Balance.MINUTES_PER_HOUR
 
 
-func at_fire(rc: RunController, balance: Balance) -> void:
-	var run := rc.run
-	var hurt := run.hp < roundi(run.max_hp * 0.6)
+## Missing at least a full rest's worth of hp, so resting wastes none of it.
+func wants_rest(run: RunState) -> bool:
+	return run.hp <= run.max_hp - run.fire_heal_amount()
 
-	if hurt and rc.use_fire(RunState.FireAction.REST):
-		return
+
+func at_fire(rc: RunController, balance: Balance) -> void:
+	# Each action can be taken once per fire; take every one worth taking.
+	# A refused action (cannot afford it, the run ended) is simply skipped.
+	var run := rc.run
+	if wants_rest(run):
+		rc.use_fire(RunState.FireAction.REST)
 	if run.clock.convertible_restored() >= balance.conversion_rate:
-		if rc.use_fire(RunState.FireAction.CONVERT):
-			return
-	if rc.use_fire(RunState.FireAction.UPGRADE, _best_deck_index(run)):
-		return
+		rc.use_fire(RunState.FireAction.CONVERT)
+	rc.use_fire(RunState.FireAction.UPGRADE, _best_deck_index(run))
 	rc.leave_fire()
 
 

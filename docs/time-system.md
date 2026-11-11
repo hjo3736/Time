@@ -166,7 +166,7 @@ They meet at exactly one place — the fire.
 | | HP | Remaining |
 |---|---|---|
 | Reduced by | Enemy attacks | Turns, travel, rest, shops |
-| Restored by | **Resting only** | **Conversion at a fire only** |
+| Restored by | **Resting**, plus 10% of max when an act's boss falls | **Conversion at a fire only** |
 | At zero | Lose the current fight | The Warden is gone |
 | Lives in | `RunState` | `RunClock` |
 
@@ -190,26 +190,30 @@ of the last time left in a broken hourglass. Damage is that vessel failing, and
 resting is time spent holding it together — a thing made of time spending itself
 to stay in one piece.
 
-### The fire: one action, priced by which one
+### The fire: each action once, priced by which one
 
-Take **one** of:
+Take any of, each **once** per fire:
 
 | | Costs | Does |
 |---|---|---|
-| **Rest** | 4h | Heal 20% of max HP |
+| **Rest** | 4h | Heal 30% of max HP |
 | **Upgrade** | 2h | Improve one card |
 | **Convert** | free | Restored into Remaining at 2:1, capped |
 
-Slay the Spire's rest-or-smith with conversion added as a third arm.
+Leaving after taking anything puts the fire out; walking past without taking
+anything leaves it lit for later.
 
-**The opportunity cost is the single action, not a shared price.** That is what
-produces this design's signature squeeze — when HP is low and time is short, the
-player has to choose which way to die — and it survives conversion being free in
-hours, because taking the conversion still costs the heal.
+**The price is hours, not the other arms.** Every arm is paid for on the clock
+(conversion is the exception, and it pays by spending Restored that would
+otherwise be returned), so a fire is a place to spend time, and how much to spend
+there is the decision.
 
-*(An earlier version charged a flat 8h whichever arm was taken. The split is a
-tuning decision and the reasoning behind these three particular numbers is not
-written down yet; if it matters later, write it here.)*
+*(This replaced a one-action rule, Slay the Spire's rest-or-smith. That rule made
+the single action the opportunity cost — low HP and short time meant choosing
+which way to die, and taking the conversion cost the heal. Changed 2026-11-10;
+the reasoning is not written down yet. That squeeze is what was given up, so if
+fires turn out too generous, the hours are the first dial and the single choice
+the second.)*
 
 ### A worked segment
 
@@ -223,8 +227,8 @@ Opening: Remaining 720h · HP 80/80 · Restored 0.
 
 Decision point at 42/80. A fire sits 3h of corridor away; a shop sits 1h away.
 
-- **Fire:** 3h walk + 4h rest = 7h → Remaining 681h, HP 58/80. The 20h of
-  Restored stays unspent, because the fire only buys one thing.
+- **Fire:** 3h walk + 4h rest = 7h → Remaining 681h, HP 58/80, and the
+  20h of Restored can be converted at the same fire, for nothing in hours.
 - **Shop:** 1h walk + 1h inside = 2h → Remaining 686h, and 20h of Restored buys
   cards. HP stays at 42, and the next bad fight ends the run.
 

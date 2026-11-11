@@ -51,6 +51,11 @@ const MINUTES_PER_DAY := 1440
 
 @export_range(0.0, 1.0) var fire_heal_fraction := 0.3
 
+## Healed when an act's boss falls, as a share of max hp. Small on purpose:
+## without it the next act opened on whatever the boss left (median 32/80
+## after act one in the sim), but it must not stand in for the fires.
+@export_range(0.0, 1.0) var act_clear_heal_fraction := 0.1
+
 
 @export var reward_weight_common := 60
 @export var reward_weight_uncommon := 34

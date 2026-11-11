@@ -26,6 +26,7 @@ restored_minutes_per_hp = 12
 conversion_rate = 2
 conversion_cap = 2160
 fire_heal_fraction = 0.3
+act_clear_heal_fraction = 0.1
 reward_weight_common = 60
 reward_weight_uncommon = 34
 reward_weight_rare = 6

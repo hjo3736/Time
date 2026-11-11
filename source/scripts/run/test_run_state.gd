@@ -26,7 +26,7 @@ func _init() -> void:
 	check("hp floors at 0", s.hp, 0)
 	check("run clock still fine", s.clock.remaining, _b.starting_remaining)
 
-	print("\n-- a fire buys exactly one action --")
+	print("\n-- each fire action is priced on its own --")
 	var f := RunState.new(_b)
 	f.damage(40)
 	var hurt_to := f.hp

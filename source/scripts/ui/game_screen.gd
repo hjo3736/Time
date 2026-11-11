@@ -189,19 +189,24 @@ func _show_fire() -> void:
 	var gain := run.clock.conversion_yield(convertible)
 	var rest_span := RunClock.format_span(run.fire_cost_of(RunState.FireAction.REST))
 	var upgrade_span := RunClock.format_span(run.fire_cost_of(RunState.FireAction.UPGRADE))
+	# Anything taken here and the fire goes out on leaving, so the way out says so.
+	var room := rc.current_room()
+	var lit_out := room != null and not room.fire_used.is_empty()
 	var options := [
 		{
 			"label": tr("ui.fire.rest"),
 			"detail": tr("ui.fire.rest_detail").format(
 				{"span": rest_span, "n": run.fire_heal_amount()}),
 			"id": ["fire", RunState.FireAction.REST],
-			"disabled": run.hp >= run.max_hp or not run.can_use_fire(RunState.FireAction.REST),
+			"disabled": run.hp >= run.max_hp or not run.can_use_fire(RunState.FireAction.REST) \
+				or rc.fire_action_used(RunState.FireAction.REST),
 		},
 		{
 			"label": tr("ui.fire.upgrade"),
 			"detail": tr("ui.fire.upgrade_detail").format({"span": upgrade_span}),
 			"id": ["fire", RunState.FireAction.UPGRADE],
-			"disabled": run.deck.is_empty() or not run.can_use_fire(RunState.FireAction.UPGRADE),
+			"disabled": run.deck.is_empty() or not run.can_use_fire(RunState.FireAction.UPGRADE) \
+				or rc.fire_action_used(RunState.FireAction.UPGRADE),
 		},
 		{
 			"label": tr("ui.fire.convert"),
@@ -209,11 +214,11 @@ func _show_fire() -> void:
 				"a": RunClock.format_span(convertible),
 				"b": RunClock.format_span(gain)}),
 			"id": ["fire", RunState.FireAction.CONVERT],
-			"disabled": convertible <= 0,
+			"disabled": convertible <= 0 or rc.fire_action_used(RunState.FireAction.CONVERT),
 		},
 		{
-			"label": tr("ui.fire.leave"),
-			"detail": tr("ui.fire.leave_detail"),
+			"label": tr("ui.fire.done" if lit_out else "ui.fire.leave"),
+			"detail": tr("ui.fire.done_detail" if lit_out else "ui.fire.leave_detail"),
 			"id": "leave_fire",
 		},
 	]

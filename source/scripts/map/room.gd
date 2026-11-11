@@ -23,6 +23,10 @@ var visited := false
 
 var cleared := false
 
+## A fire's actions already taken here (RunState.FireAction). Each can be taken
+## once; the fire goes out when the Warden leaves having taken any.
+var fire_used: Array[int] = []
+
 
 func _written_exits() -> Array:
 	var out := []
@@ -71,6 +75,7 @@ func to_dict() -> Dictionary:
 		"exits": _written_exits(),
 		"visited": visited,
 		"cleared": cleared,
+		"fire_used": Array(fire_used),
 	}
 
 
@@ -89,4 +94,6 @@ static func from_dict(data: Dictionary) -> Room:
 			out.exits[Vector2i(int(entry[0]), int(entry[1]))] = int(entry[2])
 	out.visited = bool(data.get("visited", false))
 	out.cleared = bool(data.get("cleared", false))
+	for action in data.get("fire_used", []):
+		out.fire_used.append(int(action))
 	return out

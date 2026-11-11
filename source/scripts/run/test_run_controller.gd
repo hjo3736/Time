@@ -129,7 +129,7 @@ func _init() -> void:
 	check("exploring again", f.phase, RunController.Phase.EXPLORING)
 	check("walking back offers nothing", f.map.at(f.map.current).is_spent(), true)
 
-	print("\n-- a fire spends eight hours on exactly one thing --")
+	print("\n-- a fire offers each of its actions once --")
 	var fr := _walk_until(Room.Kind.FIRE, 30)
 	check("reached a fire", fr != null, true)
 	if fr == null:
@@ -143,6 +143,20 @@ func _init() -> void:
 	check("healed", fr.run.hp > hp_before, true)
 	check("cost what resting costs", clock_before - fr.run.clock.remaining,
 		fr.run.fire_cost_of(RunState.FireAction.REST))
+	check("still at the fire", fr.phase, RunController.Phase.FIRE)
+	check("resting twice is refused", fr.use_fire(RunState.FireAction.REST), false)
+	check("refused for free", clock_before - fr.run.clock.remaining,
+		fr.run.fire_cost_of(RunState.FireAction.REST))
+
+	var resumed := RunController.from_dict(JSON.parse_string(JSON.stringify(fr.save_state())),
+		_b, _cards, _enemies, _encounters, _relics)
+	check("a resumed fire remembers the rest", resumed.use_fire(RunState.FireAction.REST), false)
+
+	check("sharpening still offered", fr.use_fire(RunState.FireAction.UPGRADE, 0), true)
+	check("sharpened once", int(fr.run.deck[0].get("upgrades", 0)), 1)
+	check("sharpening twice is refused", fr.use_fire(RunState.FireAction.UPGRADE, 1), false)
+	check("the fire is lit until it is left", fr.map.at(fr.map.current).cleared, false)
+	fr.leave_fire()
 	check("back on the floor", fr.phase, RunController.Phase.EXPLORING)
 	check("and the fire is spent", fr.map.at(fr.map.current).cleared, true)
 
@@ -206,6 +220,8 @@ func _init() -> void:
 	print("\n-- opening the boss door finishes the act --")
 	var boss := controller(6)
 	boss.map.current = boss.map.neighbours(boss.map.boss_coord)[0]
+	var hp_at_the_fall := [-1]
+	boss.battle_finished.connect(func(_won: bool) -> void: hp_at_the_fall[0] = boss.run.hp)
 	check("at the door", boss.move_to(boss.map.boss_coord), true)
 	if boss.phase == RunController.Phase.BATTLE:
 		_auto_fight(boss)
@@ -215,6 +231,12 @@ func _init() -> void:
 	check("and the screen can name it", boss.last_relic, boss.run.relics[0])
 	check("a boss relic, from the shelf nothing else draws from",
 		_relics.get_relic(boss.last_relic).rarity, Relic.Rarity.BOSS)
+	var tenth := roundi(boss.run.max_hp * _b.act_clear_heal_fraction)
+	check("the boss falling heals a tenth, or up to full", boss.run.hp,
+		mini(boss.run.max_hp, hp_at_the_fall[0] + tenth))
+	var boss_resumed := RunController.from_dict(JSON.parse_string(JSON.stringify(boss.save_state())),
+		_b, _cards, _enemies, _encounters, _relics)
+	check("a resumed act screen does not heal again", boss_resumed.run.hp, boss.run.hp)
 	check("moving on", boss.advance_act(), true)
 	check("act two", boss.run.act, 2)
 	check("on a new floor", boss.map.current, Vector2i.ZERO)

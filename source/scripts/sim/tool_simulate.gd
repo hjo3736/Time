@@ -29,8 +29,8 @@ func _init() -> void:
 		runs = args[0].to_int()
 
 	print("\n%d runs per greed level\n" % runs)
-	print("greed   done   fell  timeout |   act  fights  turns/fight |  travel%   fires  conv%")
-	print("------  -----  -----  ------- |  ----  ------  ----------- |  -------  -----  -----")
+	print("greed   done   fell  timeout |   act  fights  turns/fight |  travel%   fires  rest/sharpen/keep  conv%")
+	print("------  -----  -----  ------- |  ----  ------  ----------- |  -------  -----  -----------------  -----")
 
 	var rows := []
 	for greed in GREEDS:
@@ -44,7 +44,8 @@ func _init() -> void:
 func _batch(greed: float, runs: int) -> Dictionary:
 	var totals := {
 		"greed": greed, "finished": 0, "fell": 0, "timeout": 0,
-		"fights": 0.0, "turns": 0.0, "travel": 0.0, "fires": 0.0,
+		"fights": 0.0, "turns": 0.0, "travel": 0.0, "fires": 0.0, "fire_time": 0.0,
+		"rests": 0.0, "sharpens": 0.0, "keeps": 0.0,
 		"converted": 0.0, "restored_total": 0.0, "deck": 0.0, "acts": 0.0, "hp_lost": 0.0,
 	}
 
@@ -57,12 +58,12 @@ func _batch(greed: float, runs: int) -> Dictionary:
 				totals["fell"] = int(totals["fell"]) + 1
 			_:
 				totals["timeout"] = int(totals["timeout"]) + 1
-		for key in ["fights", "turns", "travel", "fires", "converted", "restored_total", "deck", "acts", "hp_lost"]:
+		for key in ["fights", "turns", "travel", "fires", "fire_time", "rests", "sharpens", "keeps", "converted", "restored_total", "deck", "acts", "hp_lost"]:
 			totals[key] = float(totals[key]) + float(r[key])
 
 	var n := float(runs)
 	var restored_total: float = maxf(1.0, float(totals["restored_total"]))
-	print("%5.2f  %5d  %5d  %7d |  %4.1f  %6.1f  %11.2f |  %6.1f%%  %5.1f  %4.0f%%" % [
+	print("%5.2f  %5d  %5d  %7d |  %4.1f  %6.1f  %11.2f |  %6.1f%%  %5.1f  %5.1f %5.1f %5.1f  %4.0f%%" % [
 		greed,
 		int(totals["finished"]), int(totals["fell"]), int(totals["timeout"]),
 		float(totals["acts"]) / n,
@@ -70,13 +71,14 @@ func _batch(greed: float, runs: int) -> Dictionary:
 		float(totals["turns"]) / maxf(1.0, float(totals["fights"])),
 		100.0 * float(totals["travel"]) / maxf(1.0, float(totals["travel"]) + _elapsed_total(totals)),
 		float(totals["fires"]) / n,
+		float(totals["rests"]) / n, float(totals["sharpens"]) / n, float(totals["keeps"]) / n,
 		100.0 * float(totals["converted"]) / restored_total,
 	])
 	return totals
 
 
 func _elapsed_total(totals: Dictionary) -> float:
-	return float(totals["turns"]) * 180.0 + float(totals["fires"]) * 480.0
+	return float(totals["turns"]) * 180.0 + float(totals["fire_time"])
 
 
 func _play(greed: float, seed_value: int) -> Dictionary:
@@ -88,6 +90,8 @@ func _play(greed: float, seed_value: int) -> Dictionary:
 	var fights := 0
 	var turns := 0
 	var fires := 0
+	var taken := {RunState.FireAction.REST: 0, RunState.FireAction.UPGRADE: 0, RunState.FireAction.CONVERT: 0}
+	rc.run.fire_used.connect(func(action: RunState.FireAction) -> void: taken[action] += 1)
 	var guard := 0
 	var hp_lost := 0
 	var hp_was := rc.run.hp
@@ -129,6 +133,10 @@ func _play(greed: float, seed_value: int) -> Dictionary:
 		"turns": turns,
 		"travel": float(spent[RunClock.Source.TRAVEL]),
 		"fires": fires,
+		"fire_time": float(spent[RunClock.Source.FIRE]),
+		"rests": taken[RunState.FireAction.REST],
+		"sharpens": taken[RunState.FireAction.UPGRADE],
+		"keeps": taken[RunState.FireAction.CONVERT],
 		"converted": float(rc.run.total_kept),
 		"restored_total": float(rc.run.total_kept + rc.run.clock.restored),
 		"deck": float(rc.run.deck.size()),
@@ -148,6 +156,15 @@ func _step(rc: RunController, policy: SimPolicy) -> bool:
 		if room.cleared:
 			cleared += 1
 	var want := roundi(policy.greed * fights)
+
+	# Hurt enough that a rest would not waste any of its heal: go to a known
+	# fire first, whatever the greed. Without this a low-greed run walked past
+	# every fire to the boss door, and the sim reported its own carelessness
+	# as boss difficulty (act one: 0.0 fires used, boss fights begun at 28/80).
+	if policy.wants_rest(rc.run):
+		var to_fire: Variant = _toward(rc, Room.Kind.FIRE)
+		if to_fire != null:
+			return rc.move_to(to_fire)
 
 	var target_kinds: Array = [Room.Kind.FIRE, Room.Kind.SHOP, Room.Kind.COMBAT] \
 		if cleared < want else [Room.Kind.BOSS]
@@ -290,7 +307,9 @@ func _verdict(rows: Array) -> void:
 	print("  hp available per run     %d  (%d starting + %d fires at %d)"
 		% [hp_supply, _b.starting_max_hp, fires_total, roundi(_b.starting_max_hp * _b.fire_heal_fraction)])
 	var fires_used := float(high["fires"]) / maxf(1.0, float(high["finished"] + high["fell"] + high["timeout"]))
-	var reachable := float(_b.starting_max_hp) + fires_used * roundi(_b.starting_max_hp * _b.fire_heal_fraction)
+	var rests_used := float(high["rests"]) / maxf(1.0, float(high["finished"] + high["fell"] + high["timeout"]))
+	# A fire heals only if it is rested at; a fire used to sharpen heals nothing.
+	var reachable := float(_b.starting_max_hp) + rests_used * roundi(_b.starting_max_hp * _b.fire_heal_fraction)
 	print("  hp actually lost a fight %.0f  (measured, not assumed)" % per_fight)
 	print("  fires actually reached   %.1f of %d" % [fires_used, fires_total])
 	print("  so a run affords         %d fights on paper, %d in practice"

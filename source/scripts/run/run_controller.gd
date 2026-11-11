@@ -204,6 +204,7 @@ func _room_resolved(room: Room) -> void:
 		_grant_relic(_relics.roll(_rng, _balance, run.relics))
 	if room != null and room.kind == Room.Kind.BOSS:
 		_grant_relic(_relics.roll_boss(_rng, run.relics))
+		run.heal(maxi(1, roundi(run.max_hp * _balance.act_clear_heal_fraction)))
 		phase = Phase.ACT_CLEARED
 		return
 
@@ -239,21 +240,31 @@ func skip_reward() -> void:
 	phase = Phase.EXPLORING
 
 
+## Rest, sharpen and keep can all be taken at one fire, each once. The Warden
+## stays at the fire until it leaves; leaving having taken anything puts the
+## fire out, leaving having taken nothing keeps it lit for later.
 func use_fire(action: RunState.FireAction, argument: int = 0) -> bool:
-	if phase != Phase.FIRE:
+	if phase != Phase.FIRE or fire_action_used(action):
 		return false
 	if not run.use_fire(action, argument):
 		return false
-	map.clear_current()
-	if _check_clock():
-		return true
-	phase = Phase.EXPLORING
+	current_room().fire_used.append(action)
+	_check_clock()
 	return true
 
 
+func fire_action_used(action: RunState.FireAction) -> bool:
+	var room := current_room()
+	return room != null and room.fire_used.has(action)
+
+
 func leave_fire() -> void:
-	if phase == Phase.FIRE:
-		phase = Phase.EXPLORING
+	if phase != Phase.FIRE:
+		return
+	var room := current_room()
+	if room != null and not room.fire_used.is_empty():
+		map.clear_current()
+	phase = Phase.EXPLORING
 
 
 func buy_card(index: int) -> bool:

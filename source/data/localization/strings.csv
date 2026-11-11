@@ -202,7 +202,7 @@ ui.reward.title,무엇을 회수했는가,What was recovered
 ui.reward.body,한 장만 가져갈 수 있다. 이 방을 떠나면 나머지는 사라진다.,Only one can be taken. Leave the room and the rest are gone.
 ui.reward.skip,받지 않는다,Take none
 ui.fire.title,모닥불,Fire
-ui.fire.body,그 시간으로 할 수 있는 것은 하나뿐이다.,That time buys one thing.
+ui.fire.body,쉬고 벼리고 가져가는 것을 저마다 한 번씩 할 수 있다.,Each of these can be done once.
 ui.fire.rest,쉰다,Rest
 ui.fire.rest_detail,{span} · 체력 {n} 회복,{span} · Recover {n} health
 ui.fire.upgrade,카드를 벼린다,Sharpen a card
@@ -211,6 +211,8 @@ ui.fire.convert,가져간다,Keep it
 ui.fire.convert_detail,시간이 들지 않는다 · 회복한 시간 {a} → 남은 시간 {b},Costs no time · Restored {a} → Remaining {b}
 ui.fire.leave,그냥 지나간다,Walk past
 ui.fire.leave_detail,모닥불은 그대로 남는다,The fire stays lit
+ui.fire.done,떠난다,Leave
+ui.fire.done_detail,모닥불이 꺼진다,The fire goes out
 ui.shop.title,상점,Shop
 ui.shop.body,값은 회수한 시간으로 치른다. 상인에게 준 시간은 하계에 남는다.,Paid for in recovered time. What the trader takes stays below.
 ui.shop.entry,{name}  ―  {price},{name}  ―  {price}
