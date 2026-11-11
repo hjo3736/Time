@@ -1,6 +1,6 @@
-[gd_resource type="Theme" format=3]
+[gd_resource type="Theme" format=3 uid="uid://dxp0o40xq2c6d"]
 
-[ext_resource type="FontFile" path="res://source/assets/font/DungGeunMo.ttf" id="1_ub0ne"]
+[ext_resource type="FontFile" uid="uid://cxnkkdfecchfm" path="res://source/assets/font/DungGeunMo.ttf" id="1_ub0ne"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6sa54"]
 content_margin_left = 10.0

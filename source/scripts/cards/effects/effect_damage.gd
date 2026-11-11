@@ -1,16 +1,13 @@
 class_name EffectDamage
 extends CardEffect
 
+enum UpgradeTarget { AMOUNT, TIMES }
 
 @export var amount := 6
-
 @export var times := 1
-
+@export var upgrade_target := UpgradeTarget.AMOUNT
 @export var reroll_target_each_hit := false
-
-## Overrides the wording, keeping {amount} / {times} / {who} substitution.
 @export var text_key := &""
-
 
 func apply(ctx: EffectContext) -> void:
 	for i in maxi(1, times):
@@ -23,10 +20,8 @@ func apply(ctx: EffectContext) -> void:
 			if ctx.is_alive(target):
 				ctx.deal_damage(target, amount)
 
-
 func describe(targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
 	return _line(amount, targeting, name_target)
-
 
 func _line(shown: Variant, targeting: int, name_target := true) -> String:
 	if text_key != &"":
@@ -41,7 +36,6 @@ func _line(shown: Variant, targeting: int, name_target := true) -> String:
 	if times > 1:
 		return tr("effect.damage_multi").format({"amount": shown, "times": times})
 	return tr("effect.damage").format({"amount": shown})
-
 
 func describe_live(battle, source: int, target: int, targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
 	if battle == null:
@@ -58,6 +52,12 @@ func describe_live(battle, source: int, target: int, targeting := CardTargeting.
 	var marked := "[color=#%s]%d[/color]" % [colour.to_html(false), shown]
 	return _line(marked, targeting, name_target)
 
-
 func faces_enemies() -> bool:
 	return true
+
+func upgraded_self(growth: int) -> CardEffect:
+	var upgraded := duplicate() as EffectDamage
+	match upgraded.upgrade_target:
+		UpgradeTarget.AMOUNT: upgraded.amount += growth
+		UpgradeTarget.TIMES: upgraded.times += growth
+	return upgraded

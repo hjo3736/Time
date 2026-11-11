@@ -1,7 +1,6 @@
 class_name BattleState
 extends RefCounted
 
-
 signal phase_changed(phase: Phase)
 signal turn_started(turn: int)
 signal card_played(deck_index: int)

@@ -93,7 +93,7 @@ func get_card(id: StringName, upgrade_level: int = 0) -> CardData:
 
 	var key := "%s@%d" % [id, upgrade_level]
 	if not _upgrade_cache.has(key):
-		_upgrade_cache[key] = base.upgraded()
+		_upgrade_cache[key] = get_card(id, upgrade_level-1).upgraded()
 	return _upgrade_cache[key]
 
 

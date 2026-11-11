@@ -1,11 +1,8 @@
 class_name BattleEffectContext
 extends EffectContext
 
-
 var variable_amount := 0
-
 var _battle: BattleState
-
 
 func _init(battle: BattleState) -> void:
 	_battle = battle

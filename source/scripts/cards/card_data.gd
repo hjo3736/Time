@@ -1,7 +1,6 @@
 class_name CardData
 extends Resource
 
-
 enum Kind { ATTACK, SKILL, POWER, CURSE, STATUS }
 
 enum Rarity { STARTER, COMMON, UNCOMMON, RARE, SPECIAL }
@@ -17,30 +16,18 @@ const MAX_COST_HOURS := 3
 @export var name_key := &""
 @export var kind := Kind.ATTACK
 @export var rarity := Rarity.COMMON
-
 @export var class_id := &"warden"
-
 @export var lanes: Array[Lane] = []
-
 @export var cost_hours := 1
-
 @export var targeting := CardTargeting.Mode.SINGLE_ENEMY
-
 @export var effects: Array[CardEffect] = []
+@export var upgrade: CardUpgrade = null
+@export var text_key := &""
 
 @export_flags("Exhaust", "Retain", "Innate", "Ethereal", "Unplayable") var keywords := 0
 
-@export var upgrade: CardUpgrade = null
-
-@export var text_key := &""
-
-var name_suffix := ""
-
 var upgrade_level := 0
-
-
 enum Keyword { EXHAUST = 1, RETAIN = 2, INNATE = 4, ETHEREAL = 8, UNPLAYABLE = 16 }
-
 
 func has_keyword(keyword: Keyword) -> bool:
 	return (keywords & int(keyword)) != 0
@@ -61,7 +48,7 @@ func in_lane(lane: Lane) -> bool:
 
 
 func can_upgrade() -> bool:
-	return upgrade != null and upgrade_level == 0
+	return upgrade != null and (upgrade_level < upgrade.max_upgrade or upgrade.max_upgrade == CardUpgrade.UNLIMITED)
 
 
 func upgraded() -> CardData:
@@ -71,26 +58,42 @@ func upgraded() -> CardData:
 	var out := CardData.new()
 	out.id = id
 	out.name_key = name_key
-	out.name_suffix = name_suffix + upgrade.name_suffix
 	out.kind = kind
 	out.rarity = rarity
 	out.class_id = class_id
 	out.lanes = lanes.duplicate()
 	out.upgrade_level = upgrade_level + 1
-	out.upgrade = null
+	out.upgrade = upgrade
 
 	out.cost_hours = cost_hours if upgrade.cost_hours == CardUpgrade.INHERIT else upgrade.cost_hours
 	out.targeting = upgrade.targeting if upgrade.override_targeting else targeting
-	out.effects = upgrade.effects.duplicate() if not upgrade.effects.is_empty() else effects.duplicate()
+	
+	if upgrade_level == 0:
+		out.effects = upgrade.effects.duplicate() if not upgrade.effects.is_empty() else effects.duplicate()
+	else:
+		var grown: Array[CardEffect] = []
+		
+		for effect in effects:
+			grown.append(effect.upgraded_self(upgrade.growth))
+		
+		out.effects = grown
+	
 	out.keywords = (keywords | upgrade.add_keywords) & ~upgrade.remove_keywords
 	out.text_key = upgrade.text_key if upgrade.text_key != &"" else text_key
 
 	return out
 
-
 func display_name() -> String:
-	return tr(name_key) + name_suffix
-
+	var suffix := ""
+	
+	if upgrade_level == 0:
+		pass
+	elif upgrade.max_upgrade == CardUpgrade.UNLIMITED:
+		suffix = upgrade.name_suffix + str(upgrade_level)
+	else:
+		suffix = upgrade.name_suffix
+	
+	return tr(name_key) + suffix
 
 func rules_text() -> String:
 	if text_key != &"":
@@ -174,5 +177,11 @@ func validate() -> PackedStringArray:
 				and upgrade.remove_keywords == 0 \
 				and upgrade.text_key == &"":
 			problems.append("%s: upgrade block changes nothing." % label)
+		if upgrade.max_upgrade < CardUpgrade.UNLIMITED \
+				or upgrade.max_upgrade == 0:
+			problems.append("%s: max_upgrade must be -1 or bigger than 0 (now: %d)." % [label,upgrade.max_upgrade])
+		if upgrade.max_upgrade != 1 \
+				and upgrade.growth <= 0 :
+			problems.append("%s: growth must be 1 or more (now: %d)" % [label, upgrade.growth])
 
 	return problems

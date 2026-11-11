@@ -1,11 +1,9 @@
 class_name EffectApplyStatus
 extends CardEffect
 
-
 @export var status := &"softened"
 @export var stacks := 2
 @export var on_self := false
-
 
 func apply(ctx: EffectContext) -> void:
 	if on_self:
