@@ -209,5 +209,98 @@ func _init() -> void:
 		seen.append(bs.piles().hand.map(func(x: int) -> String: return String(bs.card_at(bs.piles().hand.find(x)).id)))
 	check("identical openings", seen[0], seen[1])
 
+	_stats_hold_their_bounds()
+	_stats_say_when_they_change()
+	_stats_survive_a_save()
+	_stats_instances_do_not_share()
+
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
+
+
+func _stats_hold_their_bounds() -> void:
+	print("\n-- stats: hp stays between 0 and max, block under its cap --")
+	var s := Stats.new()
+	s.max_hp = 30
+	s.hp = 50
+	check("hp above max is held at max", s.hp, 30)
+	s.hp = -5
+	check("hp below zero is held at zero", s.hp, 0)
+	s.block = 1200
+	check("block is capped", s.block, 999)
+
+	print("\n-- stats: take_damage spends block first and reports what got through --")
+	var t := Stats.new()
+	t.max_hp = 30
+	t.hp = 30
+	t.block = 5
+	check("three of eight get past five block", t.take_damage(8), 3)
+	check("and land on hp", [t.hp, t.block], [27, 0])
+	check("nothing offered, nothing through", t.take_damage(0), 0)
+
+
+func _stats_say_when_they_change() -> void:
+	print("\n-- stats: changes are announced --")
+	var s := Stats.new()
+	s.max_hp = 30
+	var heard := [0]
+	s.stats_changed.connect(func() -> void: heard[0] += 1)
+	s.hp = 10
+	check("an hp change is heard", heard[0], 1)
+	s.add_status(StatusRules.STRENGTH, 0)
+	check("a status change of nothing is not", heard[0], 1)
+	s.add_status(StatusRules.STRENGTH, 2)
+	check("a real status change is", heard[0], 2)
+
+	var e := Stats.new()
+	e.intents = [EnemyIntent.attack(3), EnemyIntent.block(2)] as Array[EnemyIntent]
+	var turned := [0]
+	e.intent_changed.connect(func() -> void: turned[0] += 1)
+	e.advance_intent()
+	check("advancing the intent is heard once", turned[0], 1)
+	e.intent_index = 0
+	check("so is a behaviour setting it directly", turned[0], 2)
+
+
+func _stats_survive_a_save() -> void:
+	print("\n-- stats: a save and a load give the same fighter back --")
+	var saved := Stats.new()
+	saved.name_key = &"askew.test"
+	saved.max_hp = 80
+	saved.hp = 34
+	saved.block = 5
+	saved.link = 2
+	saved.restored_value = 120
+	saved.intents = [EnemyIntent.attack(6), EnemyIntent.block(4)] as Array[EnemyIntent]
+	saved.intent_index = 1
+	saved.add_status(StatusRules.STRENGTH, 2)
+
+	var written := saved.to_dict()
+	check("no art, no art entry", written.has("art"), false)
+	# Through JSON, as the save file is, so numbers come back as floats.
+	var back := Stats.from_dict(JSON.parse_string(JSON.stringify(written)))
+	check("hp is not cut down to the default max on load", [back.hp, back.max_hp], [34, 80])
+	check("block, link and worth come back", [back.block, back.link, back.restored_value], [5, 2, 120])
+	check("the intents come back", back.intents.size(), 2)
+	check("on the one it was showing", back.current_intent().kind, EnemyIntent.Kind.BLOCK)
+	check("statuses come back", back.status(StatusRules.STRENGTH), 2)
+
+	var pictured := Stats.new()
+	pictured.art = load("res://icon.svg") as Texture2D
+	var pictured_back := Stats.from_dict(JSON.parse_string(JSON.stringify(pictured.to_dict())))
+	check("art comes back by its path", pictured_back.art != null
+		and pictured_back.art.resource_path == "res://icon.svg", true)
+
+
+func _stats_instances_do_not_share() -> void:
+	print("\n-- stats: each instance is its own --")
+	var template := Stats.new()
+	template.max_hp = 40
+	template.start_block = 6
+	template.hp = 1
+	var a := template.create_instance()
+	var b := template.create_instance()
+	check("an instance opens at full hp with its starting block", [a.hp, a.block], [40, 6])
+	a.take_damage(20)
+	check("striking one leaves the other whole", b.hp, 40)
+	check("and the template untouched", [template.hp, template.block], [1, 0])
