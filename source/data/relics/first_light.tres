@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="RelicFirstLight" format=3]
-
-[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_first_light.gd" id="1_1pb4b"]
-
-[resource]
-script = ExtResource("1_1pb4b")
-id = &"first_light"
-name_key = &"relic.first_light.name"
-text_key = &"relic.first_light.text"

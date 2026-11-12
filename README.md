@@ -211,30 +211,34 @@ source/
              from data -- the floor in map_view, a room's doors, a
              compendium tab -- the frame is the scene and the contents are
              built in code. Build every view with its create(), not .new()
+  core/      stats.gd — what every fighter is built on, Warden and Askew alike
+  enemies/   one folder per Askew (linked pairs and the clock hands share one),
+             holding its .tres and, later, its art. enemy_data.gd,
+             enemy_database.gd, enemy_intent.gd, enemy_behavior.gd at the root;
+             behaviors/ holds the behaviour scripts, several Askew share each
+  relics/    one folder per relic: its .tres and its relic_*.gd. relic.gd and
+             relic_database.gd at the root
   scripts/   .gd scripts
     balance.gd     every tunable number, as a Resource
     run/           run_clock.gd, run_state.gd, run_controller.gd, tests
     cards/         card_data.gd, card_upgrade.gd, card_targeting.gd,
                    card_database.gd, effect_context.gd, card_effect.gd,
                    effects/, tests
-    battle/        battle_state.gd, stats.gd, battle_piles.gd,
-                   status_rules.gd, enemy_intent.gd, battle_effect_context.gd,
-                   enemy_behavior.gd, behaviors/, enemy_data.gd, enemy_database.gd,
-                   encounter_data.gd, encounter_table.gd
+    battle/        battle_state.gd, battle_piles.gd, status_rules.gd,
+                   battle_effect_context.gd, encounter_data.gd,
+                   encounter_table.gd, tests
     map/           room.gd, map_generator.gd, map_state.gd
     rewards/       card_reward.gd, shop.gd
-    relics/        relic.gd, relic_database.gd, relics/
+    relics/        tests
   data/
     balance.tres   the default tuning profile — edit this, not the code
     cards/         card definitions (.tres) — the pool; see Content data
     cards_shelved/ out of the pool, read by the tests
     cards_fixtures/ test-only cards
     localization/  strings.csv — ko is source, en is the pivot
-    enemies/       Askew definitions (.tres)
     encounters/    which Askew share a room
-    relics/
     events/
-  assets/    art and audio
+  assets/    audio, font
     theme/   ui_theme.tres — font, boxes, palette, card frames
 docs/        design notes
 tools/
@@ -346,7 +350,7 @@ mid-fight; **D** shows the deck the same way. It opens centred on the Warden, zo
 and pans by dragging empty space. Fights
 put the hand along the bottom and enemy intents on show, and rewards, fires,
 shops and endings share one screen. No art yet — colours and text only, on the
-palette from `source/assets/art/warden_pixel_study.svg`.
+palette taken from an early Warden pixel study (the file has since been removed).
 
 **The font is bundled and it is a pixel font.** `source/assets/font/DungGeunMo.ttf`
 (둥근모꼴), the default font of the theme, so a build draws Hangul on a machine

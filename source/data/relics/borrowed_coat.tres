@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="RelicBorrowedCoat" format=3]
-
-[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_borrowed_coat.gd" id="1_ciln7"]
-
-[resource]
-script = ExtResource("1_ciln7")
-id = &"borrowed_coat"
-name_key = &"relic.borrowed_coat.name"
-text_key = &"relic.borrowed_coat.text"

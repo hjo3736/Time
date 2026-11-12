@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicMorningFrost" format=3]
+
+[ext_resource type="Script" path="res://source/relics/morning_frost/relic_morning_frost.gd" id="1_t4hva"]
+
+[resource]
+script = ExtResource("1_t4hva")
+id = &"morning_frost"
+name_key = &"relic.morning_frost.name"
+text_key = &"relic.morning_frost.text"
+rarity = 1

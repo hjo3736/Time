@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicFullPockets" format=3]
+
+[ext_resource type="Script" path="res://source/relics/full_pockets/relic_full_pockets.gd" id="1_3h2nb"]
+
+[resource]
+script = ExtResource("1_3h2nb")
+id = &"full_pockets"
+name_key = &"relic.full_pockets.name"
+text_key = &"relic.full_pockets.text"
+rarity = 2

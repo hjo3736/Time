@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="RelicLongShadow" format=3]
-
-[ext_resource type="Script" path="res://source/scripts/relics/relics/relic_long_shadow.gd" id="1_llqhr"]
-
-[resource]
-script = ExtResource("1_llqhr")
-id = &"long_shadow"
-name_key = &"relic.long_shadow.name"
-text_key = &"relic.long_shadow.text"

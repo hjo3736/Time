@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicStoppedWatch" format=3]
+
+[ext_resource type="Script" path="res://source/relics/stopped_watch/relic_stopped_watch.gd" id="1_ln5so"]
+
+[resource]
+script = ExtResource("1_ln5so")
+id = &"stopped_watch"
+name_key = &"relic.stopped_watch.name"
+text_key = &"relic.stopped_watch.text"
+rarity = 2

@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/enemies/behaviors/behavior_spilling.gd" id="1_nqunh"]
+[ext_resource type="Script" path="res://source/enemies/enemy_intent.gd" id="2_r2cau"]
+[ext_resource type="Script" path="res://source/enemies/enemy_data.gd" id="3_84iqq"]
+
+[sub_resource type="Resource" id="Resource_5chne"]
+script = ExtResource("2_r2cau")
+times = 3
+
+[sub_resource type="Resource" id="Resource_x041a"]
+script = ExtResource("2_r2cau")
+kind = 1
+amount = 10
+
+[sub_resource type="Resource" id="Resource_tgcmg"]
+script = ExtResource("2_r2cau")
+amount = 8
+times = 2
+
+[sub_resource type="Resource" id="Resource_cbnl1"]
+script = ExtResource("2_r2cau")
+amount = 14
+
+[resource]
+script = ExtResource("3_84iqq")
+id = &"throng"
+name_key = &"enemy.throng.name"
+tier = 1
+hp_min = 66
+hp_max = 72
+intents = Array[ExtResource("2_r2cau")]([SubResource("Resource_5chne"), SubResource("Resource_x041a"), SubResource("Resource_tgcmg"), SubResource("Resource_cbnl1")])
+behavior_script = ExtResource("1_nqunh")

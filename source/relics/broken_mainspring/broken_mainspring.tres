@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicBrokenMainspring" format=3]
+
+[ext_resource type="Script" path="res://source/relics/broken_mainspring/relic_broken_mainspring.gd" id="1_r6iol"]
+
+[resource]
+script = ExtResource("1_r6iol")
+id = &"broken_mainspring"
+name_key = &"relic.broken_mainspring.name"
+text_key = &"relic.broken_mainspring.text"
+rarity = 1

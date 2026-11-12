@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/enemies/enemy_intent.gd" id="1_gwfrb"]
+[ext_resource type="Script" path="res://source/enemies/enemy_data.gd" id="2_2vn4m"]
+
+[sub_resource type="Resource" id="Resource_y7ltc"]
+script = ExtResource("1_gwfrb")
+kind = 1
+amount = 8
+
+[sub_resource type="Resource" id="Resource_dxeqp"]
+script = ExtResource("1_gwfrb")
+kind = 1
+amount = 8
+
+[sub_resource type="Resource" id="Resource_jl8kl"]
+script = ExtResource("1_gwfrb")
+amount = 15
+
+[resource]
+script = ExtResource("2_2vn4m")
+id = &"swallowed_word"
+name_key = &"enemy.swallowed_word.name"
+hp_min = 32
+hp_max = 35
+intents = Array[ExtResource("1_gwfrb")]([SubResource("Resource_y7ltc"), SubResource("Resource_dxeqp"), SubResource("Resource_jl8kl")])

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3]
+
+[ext_resource type="Script" path="res://source/enemies/enemy_intent.gd" id="1_lt278"]
+[ext_resource type="Script" path="res://source/enemies/enemy_data.gd" id="2_opr02"]
+
+[sub_resource type="Resource" id="Resource_2a43i"]
+script = ExtResource("1_lt278")
+kind = 3
+
+[sub_resource type="Resource" id="Resource_kvyso"]
+script = ExtResource("1_lt278")
+amount = 6
+
+[sub_resource type="Resource" id="Resource_hw6t4"]
+script = ExtResource("1_lt278")
+amount = 4
+times = 2
+
+[sub_resource type="Resource" id="Resource_ar21m"]
+script = ExtResource("1_lt278")
+amount = 6
+
+[resource]
+script = ExtResource("2_opr02")
+id = &"supper"
+name_key = &"enemy.supper.name"
+hp_min = 13
+hp_max = 15
+intents = Array[ExtResource("1_lt278")]([SubResource("Resource_2a43i")])
+night_intents = Array[ExtResource("1_lt278")]([SubResource("Resource_kvyso"), SubResource("Resource_hw6t4"), SubResource("Resource_ar21m")])

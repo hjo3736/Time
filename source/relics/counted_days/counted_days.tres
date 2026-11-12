@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="RelicCountedDays" format=3]
+
+[ext_resource type="Script" path="res://source/relics/counted_days/relic_counted_days.gd" id="1_msseu"]
+
+[resource]
+script = ExtResource("1_msseu")
+id = &"counted_days"
+name_key = &"relic.counted_days.name"
+text_key = &"relic.counted_days.text"
+rarity = 2
