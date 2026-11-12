@@ -211,9 +211,11 @@ source/
              from data -- the floor in map_view, a room's doors, a
              compendium tab -- the frame is the scene and the contents are
              built in code. Build every view with its create(), not .new()
-  core/      stats.gd — what every fighter is built on, Warden and Askew alike
+  core/      stats.gd — what every fighter is built on, Warden and Askew alike;
+             enemy_stats.gd — an Askew. Its .tres is the template, and
+             spawn() makes the fighter from it
   enemies/   one folder per Askew (linked pairs and the clock hands share one),
-             holding its .tres and, later, its art. enemy_data.gd,
+             holding its EnemyStats .tres and, later, its art.
              enemy_database.gd, enemy_intent.gd, enemy_behavior.gd at the root;
              behaviors/ holds the behaviour scripts, several Askew share each
   relics/    one folder per relic: its .tres and its relic_*.gd. relic.gd and

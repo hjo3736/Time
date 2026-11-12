@@ -21,9 +21,9 @@ func load_from(root: String = DEFAULT_ROOT) -> void:
 
 	for file in _resource_files(root):
 		var res := ResourceLoader.load(root.path_join(file))
-		if not (res is EnemyData):
+		if not (res is EnemyStats):
 			continue
-		var e: EnemyData = res
+		var e: EnemyStats = res
 		if e.id == &"":
 			_load_problems.append("%s: enemy has no id." % file)
 			continue
@@ -58,25 +58,25 @@ func has(id: StringName) -> bool:
 	return _by_id.has(id)
 
 
-func get_enemy(id: StringName) -> EnemyData:
+func get_enemy(id: StringName) -> EnemyStats:
 	return _by_id.get(id)
 
 
-func all() -> Array[EnemyData]:
-	var out: Array[EnemyData] = []
+func all() -> Array[EnemyStats]:
+	var out: Array[EnemyStats] = []
 	for id in _sorted_ids:
 		out.append(_by_id[id])
 	return out
 
 
-func of_tier(tier: EnemyData.Tier) -> Array[EnemyData]:
-	return all().filter(func(e: EnemyData) -> bool: return e.tier == tier)
+func of_tier(tier: EnemyStats.Tier) -> Array[EnemyStats]:
+	return all().filter(func(e: EnemyStats) -> bool: return e.tier == tier)
 
 
 ## Pass act -1 for every act at that tier; the compendium wants all of them and
 ## the generator wants one act's worth.
-func of_act(act: int, tier: int = -1) -> Array[EnemyData]:
-	return all().filter(func(e: EnemyData) -> bool:
+func of_act(act: int, tier: int = -1) -> Array[EnemyStats]:
+	return all().filter(func(e: EnemyStats) -> bool:
 		return e.act == act and (tier < 0 or e.tier == tier))
 
 

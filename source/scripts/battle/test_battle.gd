@@ -213,6 +213,7 @@ func _init() -> void:
 	_stats_say_when_they_change()
 	_stats_survive_a_save()
 	_stats_instances_do_not_share()
+	_spawned_askew_leave_the_template_alone()
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
@@ -309,3 +310,27 @@ func _stats_instances_do_not_share() -> void:
 	a.take_damage(20)
 	check("striking one leaves the other whole", b.hp, 40)
 	check("and the template untouched", [template.hp, template.block], [1, 0])
+
+
+func _spawned_askew_leave_the_template_alone() -> void:
+	print("\n-- an Askew .tres is a template: spawn makes fighters from it --")
+	var template := EnemyStats.new()
+	template.id = &"fixture_template"
+	template.hp_min = 20
+	template.hp_max = 26
+	template.start_block = 4
+	template.intents = [EnemyIntent.attack(5), EnemyIntent.block(3)] as Array[EnemyIntent]
+	template.behavior_script = BehaviorEcho
+	var dice := RandomNumberGenerator.new()
+	dice.seed = 11
+	var a := template.spawn(_b, dice)
+	var b := template.spawn(_b, dice)
+	check("hp is rolled inside the range", a.max_hp >= 20 and a.max_hp <= 26 and a.hp == a.max_hp, true)
+	check("it opens with the template's block", a.block, 4)
+	check("each fighter gets its own behaviour", [a.behavior is BehaviorEcho, a.behavior != b.behavior], [true, true])
+	check("and the template none", template.behavior, null)
+	a.intents.clear()
+	check("emptying one fighter's intents leaves the template's", template.intents.size(), 2)
+	check("and the other fighter's", b.intents.size(), 2)
+	a.take_damage(10)
+	check("striking a fighter leaves the template whole", [template.hp, template.block], [1, 0])

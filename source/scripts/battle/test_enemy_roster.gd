@@ -41,16 +41,16 @@ func _init() -> void:
 
 	print("\n-- the roster loads and passes its own linter --")
 	check("problems", _db.validate(), PackedStringArray())
-	var ids := _db.all().map(func(e: EnemyData) -> String: return String(e.id))
+	var ids := _db.all().map(func(e: EnemyStats) -> String: return String(e.id))
 	var sorted_ids := ids.duplicate()
 	sorted_ids.sort()
 	check("sorted by id", ids, sorted_ids)
 
 	print("\n-- what the roster holds while it is being rebuilt --")
 	check("enemies", _db.size(), HELD_NOW["all"])
-	check("normals", _db.of_tier(EnemyData.Tier.NORMAL).size(), HELD_NOW["normal"])
-	check("elites", _db.of_tier(EnemyData.Tier.ELITE).size(), HELD_NOW["elite"])
-	check("bosses", _db.of_tier(EnemyData.Tier.BOSS).size(), HELD_NOW["boss"])
+	check("normals", _db.of_tier(EnemyStats.Tier.NORMAL).size(), HELD_NOW["normal"])
+	check("elites", _db.of_tier(EnemyStats.Tier.ELITE).size(), HELD_NOW["elite"])
+	check("bosses", _db.of_tier(EnemyStats.Tier.BOSS).size(), HELD_NOW["boss"])
 	var met := {}
 	for e in _db.all():
 		if e.behavior_script != null:
@@ -82,7 +82,7 @@ func _init() -> void:
 	table.load_from()
 	var too_frail := []
 	var fights := 0
-	for tier in [EnemyData.Tier.NORMAL, EnemyData.Tier.ELITE, EnemyData.Tier.BOSS]:
+	for tier in [EnemyStats.Tier.NORMAL, EnemyStats.Tier.ELITE, EnemyStats.Tier.BOSS]:
 		for opening in [false, true]:
 			for encounter in table.candidates(1, tier, opening):
 				fights += 1
@@ -142,7 +142,7 @@ func _init() -> void:
 	var ageing := BehaviorWithered.new()
 	ageing.on_turn_end(null, 0)
 	ageing.on_turn_end(null, 0)
-	var fixture := EnemyData.new()
+	var fixture := EnemyStats.new()
 	fixture.id = &"test_ageing"
 	fixture.name_key = &"enemy.test_ageing.name"
 	fixture.hp_min = 30

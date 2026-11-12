@@ -53,7 +53,7 @@ func get_encounter(id: StringName) -> EncounterData:
 ## on the answer, so filling an act in changes a test rather than nothing.
 const BORROW_FROM_ACT := 1
 
-func candidates(act: int, tier: EnemyData.Tier, opening: bool = false,
+func candidates(act: int, tier: EnemyStats.Tier, opening: bool = false,
 		sky: int = -1) -> Array[EncounterData]:
 	# The borrow turns on when an act has nothing authored at this tier at all,
 	# never merely because the sky filtered its pool empty — that case is pick()'s
@@ -64,7 +64,7 @@ func candidates(act: int, tier: EnemyData.Tier, opening: bool = false,
 		source_act = BORROW_FROM_ACT
 	return _authored_for(source_act, tier, opening, sky)
 
-func _authored_for(act: int, tier: EnemyData.Tier, opening: bool,
+func _authored_for(act: int, tier: EnemyStats.Tier, opening: bool,
 		sky: int) -> Array[EncounterData]:
 	return _all.filter(func(e: EncounterData) -> bool:
 		return (e.act == act and e.tier == tier and e.opening_only == opening
@@ -75,7 +75,7 @@ func borrowed_acts(acts_per_run: int) -> Array[int]:
 	for act in range(1, acts_per_run + 1):
 		if act == BORROW_FROM_ACT:
 			continue
-		if _authored_for(act, EnemyData.Tier.NORMAL, false, -1).is_empty():
+		if _authored_for(act, EnemyStats.Tier.NORMAL, false, -1).is_empty():
 			out.append(act)
 	return out
 
@@ -91,7 +91,7 @@ func _shows_under(e: EncounterData, sky: int) -> bool:
 			return e.appears == EncounterData.When.NIGHT
 	return e.appears == EncounterData.When.DAY
 
-func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: bool = false,
+func pick(rng: RandomNumberGenerator, act: int, tier: EnemyStats.Tier, opening: bool = false,
 		sky: int = -1, alone: bool = false) -> EncounterData:
 	var pool := candidates(act, tier, opening, sky)
 	if pool.is_empty() and sky >= 0:
@@ -127,7 +127,7 @@ func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: b
 ## else's, so it never turns up beside a stranger.
 func mixable(act: int) -> Dictionary:
 	var out := {}
-	for e in candidates(act, EnemyData.Tier.NORMAL):
+	for e in candidates(act, EnemyStats.Tier.NORMAL):
 		if e.members.size() == 1:
 			out[e.members[0]] = int(out.get(e.members[0], 0)) + e.weight
 	return out
@@ -225,7 +225,7 @@ func validate(enemies: EnemyDatabase) -> PackedStringArray:
 	var problems := _load_problems.duplicate()
 	if _all.is_empty():
 		problems.append("Encounter table is empty.")
-	if candidates(1, EnemyData.Tier.NORMAL, true).is_empty():
+	if candidates(1, EnemyStats.Tier.NORMAL, true).is_empty():
 		problems.append("Act 1 has no opening encounter: the first fight of a run would be a general roll.")
 	for e in _all:
 		problems.append_array(e.validate(enemies))

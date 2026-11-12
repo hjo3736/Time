@@ -374,7 +374,7 @@ func _rooms_are_stocked_for_both_skies() -> void:
 	# A room can only be stocked from a pool that exists. Act one has no boss
 	# encounter yet, so its boss rooms are the unstocked ones and the count should
 	# equal the number of floors — not zero, and not more than that either.
-	var boss_pool := _encounters.candidates(1, EnemyData.Tier.BOSS).size()
+	var boss_pool := _encounters.candidates(1, EnemyStats.Tier.BOSS).size()
 	for sky in SKIES:
 		if boss_pool > 0:
 			check("none is unstocked for sky %d" % sky, missing[sky], 0)
@@ -388,7 +388,7 @@ func _rooms_are_stocked_for_both_skies() -> void:
 	# same encounter every single time. One fewer and the history saturates, pick()
 	# falls back to the whole pool, and they vary again. So the dead spot is a
 	# specific pool size rather than "small", which is the opposite of obvious.
-	var normals := _encounters.candidates(1, EnemyData.Tier.NORMAL).size()
+	var normals := _encounters.candidates(1, EnemyStats.Tier.NORMAL).size()
 	if normals == _b.encounter_history_length + 1:
 		check("a pool one larger than the history forces day and night to match",
 			differs, 0)

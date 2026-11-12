@@ -145,7 +145,7 @@ func _resolve_room() -> void:
 func _start_battle(room: Room) -> void:
 	var data: EncounterData = null
 	if not _opened_with_teaching_fight:
-		data = _encounters.pick(_rng, run.act, EnemyData.Tier.NORMAL, true)
+		data = _encounters.pick(_rng, run.act, EnemyStats.Tier.NORMAL, true)
 		_opened_with_teaching_fight = true
 	if data == null:
 		data = _encounters.mixed(

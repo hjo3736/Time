@@ -18,7 +18,7 @@ static func generate(
 	var empty_rooms := balance.empty_in(act)
 	var fires := balance.fires_in(act)
 	var shops := balance.shops_in(act)
-	var elites := balance.elites_in(act) if not encounters.candidates(act, EnemyData.Tier.ELITE).is_empty() else 0
+	var elites := balance.elites_in(act) if not encounters.candidates(act, EnemyStats.Tier.ELITE).is_empty() else 0
 	var events := content - combat_rooms
 	var total := 2 + combat_rooms + empty_rooms + fires + shops + elites + events
 
@@ -165,7 +165,7 @@ static func _assign(
 
 	var boss_coord: Vector2i = dead_ends[0] if not dead_ends.is_empty() else open[0]
 	rooms[boss_coord].kind = Room.Kind.BOSS
-	_stock(rooms[boss_coord], encounters, rng, act, EnemyData.Tier.BOSS)
+	_stock(rooms[boss_coord], encounters, rng, act, EnemyStats.Tier.BOSS)
 	open.erase(boss_coord)
 	dead_ends.erase(boss_coord)
 
@@ -219,7 +219,7 @@ static func _assign(
 		open.erase(coord)
 		settled.append(coord)
 		rooms[coord].kind = Room.Kind.ELITE
-		_stock(rooms[coord], encounters, rng, act, EnemyData.Tier.ELITE)
+		_stock(rooms[coord], encounters, rng, act, EnemyStats.Tier.ELITE)
 
 	var order := open.duplicate()
 	_shuffle(order, rng)
@@ -230,7 +230,7 @@ static func _assign(
 		# corridor spends no randomness deciding what was never in doubt.
 		var chance := balance.solo_chance_at(act, int(distances.get(order[i], 0)))
 		var alone := chance >= 1.0 or (chance > 0.0 and rng.randf() < chance)
-		_stock(room, encounters, rng, act, EnemyData.Tier.NORMAL, alone)
+		_stock(room, encounters, rng, act, EnemyStats.Tier.NORMAL, alone)
 		if not alone:
 			room.companions = encounters.draw_companions(rng, act, balance.mixed_fight_size)
 
@@ -261,7 +261,7 @@ static func _clear_of(spacing: Dictionary, settled: Array, coord: Vector2i,
 
 
 static func _stock(room: Room, encounters: EncounterTable, rng: RandomNumberGenerator,
-		act: int, tier: EnemyData.Tier, alone: bool = false) -> void:
+		act: int, tier: EnemyStats.Tier, alone: bool = false) -> void:
 	var by_day := encounters.pick(rng, act, tier, false, RunClock.Daytime.DAY, alone)
 	if by_day != null:
 		room.encounter_id = by_day.id

@@ -800,7 +800,7 @@ func _the_sky_changes_the_pattern() -> void:
 	print("\n-- an enemy that fights differently after dark --")
 	# Built here rather than taken from the roster: this checks the machinery, and
 	# it should not start failing because the bestiary was re-authored.
-	var data := EnemyData.new()
+	var data := EnemyStats.new()
 	data.id = &"test_sky"
 	data.name_key = &"enemy.test_sky.name"
 	data.hp_min = 20
@@ -817,7 +817,7 @@ func _the_sky_changes_the_pattern() -> void:
 		c.current_intent().amount, data.night_intents[0].amount)
 	check("and the two are not the same",
 		data.intents[0].amount != data.night_intents[0].amount, true)
-	var plainest := EnemyData.new()
+	var plainest := EnemyStats.new()
 	plainest.id = &"test_steady"
 	plainest.name_key = &"enemy.test_steady.name"
 	plainest.hp_min = 30
@@ -842,7 +842,7 @@ func _the_sky_changes_the_pattern() -> void:
 		read.append(four.current_intent().amount)
 	check("all four phases can be written apart", read, [1, 2, 3, 4])
 
-	var bare := EnemyData.new()
+	var bare := EnemyStats.new()
 	bare.id = &"test_bare"
 	bare.name_key = &"enemy.test_bare.name"
 	bare.hp_min = 20
@@ -864,7 +864,7 @@ func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
 	run.clock.advance(run.clock.minutes_until_sky_turns() - b.turn_cost, RunClock.Source.TRAVEL)
 	var opened_under := run.clock.daytime()
 
-	var fixture := EnemyData.new()
+	var fixture := EnemyStats.new()
 	fixture.id = &"test_clockwatcher"
 	fixture.name_key = &"enemy.test_clockwatcher.name"
 	fixture.hp_min = 30

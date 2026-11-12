@@ -5,7 +5,7 @@ enum When { ANY, MORNING, DAY, EVENING, NIGHT }
 
 @export var id := &""
 @export var act := 1
-@export var tier := EnemyData.Tier.NORMAL
+@export var tier := EnemyStats.Tier.NORMAL
 @export var weight := 10
 @export var members: Array[StringName] = []
 @export var opening_only := false

@@ -41,7 +41,7 @@ func fresh_table() -> EncounterTable:
 
 
 ## Any encounter of a tier, so the machinery checks below do not have to name one.
-func some(tier: EnemyData.Tier, act: int = 1) -> EncounterData:
+func some(tier: EnemyStats.Tier, act: int = 1) -> EncounterData:
 	var pool := _table.candidates(act, tier)
 	return pool[0] if not pool.is_empty() else null
 
@@ -55,16 +55,16 @@ func _init() -> void:
 
 	print("\n-- the table loads, and the linter reports only what is known missing --")
 	check("problems", _table.validate(_enemies), known_gaps())
-	var ids := _table.candidates(1, EnemyData.Tier.NORMAL).map(
+	var ids := _table.candidates(1, EnemyStats.Tier.NORMAL).map(
 		func(e: EncounterData) -> String: return String(e.id))
 	check("sorted by id", ids, ids.duplicate())
 
 	print("\n-- what the table holds while it is being rebuilt --")
 	check("encounters", _table.size(), HELD_NOW["all"])
-	check("normals", _table.candidates(1, EnemyData.Tier.NORMAL).size(), HELD_NOW["normal"])
-	check("elites", _table.candidates(1, EnemyData.Tier.ELITE).size(), HELD_NOW["elite"])
-	check("bosses", _table.candidates(1, EnemyData.Tier.BOSS).size(), HELD_NOW["boss"])
-	check("openers", _table.candidates(1, EnemyData.Tier.NORMAL, true).size(),
+	check("normals", _table.candidates(1, EnemyStats.Tier.NORMAL).size(), HELD_NOW["normal"])
+	check("elites", _table.candidates(1, EnemyStats.Tier.ELITE).size(), HELD_NOW["elite"])
+	check("bosses", _table.candidates(1, EnemyStats.Tier.BOSS).size(), HELD_NOW["boss"])
+	check("openers", _table.candidates(1, EnemyStats.Tier.NORMAL, true).size(),
 		HELD_NOW["opening"])
 
 	print("\n-- an encounter may not mix acts --")
@@ -81,16 +81,16 @@ func _init() -> void:
 	check("acts two and three are still unwritten",
 		_table.borrowed_acts(_b.acts_per_run), [2, 3])
 	check("so a later act still fields normals",
-		_table.candidates(3, EnemyData.Tier.NORMAL).is_empty(), false)
+		_table.candidates(3, EnemyStats.Tier.NORMAL).is_empty(), false)
 	check("and an elite, which is what puts elites on a later floor",
-		_table.candidates(3, EnemyData.Tier.ELITE).is_empty(), false)
+		_table.candidates(3, EnemyStats.Tier.ELITE).is_empty(), false)
 	check("act one borrows from nobody",
 		_table.borrowed_acts(_b.acts_per_run).has(1), false)
-	var lent := _table.pick(rng(1), 2, EnemyData.Tier.NORMAL)
+	var lent := _table.pick(rng(1), 2, EnemyStats.Tier.NORMAL)
 	check("act 2 fights something", lent != null, true)
 	check("and what it fields is act one's", lent.act, 1)
 	check("but a combination act one never authored is still null",
-		_table.pick(rng(1), 2, EnemyData.Tier.BOSS, true), null)
+		_table.pick(rng(1), 2, EnemyStats.Tier.BOSS, true), null)
 
 	print("\n-- a room with company fields its own enemy and enough of the rest --")
 	var mix_lone := _table.get_encounter(&"a1_lone_squabble")
@@ -135,7 +135,7 @@ func _init() -> void:
 	check("it cannot draw more kinds than stand alone",
 		_table.draw_companions(rng(9), 1, 99).size(), _table.mixable(1).size())
 	check("a room that must be alone is given one enemy",
-		_table.pick(rng(2), 1, EnemyData.Tier.NORMAL, false, -1, true).members.size(), 1)
+		_table.pick(rng(2), 1, EnemyStats.Tier.NORMAL, false, -1, true).members.size(), 1)
 
 	print("\n-- picking is seeded and replays --")
 	var a := fresh_table()
@@ -145,8 +145,8 @@ func _init() -> void:
 	var seq_a := []
 	var seq_b := []
 	for i in 10:
-		seq_a.append(String(a.pick(ra, 1, EnemyData.Tier.NORMAL).id))
-		seq_b.append(String(b.pick(rb, 1, EnemyData.Tier.NORMAL).id))
+		seq_a.append(String(a.pick(ra, 1, EnemyStats.Tier.NORMAL).id))
+		seq_b.append(String(b.pick(rb, 1, EnemyStats.Tier.NORMAL).id))
 	check("identical sequences", seq_a, seq_b)
 
 	print("\n-- history keeps the same fight from coming twice in a row --")
@@ -157,7 +157,7 @@ func _init() -> void:
 	# The history can only hold a repeat off while there is something else to
 	# offer. With a pool no larger than the history, pick() falls back to the whole
 	# table on purpose rather than returning nothing, so repeats are correct here.
-	var pool_size := _table.candidates(1, EnemyData.Tier.NORMAL).size()
+	var pool_size := _table.candidates(1, EnemyStats.Tier.NORMAL).size()
 	if pool_size > _b.encounter_history_length:
 		check("no back-to-back repeats", repeats, 0)
 	else:
@@ -169,12 +169,12 @@ func _init() -> void:
 	var t := fresh_table()
 	var r := rng(9)
 	for i in 400:
-		var id := String(t.pick(r, 1, EnemyData.Tier.NORMAL).id)
+		var id := String(t.pick(r, 1, EnemyStats.Tier.NORMAL).id)
 		counts[id] = int(counts.get(id, 0)) + 1
-	check("all of them", counts.size(), _table.candidates(1, EnemyData.Tier.NORMAL).size())
+	check("all of them", counts.size(), _table.candidates(1, EnemyStats.Tier.NORMAL).size())
 
 	print("\n-- spawning builds what the encounter says --")
-	var one := some(EnemyData.Tier.NORMAL)
+	var one := some(EnemyStats.Tier.NORMAL)
 	check("there is something to spawn", one != null, true)
 	var group := _table.spawn(one, _enemies, _b, rng(3))
 	check("one combatant per member", group.size(), one.members.size())

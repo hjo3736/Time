@@ -215,7 +215,7 @@ func _build_enemy_filters() -> void:
 	_side_header(_visible_enemies().size())
 
 	var tiers := []
-	for tier in [EnemyData.Tier.NORMAL, EnemyData.Tier.ELITE, EnemyData.Tier.BOSS]:
+	for tier in [EnemyStats.Tier.NORMAL, EnemyStats.Tier.ELITE, EnemyStats.Tier.BOSS]:
 		if not _enemies.of_tier(tier).is_empty():
 			tiers.append({"value": tier, "label": _tier_name(tier)})
 	_group(tr("ui.compendium.filter_tier"), "tier", tiers)
@@ -316,8 +316,8 @@ func _build_enemies() -> void:
 		body().add_child(UiTheme.label(
 			tr("ui.compendium.nothing_matches"), 20, UiTheme.INK_DIM))
 		return
-	for tier in [EnemyData.Tier.NORMAL, EnemyData.Tier.ELITE, EnemyData.Tier.BOSS]:
-		var group := shown.filter(func(e: EnemyData) -> bool: return e.tier == tier)
+	for tier in [EnemyStats.Tier.NORMAL, EnemyStats.Tier.ELITE, EnemyStats.Tier.BOSS]:
+		var group := shown.filter(func(e: EnemyStats) -> bool: return e.tier == tier)
 		if group.is_empty():
 			continue
 		body().add_child(UiTheme.label(_tier_name(tier), 20, UiTheme.GOLD))
@@ -327,14 +327,14 @@ func _build_enemies() -> void:
 
 func _tier_name(tier: int) -> String:
 	match tier:
-		EnemyData.Tier.ELITE:
+		EnemyStats.Tier.ELITE:
 			return tr("ui.compendium.tier_elite")
-		EnemyData.Tier.BOSS:
+		EnemyStats.Tier.BOSS:
 			return tr("ui.compendium.tier_boss")
 	return tr("ui.compendium.tier_normal")
 
 
-func _enemy_row(enemy: EnemyData) -> Control:
+func _enemy_row(enemy: EnemyStats) -> Control:
 	var frame := PanelContainer.new()
 	var row := VBoxContainer.new()
 	row.add_theme_constant_override("separation", 4)
@@ -356,7 +356,7 @@ func _enemy_row(enemy: EnemyData) -> Control:
 	return frame
 
 
-func _intent_line(enemy: EnemyData) -> String:
+func _intent_line(enemy: EnemyStats) -> String:
 	var parts := []
 	for intent in enemy.intents:
 		match intent.kind:
@@ -400,7 +400,7 @@ static func _columns_for(available: float) -> int:
 
 func _visible_enemies() -> Array:
 	var out := []
-	for tier in [EnemyData.Tier.NORMAL, EnemyData.Tier.ELITE, EnemyData.Tier.BOSS]:
+	for tier in [EnemyStats.Tier.NORMAL, EnemyStats.Tier.ELITE, EnemyStats.Tier.BOSS]:
 		if not _passes("tier", tier):
 			continue
 		for enemy in _enemies.of_tier(tier):

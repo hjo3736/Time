@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyStats" format=3]
 
 [ext_resource type="Script" path="res://source/enemies/behaviors/behavior_heavy.gd" id="1_radku"]
 [ext_resource type="Script" path="res://source/enemies/enemy_intent.gd" id="2_tl4lt"]
-[ext_resource type="Script" path="res://source/enemies/enemy_data.gd" id="3_31u64"]
+[ext_resource type="Script" path="res://source/core/enemy_stats.gd" id="3_31u64"]
 
 [sub_resource type="Resource" id="Resource_r6qs4"]
 script = ExtResource("2_tl4lt")

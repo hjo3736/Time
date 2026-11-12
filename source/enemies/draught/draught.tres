@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="EnemyData" format=3]
+[gd_resource type="Resource" script_class="EnemyStats" format=3]
 
 [ext_resource type="Script" path="res://source/enemies/enemy_intent.gd" id="1_cn1dv"]
-[ext_resource type="Script" path="res://source/enemies/enemy_data.gd" id="2_apm85"]
+[ext_resource type="Script" path="res://source/core/enemy_stats.gd" id="2_apm85"]
 
 [sub_resource type="Resource" id="Resource_yff0e"]
 script = ExtResource("1_cn1dv")
