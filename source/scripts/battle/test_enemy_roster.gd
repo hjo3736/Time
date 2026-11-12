@@ -220,11 +220,11 @@ func _damage_of(order: Array, cards: CardDatabase) -> int:
 	var run := RunState.new(_b, RunClock.seed_from_date(0, 0, 0, 12))
 	for id in order:
 		run.add_card(id)
-	var dummy := Stats.new()
+	var dummy := EnemyStats.new()
 	dummy.max_hp = 999
 	dummy.hp = 999
 	dummy.intents = [EnemyIntent.wait()] as Array[EnemyIntent]
-	var bt := BattleState.new(run, cards, [dummy] as Array[Stats], rng(1))
+	var bt := BattleState.new(run, cards, [dummy] as Array[EnemyStats], rng(1))
 	for id in order:
 		var played := false
 		for i in bt.piles().hand.size():

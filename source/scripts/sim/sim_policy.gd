@@ -22,7 +22,7 @@ func incoming(battle: BattleState) -> int:
 
 
 func incoming_from(battle: BattleState, handle: int) -> int:
-	var enemy: Stats = battle.combatants[handle]
+	var enemy: EnemyStats = battle.enemy(handle)
 	if not enemy.is_alive():
 		return 0
 	var intent := enemy.current_intent()
@@ -111,7 +111,7 @@ func _pick_target(battle: BattleState) -> int:
 	var best := -1
 	var best_score := -INF
 	for handle in handles:
-		var enemy: Stats = battle.combatants[handle]
+		var enemy: EnemyStats = battle.enemy(handle)
 		if not enemy.is_alive():
 			continue
 		var score := float(incoming_from(battle, handle)) * 2.0
@@ -155,7 +155,7 @@ func _play_one(rc: RunController, battle: BattleState) -> bool:
 
 	var clearing := true
 	for handle in battle.enemy_handles():
-		var enemy: Stats = battle.combatants[handle]
+		var enemy: EnemyStats = battle.enemy(handle)
 		if enemy.is_alive() and not _can_finish(battle, enemy):
 			clearing = false
 			break

@@ -14,7 +14,7 @@ func outgoing_amount(_battle: BattleState, _handle: int, intent: EnemyIntent) ->
 
 
 func on_turn_end(battle: BattleState, handle: int) -> void:
-	var who := battle.combatants[handle]
+	var who := battle.enemy(handle)
 	var performed := who.intents[(who.intent_index - 1) % who.intents.size()]
 	if performed.kind == EnemyIntent.Kind.WAIT:
 		_charge += 1

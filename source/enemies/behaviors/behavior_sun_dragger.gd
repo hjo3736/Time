@@ -25,7 +25,7 @@ var _performed: EnemyIntent = null
 ## Breaking a pull is not free twice. Every one that fails, it holds on harder
 ## for the rest of the fight, so the day can be kept for a while and not forever.
 func on_battle_start(battle: BattleState, handle: int) -> void:
-	var who: Stats = battle.combatants[handle]
+	var who: EnemyStats = battle.enemy(handle)
 	if not who.evening_intents.is_empty():
 		_base_growth = who.evening_intents[0].stacks
 	_elapsed_shown = battle.run().clock.elapsed
@@ -51,7 +51,7 @@ func on_turn_end(battle: BattleState, handle: int) -> void:
 	if battle == null:
 		_taken = 0
 		return
-	var who: Stats = battle.combatants[handle]
+	var who: EnemyStats = battle.enemy(handle)
 	var performed := _performed
 	if performed == null:
 		_taken = 0
@@ -69,7 +69,7 @@ func on_turn_end(battle: BattleState, handle: int) -> void:
 	_elapsed_shown = battle.run().clock.elapsed
 
 
-func _set_evening(who: Stats, stacks: int) -> void:
+func _set_evening(who: EnemyStats, stacks: int) -> void:
 	var next: Array[EnemyIntent] = [EnemyIntent.grow(stacks)]
 	who.evening_intents = next
 
@@ -80,7 +80,7 @@ func _set_evening(who: Stats, stacks: int) -> void:
 ##
 ## Read off the clock rather than off `sky`, which is not brought up to date
 ## until the next turn begins — by which time the intent is already on show.
-func advance_intent(battle: BattleState, who: Stats) -> void:
+func advance_intent(battle: BattleState, who: EnemyStats) -> void:
 	_performed = who.current_intent()
 	who.advance_intent()
 	if battle != null and battle.run().clock.daytime() != who.sky:

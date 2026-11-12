@@ -30,7 +30,7 @@ func on_turn_start(_run: RunState, _battle) -> void:
 	pass
 
 
-func on_enemy_defeated(_run: RunState, _battle, _enemy: Stats) -> void:
+func on_enemy_defeated(_run: RunState, _battle, _enemy: EnemyStats) -> void:
 	pass
 
 

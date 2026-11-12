@@ -16,10 +16,10 @@ func on_absorbed(battle: BattleState, handle: int, amount: int) -> void:
 
 
 func _twin_of(battle: BattleState, handle: int) -> BehaviorOverlaid:
-	var who := battle.combatants[handle]
+	var who := battle.enemy(handle)
 	if who.link < 0 or who.link >= battle.combatants.size():
 		return null
-	var twin: Stats = battle.combatants[who.link]
+	var twin: EnemyStats = battle.enemy(who.link)
 	if not twin.is_alive():
 		return null
 	return twin.behavior as BehaviorOverlaid
@@ -28,7 +28,7 @@ func _twin_of(battle: BattleState, handle: int) -> BehaviorOverlaid:
 func on_turn_start(battle: BattleState, handle: int) -> void:
 	if _pending <= 0:
 		return
-	var who := battle.combatants[handle]
+	var who := battle.enemy(handle)
 	var landing := _pending
 	_pending = 0
 	who.hp = maxi(0, who.hp - landing)

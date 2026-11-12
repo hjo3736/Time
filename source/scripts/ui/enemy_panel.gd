@@ -1,7 +1,6 @@
 class_name EnemyPanel
 extends VBoxContainer
 
-
 signal target_chosen(handle: int)
 
 ## The layout is the scene; this script only fills it. One per Askew in the
@@ -10,7 +9,6 @@ const SCENE := preload("res://source/scenes/ui/enemy_panel.tscn")
 
 var handle := -1
 
-
 ## Always make one through here, never EnemyPanel.new(): new() is the script
 ## without the scene.
 static func create(rc: RunController, p_handle: int, picking: bool) -> EnemyPanel:
@@ -18,10 +16,9 @@ static func create(rc: RunController, p_handle: int, picking: bool) -> EnemyPane
 	panel.fill(rc, p_handle, picking)
 	return panel
 
-
 func fill(rc: RunController, p_handle: int, picking: bool) -> void:
 	handle = p_handle
-	var enemy: Stats = rc.battle.combatants[handle]
+	var enemy: EnemyStats = rc.battle.enemy(handle)
 
 	var intent := %Intent as Label
 	intent.text = intent_text(rc, handle, enemy)
@@ -68,13 +65,11 @@ func fill(rc: RunController, p_handle: int, picking: bool) -> void:
 	pick.text = tr("ui.battle.use_here")
 	pick.visible = picking
 
-
 func _ready() -> void:
 	UiTheme.localize(self)
 	(%UseHere as Button).pressed.connect(func() -> void: target_chosen.emit(handle))
 
-
-static func intent_amount(rc: RunController, p_handle: int, enemy: Stats,
+static func intent_amount(rc: RunController, p_handle: int, enemy: EnemyStats,
 		intent: EnemyIntent) -> int:
 	var amount := intent.amount
 	if enemy.behavior != null:
@@ -84,10 +79,10 @@ static func intent_amount(rc: RunController, p_handle: int, enemy: Stats,
 		amount = StatusRules.modified_damage(enemy, rc.battle.warden(), amount)
 	return amount
 
-
-static func intent_text(rc: RunController, p_handle: int, enemy: Stats,
+static func intent_text(rc: RunController, p_handle: int, enemy: EnemyStats,
 		shown: EnemyIntent = null) -> String:
 	var intent := shown if shown != null else enemy.current_intent()
+	
 	if intent == null:
 		return TranslationServer.translate("ui.battle.intent_none")
 	var amount := intent_amount(rc, p_handle, enemy, intent)
@@ -121,10 +116,9 @@ static func intent_text(rc: RunController, p_handle: int, enemy: Stats,
 			return TranslationServer.translate("ui.battle.intent_wait")
 	return TranslationServer.translate("ui.battle.intent_none")
 
-
 ## Green when what is shown is less than what it would strike for unmodified, so
 ## a blow the player has already softened reads as softened.
-static func intent_colour(rc: RunController, p_handle: int, enemy: Stats) -> Color:
+static func intent_colour(rc: RunController, p_handle: int, enemy: EnemyStats) -> Color:
 	var intent := enemy.current_intent()
 	if intent == null or intent.kind != EnemyIntent.Kind.ATTACK:
 		return UiTheme.BLOOD

@@ -7,7 +7,7 @@ const GUARDS := 1
 
 
 func on_battle_start(battle: BattleState, handle: int) -> void:
-	_settle(battle, battle.combatants[handle])
+	_settle(battle, battle.enemy(handle))
 
 
 ## 시소. Written as two intents — the blow, then the guard — and which one is
@@ -16,11 +16,11 @@ func on_battle_start(battle: BattleState, handle: int) -> void:
 ## intent on show through the player's turn is the one that lands, however the
 ## gauges move while it is on show. What the player does this turn chooses the
 ## turn after.
-func advance_intent(battle: BattleState, who: Stats) -> void:
+func advance_intent(battle: BattleState, who: EnemyStats) -> void:
 	_settle(battle, who)
 
 
-func _settle(battle: BattleState, who: Stats) -> void:
+func _settle(battle: BattleState, who: EnemyStats) -> void:
 	var other := _other_end(battle, who)
 	# Level is both down: neither end is the lighter one. And an end left on its
 	# own has nothing to be lighter than.
@@ -30,10 +30,10 @@ func _settle(battle: BattleState, who: Stats) -> void:
 		who.intent_index = GUARDS
 
 
-func _other_end(battle: BattleState, who: Stats) -> Stats:
+func _other_end(battle: BattleState, who: EnemyStats) -> EnemyStats:
 	if battle == null or who.link < 0 or who.link >= battle.combatants.size():
 		return null
-	var other: Stats = battle.combatants[who.link]
+	var other: EnemyStats = battle.enemy(who.link)
 	return other if other.is_alive() else null
 
 

@@ -1,14 +1,12 @@
 class_name EncounterTable
 extends RefCounted
 
-
 const DEFAULT_ROOT := "res://source/data/encounters"
 
 var _all: Array[EncounterData] = []
 var _by_id: Dictionary = {}
 var _load_problems := PackedStringArray()
 var _recent: Array[StringName] = []
-
 
 func load_from(root: String = DEFAULT_ROOT) -> void:
 	_all.clear()
@@ -17,6 +15,7 @@ func load_from(root: String = DEFAULT_ROOT) -> void:
 	_load_problems = PackedStringArray()
 
 	var dir := DirAccess.open(root)
+	
 	if dir == null:
 		_load_problems.append("%s: directory not found." % root)
 		return
@@ -24,34 +23,35 @@ func load_from(root: String = DEFAULT_ROOT) -> void:
 	for file in ResourceLoader.list_directory(root):
 		if file.ends_with("/"):
 			continue
+			
 		var res := ResourceLoader.load(root.path_join(file))
+		
 		if not (res is EncounterData):
 			continue
+			
 		var e: EncounterData = res
+		
 		if e.id == &"" or _by_id.has(e.id):
 			_load_problems.append("%s: missing or duplicate id." % file)
 			continue
+			
 		_by_id[e.id] = e
 
 	_all.assign(_by_id.values())
 	_all.sort_custom(func(a: EncounterData, b: EncounterData) -> bool:
 		return String(a.id) < String(b.id))
 
-
 func size() -> int:
 	return _all.size()
 
-
 func get_encounter(id: StringName) -> EncounterData:
 	return _by_id.get(id)
-
 
 ## Scaffolding. An act with no encounters of its own fights act one's instead, so
 ## the clock economy can be measured before acts two and three are written. The
 ## borrowing is not silent: borrowed_acts() reports it and test_encounters asserts
 ## on the answer, so filling an act in changes a test rather than nothing.
 const BORROW_FROM_ACT := 1
-
 
 func candidates(act: int, tier: EnemyData.Tier, opening: bool = false,
 		sky: int = -1) -> Array[EncounterData]:
@@ -64,13 +64,11 @@ func candidates(act: int, tier: EnemyData.Tier, opening: bool = false,
 		source_act = BORROW_FROM_ACT
 	return _authored_for(source_act, tier, opening, sky)
 
-
 func _authored_for(act: int, tier: EnemyData.Tier, opening: bool,
 		sky: int) -> Array[EncounterData]:
 	return _all.filter(func(e: EncounterData) -> bool:
 		return (e.act == act and e.tier == tier and e.opening_only == opening
 			and _shows_under(e, sky)))
-
 
 func borrowed_acts(acts_per_run: int) -> Array[int]:
 	var out: Array[int] = []
@@ -80,7 +78,6 @@ func borrowed_acts(acts_per_run: int) -> Array[int]:
 		if _authored_for(act, EnemyData.Tier.NORMAL, false, -1).is_empty():
 			out.append(act)
 	return out
-
 
 func _shows_under(e: EncounterData, sky: int) -> bool:
 	if sky < 0 or e.appears == EncounterData.When.ANY:
@@ -93,7 +90,6 @@ func _shows_under(e: EncounterData, sky: int) -> bool:
 		RunClock.Daytime.NIGHT:
 			return e.appears == EncounterData.When.NIGHT
 	return e.appears == EncounterData.When.DAY
-
 
 func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: bool = false,
 		sky: int = -1, alone: bool = false) -> EncounterData:
@@ -126,7 +122,6 @@ func pick(rng: RandomNumberGenerator, act: int, tier: EnemyData.Tier, opening: b
 	_remember(pool[-1].id)
 	return pool[-1]
 
-
 ## Who may be drawn as company: whoever the act fields alone, at the weight it
 ## fields them. An Askew written only into a group is that group's and nobody
 ## else's, so it never turns up beside a stranger.
@@ -136,7 +131,6 @@ func mixable(act: int) -> Dictionary:
 		if e.members.size() == 1:
 			out[e.members[0]] = int(out.get(e.members[0], 0)) + e.weight
 	return out
-
 
 ## Drawn without putting back, so a room's company is all different. Asked for
 ## one more than a fight needs: the room's own enemy changes with the sky, and
@@ -159,7 +153,6 @@ func draw_companions(rng: RandomNumberGenerator, act: int, count: int) -> Array[
 				break
 	return out
 
-
 ## The fight a room actually holds: its one enemy and enough of its company to
 ## make `size`. A group is left exactly as written, and so is a room with no
 ## company. The result is built for the fight and never joins the table.
@@ -167,32 +160,33 @@ func mixed(base: EncounterData, companions: Array[StringName], size: int,
 		hp_scale: float = 1.0) -> EncounterData:
 	if base == null or base.members.size() != 1 or companions.is_empty():
 		return base
+		
 	var out := EncounterData.new()
+	
 	out.id = base.id
 	out.act = base.act
 	out.tier = base.tier
 	out.weight = base.weight
 	out.members = base.members.duplicate()
 	out.hp_scale = hp_scale
+	
 	for id in companions:
 		if out.members.size() >= size:
 			break
 		if not out.members.has(id):
 			out.members.append(id)
+			
 	return out
-
-
+	
 func _remember(id: StringName) -> void:
 	_recent.append(id)
 	var limit := 2
 	while _recent.size() > limit:
 		_recent.pop_front()
 
-
 func set_history_length(length: int) -> void:
 	while _recent.size() > length:
 		_recent.pop_front()
-
 
 func spawn(
 	encounter: EncounterData,
@@ -200,17 +194,20 @@ func spawn(
 	balance: Balance,
 	rng: RandomNumberGenerator,
 	threat_level: int = 0,
-) -> Array[Stats]:
-	var out: Array[Stats] = []
+) -> Array[EnemyStats]:
+	var out: Array[EnemyStats] = []
 	var hp_scale := (balance.enemy_hp_scale * balance.threat_hp_multiplier(threat_level)
 		* encounter.hp_scale)
 	var damage_scale := balance.enemy_damage_scale * balance.threat_damage_multiplier(threat_level)
 
 	for member in encounter.members:
 		var data := enemies.get_enemy(member)
+		
 		if data == null:
 			continue
+			
 		var c := data.spawn(balance, rng)
+		
 		c.max_hp = maxi(1, roundi(c.max_hp * hp_scale))
 		c.hp = c.max_hp
 		c.restored_value = roundi(c.max_hp * balance.restored_minutes_per_hp * data.restored_multiplier)
@@ -223,7 +220,6 @@ func spawn(
 			out[i + 1].link = i + 1
 
 	return out
-
 
 func validate(enemies: EnemyDatabase) -> PackedStringArray:
 	var problems := _load_problems.duplicate()

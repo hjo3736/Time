@@ -23,7 +23,7 @@ func on_turn_end(battle: BattleState, handle: int) -> void:
 	if today == _day:
 		return
 	_day = today
-	var who: Stats = battle.combatants[handle]
+	var who: EnemyStats = battle.enemy(handle)
 	who.hp = who.max_hp
 	who.block = 0
 	who.statuses.clear()

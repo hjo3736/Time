@@ -1,7 +1,6 @@
 class_name EnemyData
 extends Resource
 
-
 enum Tier { NORMAL, ELITE, BOSS }
 
 @export var id := &""
@@ -26,9 +25,8 @@ enum Tier { NORMAL, ELITE, BOSS }
 
 @export var restored_multiplier := 1.0
 
-
-func spawn(balance: Balance, rng: RandomNumberGenerator) -> Stats:
-	var c := Stats.new()
+func spawn(balance: Balance, rng: RandomNumberGenerator) -> EnemyStats:
+	var c := EnemyStats.new()
 	c.name_key = name_key
 	c.max_hp = rng.randi_range(hp_min, maxi(hp_min, hp_max))
 	c.hp = c.max_hp
@@ -41,7 +39,6 @@ func spawn(balance: Balance, rng: RandomNumberGenerator) -> Stats:
 	if behavior_script != null:
 		c.behavior = behavior_script.new()
 	return c
-
 
 func validate() -> PackedStringArray:
 	var problems := PackedStringArray()

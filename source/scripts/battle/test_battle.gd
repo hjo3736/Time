@@ -14,8 +14,8 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 		print("  FAIL  %s = %s, expected %s" % [label, actual, expected])
 
 
-func dummy(hp: int, intents: Array[EnemyIntent], restored: int = 360) -> Stats:
-	var c := Stats.new()
+func dummy(hp: int, intents: Array[EnemyIntent], restored: int = 360) -> EnemyStats:
+	var c := EnemyStats.new()
 	c.max_hp = hp
 	c.hp = hp
 	c.restored_value = restored
@@ -30,7 +30,7 @@ func run_with_deck(ids: Array) -> RunState:
 	return run
 
 
-func battle(run: RunState, enemies: Array[Stats], seed_value: int = 7) -> BattleState:
+func battle(run: RunState, enemies: Array[EnemyStats], seed_value: int = 7) -> BattleState:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	return BattleState.new(run, _cards, enemies, rng)
@@ -252,7 +252,7 @@ func _stats_say_when_they_change() -> void:
 	s.add_status(StatusRules.STRENGTH, 2)
 	check("a real status change is", heard[0], 2)
 
-	var e := Stats.new()
+	var e := EnemyStats.new()
 	e.intents = [EnemyIntent.attack(3), EnemyIntent.block(2)] as Array[EnemyIntent]
 	var turned := [0]
 	e.intent_changed.connect(func() -> void: turned[0] += 1)
@@ -264,7 +264,7 @@ func _stats_say_when_they_change() -> void:
 
 func _stats_survive_a_save() -> void:
 	print("\n-- stats: a save and a load give the same fighter back --")
-	var saved := Stats.new()
+	var saved := EnemyStats.new()
 	saved.name_key = &"askew.test"
 	saved.max_hp = 80
 	saved.hp = 34
@@ -278,12 +278,17 @@ func _stats_survive_a_save() -> void:
 	var written := saved.to_dict()
 	check("no art, no art entry", written.has("art"), false)
 	# Through JSON, as the save file is, so numbers come back as floats.
-	var back := Stats.from_dict(JSON.parse_string(JSON.stringify(written)))
+	var loaded := Stats.from_dict(JSON.parse_string(JSON.stringify(written)))
+	check("an Askew comes back as an Askew", loaded is EnemyStats, true)
+	var back := loaded as EnemyStats
 	check("hp is not cut down to the default max on load", [back.hp, back.max_hp], [34, 80])
 	check("block, link and worth come back", [back.block, back.link, back.restored_value], [5, 2, 120])
 	check("the intents come back", back.intents.size(), 2)
 	check("on the one it was showing", back.current_intent().kind, EnemyIntent.Kind.BLOCK)
 	check("statuses come back", back.status(StatusRules.STRENGTH), 2)
+
+	var plain := Stats.from_dict(JSON.parse_string(JSON.stringify(Stats.new().to_dict())))
+	check("and the Warden as plain Stats", plain is EnemyStats, false)
 
 	var pictured := Stats.new()
 	pictured.art = load("res://icon.svg") as Texture2D

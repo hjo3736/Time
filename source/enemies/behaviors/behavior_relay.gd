@@ -14,7 +14,7 @@ var _incoming := 0
 ## strikes, and having struck it hands it on, a little heavier each time. The
 ## runner written first starts with it, at the blow it was authored with.
 func on_battle_start(battle: BattleState, handle: int) -> void:
-	var who: Stats = battle.combatants[handle]
+	var who: EnemyStats = battle.enemy(handle)
 	_base = who.intents[0].amount if not who.intents.is_empty() else 0
 	if _first_runner(battle) == handle:
 		_take(who, _base)
@@ -30,7 +30,7 @@ func on_battle_start(battle: BattleState, handle: int) -> void:
 ## hand would be swung at once, unannounced. So it is only told one is coming,
 ## and takes it up as its own turn ends. A runner earlier in the line has already
 ## been, and can simply be given it.
-func advance_intent(battle: BattleState, who: Stats) -> void:
+func advance_intent(battle: BattleState, who: EnemyStats) -> void:
 	var handle := battle.combatants.find(who)
 	if _incoming > 0:
 		_take(who, _incoming)
@@ -43,7 +43,7 @@ func advance_intent(battle: BattleState, who: Stats) -> void:
 			_take(who, heavier)
 			return
 		_rest(who)
-		var to: Stats = battle.combatants[next]
+		var to: EnemyStats = battle.enemy(next)
 		var theirs := to.behavior as BehaviorRelay
 		if next > handle:
 			theirs._incoming = heavier
@@ -57,7 +57,7 @@ func advance_intent(battle: BattleState, who: Stats) -> void:
 		_take(who, _base)
 
 
-func _take(who: Stats, power: int) -> void:
+func _take(who: EnemyStats, power: int) -> void:
 	_holds = true
 	_power = power
 	var next: Array[EnemyIntent] = [EnemyIntent.attack(power)]
@@ -65,7 +65,7 @@ func _take(who: Stats, power: int) -> void:
 	who.intent_index = 0
 
 
-func _rest(who: Stats) -> void:
+func _rest(who: EnemyStats) -> void:
 	_holds = false
 	_power = 0
 	var next: Array[EnemyIntent] = [EnemyIntent.wait()]
@@ -76,7 +76,7 @@ func _rest(who: Stats) -> void:
 func _runners(battle: BattleState) -> PackedInt32Array:
 	var out := PackedInt32Array()
 	for handle in battle.enemy_handles():
-		if battle.combatants[handle].behavior is BehaviorRelay:
+		if battle.enemy(handle).behavior is BehaviorRelay:
 			out.append(handle)
 	return out
 
@@ -96,7 +96,7 @@ func _next_runner(battle: BattleState, handle: int) -> int:
 
 func _someone_has_it(battle: BattleState) -> bool:
 	for handle in _runners(battle):
-		var theirs := battle.combatants[handle].behavior as BehaviorRelay
+		var theirs := battle.enemy(handle).behavior as BehaviorRelay
 		if theirs._holds or theirs._incoming > 0:
 			return true
 	return false

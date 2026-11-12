@@ -505,18 +505,18 @@ func _go() -> void:
 	var two := RunState.new(_b_of(s), 4)
 	for i in 6:
 		two.add_card(&"take")
-	var a := Stats.new()
+	var a := EnemyStats.new()
 	a.max_hp = 40
 	a.hp = 40
 	a.intents = [EnemyIntent.wait()] as Array[EnemyIntent]
-	var bmob := Stats.new()
+	var bmob := EnemyStats.new()
 	bmob.max_hp = 40
 	bmob.hp = 40
 	bmob.intents = [EnemyIntent.wait()] as Array[EnemyIntent]
 	bmob.add_status(StatusRules.SOFTENED, 3)
 	var rng2 := RandomNumberGenerator.new()
 	rng2.seed = 4
-	var duel := BattleState.new(two, db, [a, bmob] as Array[Stats], rng2)
+	var duel := BattleState.new(two, db, [a, bmob] as Array[EnemyStats], rng2)
 
 	var strike_card := db.get_card(&"take")
 	var vs_plain := strike_card.rules_text_live(duel, BattleState.WARDEN, 1)
@@ -617,7 +617,7 @@ func _go() -> void:
 	check("survived", is_instance_valid(r), true)
 
 	print("\n-- a telegraphed blow shows what it will really do --")
-	var w1 := Stats.new()
+	var w1 := EnemyStats.new()
 	w1.max_hp = 40
 	w1.hp = 40
 	w1.name_key = &"enemy.afterimage.name"
@@ -625,7 +625,7 @@ func _go() -> void:
 	var telegraph := RunState.new(_b_of(s), 3)
 	for i in 6:
 		telegraph.add_card(&"brace")
-	var tb := BattleState.new(telegraph, db, [w1] as Array[Stats], rng2)
+	var tb := BattleState.new(telegraph, db, [w1] as Array[EnemyStats], rng2)
 	await process_frame
 	var stub := RunController.new(_b_of(s), db, EnemyDatabase.new(), EncounterTable.new(),
 		RelicDatabase.new(), 3)
@@ -1417,7 +1417,7 @@ func _out_of_reach_is_shown(boot: RootScreen) -> void:
 		return
 
 	var mark := g.rc.battle.enemy_handles()[0]
-	var enemy: Stats = g.rc.battle.combatants[mark]
+	var enemy: EnemyStats = g.rc.battle.enemy(mark)
 	enemy.behavior = BehaviorLooper.new()
 	enemy.intents.clear()
 	var wall := EnemyIntent.new()

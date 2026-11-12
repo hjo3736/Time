@@ -7,6 +7,7 @@ enum UpgradeTarget { AMOUNT, TIMES }
 @export var times := 1
 @export var upgrade_target := UpgradeTarget.AMOUNT
 @export var reroll_target_each_hit := false
+## Overrides the wording, keeping {amount} / {times} / {who} substitution.
 @export var text_key := &""
 
 func apply(ctx: EffectContext) -> void:

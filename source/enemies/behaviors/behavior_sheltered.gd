@@ -14,13 +14,13 @@ func absorbs(battle: BattleState, handle: int, amount: int) -> int:
 
 func on_absorbed(battle: BattleState, handle: int, amount: int) -> void:
 	if amount > 0 and _covered(battle, handle):
-		battle.damage(battle.combatants[handle].link, amount)
+		battle.damage(battle.enemy(handle).link, amount)
 
 
 func _covered(battle: BattleState, handle: int) -> bool:
 	if battle == null or battle.targets_in_play > 1:
 		return false
-	var who: Stats = battle.combatants[handle]
+	var who: EnemyStats = battle.enemy(handle)
 	if who.link < 0 or who.link >= battle.combatants.size():
 		return false
 	return battle.combatants[who.link].is_alive()

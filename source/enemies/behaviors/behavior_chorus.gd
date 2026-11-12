@@ -14,7 +14,7 @@ func outgoing_amount(battle: BattleState, _handle: int, intent: EnemyIntent) -> 
 func voices(battle: BattleState) -> int:
 	var count := 0
 	for handle in battle.enemy_handles():
-		if battle.combatants[handle].behavior is BehaviorChorus:
+		if battle.enemy(handle).behavior is BehaviorChorus:
 			count += 1
 	return maxi(1, count)
 

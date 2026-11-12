@@ -148,8 +148,8 @@ func _init() -> void:
 			resumed.battle.combatants[mark].status(StatusRules.SOFTENED), 0)
 		check("and the enemy is unhurt again",
 			resumed.battle.combatants[mark].hp, resumed.battle.combatants[mark].max_hp)
-		check("intents intact", resumed.battle.combatants[mark].intents.size(),
-			fighting.battle.combatants[mark].intents.size())
+		check("intents intact", resumed.battle.enemy(mark).intents.size(),
+			fighting.battle.enemy(mark).intents.size())
 
 		print("\n-- a fight several turns in still resumes at its start --")
 		fighting.end_turn()

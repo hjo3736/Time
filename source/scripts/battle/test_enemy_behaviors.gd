@@ -14,8 +14,8 @@ func check(label: String, actual: Variant, expected: Variant) -> void:
 		print("  FAIL  %s = %s, expected %s" % [label, actual, expected])
 
 
-func enemy(hp: int, intents: Array[EnemyIntent], behavior: EnemyBehavior = null) -> Stats:
-	var c := Stats.new()
+func enemy(hp: int, intents: Array[EnemyIntent], behavior: EnemyBehavior = null) -> EnemyStats:
+	var c := EnemyStats.new()
 	c.max_hp = hp
 	c.hp = hp
 	c.restored_value = 360
@@ -37,7 +37,7 @@ func rng(seed_value: int) -> RandomNumberGenerator:
 	return r
 
 
-func battle(run: RunState, enemies: Array[Stats]) -> BattleState:
+func battle(run: RunState, enemies: Array[EnemyStats]) -> BattleState:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
 	return BattleState.new(run, _cards, enemies, rng)
@@ -528,12 +528,12 @@ func _init() -> void:
 	check("it bore it", self_echo.status(StatusRules.STRENGTH), 2)
 
 	print("\n-- 이어달리기: one blow a turn, handed on and heavier each time --")
-	var team: Array[Stats] = []
+	var team: Array[EnemyStats] = []
 	for i in 3:
 		team.append(enemy(40, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorRelay.new()))
 	var relay_bt := battle(strikes(), team)
 	var showing := func() -> Array:
-		return team.map(func(c: Stats) -> int:
+		return team.map(func(c: EnemyStats) -> int:
 			var i := c.current_intent()
 			return i.amount if i.kind == EnemyIntent.Kind.ATTACK else 0)
 	check("the first runner opens with it and the others wait", showing.call(), [5, 0, 0])
@@ -548,7 +548,7 @@ func _init() -> void:
 	check("and who strikes next is on show the whole turn before",
 		relay_shown, [[0, 8, 0], [0, 0, 11], [14, 0, 0], [0, 17, 0]])
 
-	var dropped: Array[Stats] = []
+	var dropped: Array[EnemyStats] = []
 	for i in 3:
 		dropped.append(enemy(40, [EnemyIntent.attack(5)] as Array[EnemyIntent], BehaviorRelay.new()))
 	var drop_bt := battle(strikes(), dropped)
@@ -560,7 +560,7 @@ func _init() -> void:
 	drop_bt.end_turn()
 	check("brought down holding it, the blow never comes", drop_bt.warden().hp, drop_hp)
 	check("and it is picked up at the weight it started",
-		dropped.slice(0, 2).map(func(c: Stats) -> int:
+		dropped.slice(0, 2).map(func(c: EnemyStats) -> int:
 			var i := c.current_intent()
 			return i.amount if i.kind == EnemyIntent.Kind.ATTACK else 0), [5, 0])
 	dropped[1].hp = 0
@@ -573,7 +573,7 @@ func _init() -> void:
 		[(resumed.behavior as BehaviorRelay).holds(), resumed.current_intent().amount], [true, 11])
 
 	print("\n-- 합창: each strikes for every one still singing --")
-	var choir: Array[Stats] = []
+	var choir: Array[EnemyStats] = []
 	for i in 3:
 		choir.append(enemy(40, [EnemyIntent.attack(2)] as Array[EnemyIntent], BehaviorChorus.new()))
 	var choir_bt := battle(strikes(), choir)
@@ -593,7 +593,7 @@ func _init() -> void:
 
 	print("\n-- 도미노: one falls onto the next, for as long as that is enough --")
 	var line_run := strikes()
-	var line: Array[Stats] = []
+	var line: Array[EnemyStats] = []
 	for i in 4:
 		line.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
 	var line_bt := battle(line_run, line)
@@ -605,7 +605,7 @@ func _init() -> void:
 	check("and every one of them was recovered", line_run.clock.restored, 4 * 360)
 	check("which ends the fight", line_bt.is_over(), true)
 
-	var stopped: Array[Stats] = []
+	var stopped: Array[EnemyStats] = []
 	for i in 3:
 		stopped.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
 	var stop_bt := battle(strikes(), stopped)
@@ -615,7 +615,7 @@ func _init() -> void:
 	check("one point too many and it stops there",
 		stopped.map(func(c: Stats) -> int: return c.hp), [0, 1, 10])
 
-	var gapped: Array[Stats] = []
+	var gapped: Array[EnemyStats] = []
 	for i in 3:
 		gapped.append(enemy(10, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorDomino.new()))
 	var gap_bt := battle(strikes(), gapped)
@@ -681,7 +681,7 @@ func _init() -> void:
 		guarded_prop_bt.preview_damage(1, 30, BattleState.WARDEN), 17)
 
 	print("\n-- 해를 끄는 것: a pull that holds lands on the evening, and it grows for the hours --")
-	var sun_dragger := func() -> Stats:
+	var sun_dragger := func() -> EnemyStats:
 		var c := enemy(400, [EnemyIntent.drag(18)] as Array[EnemyIntent], BehaviorSunDragger.new())
 		var at_dawn: Array[EnemyIntent] = [EnemyIntent.drag(18)]
 		var at_dusk: Array[EnemyIntent] = [EnemyIntent.grow(1)]
@@ -870,9 +870,9 @@ func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
 	fixture.hp_min = 30
 	fixture.hp_max = 30
 	fixture.intents = [EnemyIntent.attack(5)] as Array[EnemyIntent]
-	var group: Array[Stats] = [fixture.spawn(b, rng(2))]
+	var group: Array[EnemyStats] = [fixture.spawn(b, rng(2))]
 	var bt := BattleState.new(run, cards, group, rng(2))
-	var enemy: Stats = bt.combatants[1]
+	var enemy: EnemyStats = bt.enemy(1)
 	check("the fight opens under the sky the run is under", enemy.sky, opened_under)
 
 	bt.end_turn()
