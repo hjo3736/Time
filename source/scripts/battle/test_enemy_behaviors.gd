@@ -101,12 +101,12 @@ func _init() -> void:
 	var stilled := enemy(99, [EnemyIntent.wait(), EnemyIntent.wait(), EnemyIntent.attack(10)] as Array[EnemyIntent], stilled_behavior)
 	var sb := battle(strikes(), [stilled])
 	sb.end_turn()
-	check("no damage on the first wait", sb.warden().hp, _start_hp())
+	check("no damage on the first wait", sb.player().hp, _start_hp())
 	check("charge 1", stilled_behavior.charge(), 1)
 	sb.end_turn()
 	check("charge 2", stilled_behavior.charge(), 2)
 	sb.end_turn()
-	check("10 became 18", sb.warden().hp, _start_hp() - 18)
+	check("10 became 18", sb.player().hp, _start_hp() - 18)
 	check("charge reset after acting", stilled_behavior.charge(), 0)
 
 	print("\n-- 노화: it opens hard and falls apart --")
@@ -115,11 +115,11 @@ func _init() -> void:
 	var withered := enemy(99, [EnemyIntent.attack(20)] as Array[EnemyIntent], withered_behavior)
 	var wb := battle(strikes(), [withered])
 	wb.end_turn()
-	check("first exchange hurts", wb.warden().hp, _start_hp() - 20)
+	check("first exchange hurts", wb.player().hp, _start_hp() - 20)
 	wb.end_turn()
-	check("weaker", wb.warden().hp, _start_hp() - 35)
+	check("weaker", wb.player().hp, _start_hp() - 35)
 	wb.end_turn()
-	check("weaker still", wb.warden().hp, _start_hp() - 45)
+	check("weaker still", wb.player().hp, _start_hp() - 45)
 
 	print("\n-- 겹침: damage lands on the twin, one turn late --")
 	var a := enemy(30, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorOverlaid.new())
@@ -158,18 +158,18 @@ func _init() -> void:
 	hit(nb, 1)
 	check("takes damage", plain.hp, 14)
 	nb.end_turn()
-	check("hits back", nb.warden().hp, _start_hp() - 5)
+	check("hits back", nb.player().hp, _start_hp() - 5)
 
 	print("\n-- 힘 is flat, permanent, and blunted along with the blow --")
 	var strong := enemy(20, [EnemyIntent.attack(5)] as Array[EnemyIntent])
 	var strong_bt := battle(strikes(), [strong])
 	check("no strength, no change",
-		StatusRules.modified_damage(strong, strong_bt.warden(), 5), 5)
+		StatusRules.modified_damage(strong, strong_bt.player(), 5), 5)
 	strong.add_status(StatusRules.STRENGTH, 2)
-	check("two strength adds two", StatusRules.modified_damage(strong, strong_bt.warden(), 5), 7)
+	check("two strength adds two", StatusRules.modified_damage(strong, strong_bt.player(), 5), 7)
 	strong.add_status(StatusRules.BLUNTED, 1)
 	check("무뎌짐 blunts the strength too, not only the blow",
-		StatusRules.modified_damage(strong, strong_bt.warden(), 5), 5)
+		StatusRules.modified_damage(strong, strong_bt.player(), 5), 5)
 	strong.add_status(StatusRules.BLUNTED, -1)
 	StatusRules.tick_down(strong)
 	check("and 힘 does not wear off with the durations",
@@ -184,10 +184,10 @@ func _init() -> void:
 	var twilit_bt := battle(dawn, [lit])
 	var seen := []
 	for turn in 6:
-		var shown := StatusRules.modified_damage(lit, twilit_bt.warden(), lit.current_intent().amount)
-		var before := twilit_bt.warden().hp
+		var shown := StatusRules.modified_damage(lit, twilit_bt.player(), lit.current_intent().amount)
+		var before := twilit_bt.player().hp
 		twilit_bt.end_turn()
-		seen.append([lit.sky, shown, before - twilit_bt.warden().hp])
+		seen.append([lit.sky, shown, before - twilit_bt.player().hp])
 	var strengths := seen.map(func(row: Array) -> int: return int(row[1]))
 	check("the blow grows across the fight", strengths, [5, 6, 6, 6, 6, 7])
 	var mismatched := 0
@@ -214,7 +214,7 @@ func _init() -> void:
 		lag_bt.turn_cost_now(), _b.turn_cost + 60)
 	lag_bt.end_turn()
 	check("and the run paid it", _b.starting_remaining - lag_run.clock.remaining, _b.turn_cost + 60)
-	check("nothing was taken off the vessel", lag_bt.warden().hp, _start_hp())
+	check("nothing was taken off the vessel", lag_bt.player().hp, _start_hp())
 
 	var two_run := strikes()
 	var two_bt := battle(two_run, [
@@ -247,7 +247,7 @@ func _init() -> void:
 	guarded_run.clock.restore(10 * 60)
 	var guarded_bt := battle(guarded_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
 		BehaviorSpilling.new())])
-	guarded_bt.warden().block = 5
+	guarded_bt.player().block = 5
 	guarded_bt.end_turn()
 	check("a blow fully blocked spills nothing", guarded_run.clock.restored, 10 * 60)
 
@@ -255,7 +255,7 @@ func _init() -> void:
 	flurry_run.clock.restore(10 * 60)
 	var flurry_bt := battle(flurry_run, [enemy(99, [EnemyIntent.attack(4, 3)] as Array[EnemyIntent],
 		BehaviorSpilling.new())])
-	flurry_bt.warden().block = 8
+	flurry_bt.player().block = 8
 	flurry_bt.end_turn()
 	# Block soaks the first two of three 4s; only the third gets through.
 	check("a flurry spills once per blow that got past the guard",
@@ -281,17 +281,17 @@ func _init() -> void:
 	carried_run.clock.restore(10 * 60)
 	var carried_bt := battle(carried_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
 		BehaviorGnawing.new())])
-	var hp_before := carried_bt.warden().hp
+	var hp_before := carried_bt.player().hp
 	carried_bt.end_turn()
 	check("an unblocked 5 ate five hours of what was carried",
 		carried_run.clock.restored, 5 * 60)
-	check("and left the Warden alone", carried_bt.warden().hp, hp_before)
+	check("and left the Warden alone", carried_bt.player().hp, hp_before)
 
 	var held_run := strikes()
 	held_run.clock.restore(10 * 60)
 	var held_bt := battle(held_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
 		BehaviorGnawing.new())])
-	held_bt.warden().block = 5
+	held_bt.player().block = 5
 	held_bt.end_turn()
 	check("a blow fully blocked eats nothing", held_run.clock.restored, 10 * 60)
 
@@ -299,7 +299,7 @@ func _init() -> void:
 	short_run.clock.restore(10 * 60)
 	var short_bt := battle(short_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
 		BehaviorGnawing.new())])
-	short_bt.warden().block = 3
+	short_bt.player().block = 3
 	short_bt.end_turn()
 	check("block two short costs two hours, not five", short_run.clock.restored, 8 * 60)
 
@@ -307,18 +307,18 @@ func _init() -> void:
 	thin_run.clock.restore(2 * 60)
 	var thin_bt := battle(thin_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
 		BehaviorGnawing.new())])
-	var thin_hp := thin_bt.warden().hp
+	var thin_hp := thin_bt.player().hp
 	thin_bt.end_turn()
 	check("a thin pool is emptied", thin_run.clock.restored, 0)
-	check("and what it could not cover lands on hp", thin_bt.warden().hp, thin_hp - 3)
+	check("and what it could not cover lands on hp", thin_bt.player().hp, thin_hp - 3)
 
 	var broke_run := strikes()
 	var broke_bt := battle(broke_run, [enemy(99, [EnemyIntent.attack(5)] as Array[EnemyIntent],
 		BehaviorGnawing.new())])
-	var broke_hp := broke_bt.warden().hp
+	var broke_hp := broke_bt.player().hp
 	broke_bt.end_turn()
 	check("with nothing carried the blow lands on hp as written",
-		broke_bt.warden().hp, broke_hp - 5)
+		broke_bt.player().hp, broke_hp - 5)
 
 	var kept_run := strikes()
 	kept_run.clock.restore(10 * 60)
@@ -365,12 +365,12 @@ func _init() -> void:
 	print("\n-- 성장 as an intent: the turn is spent on it and the Strength stays --")
 	var grower := enemy(99, [EnemyIntent.grow(1), EnemyIntent.attack(4)] as Array[EnemyIntent])
 	var grow_bt := battle(strikes(), [grower])
-	var grow_hp := grow_bt.warden().hp
+	var grow_hp := grow_bt.player().hp
 	grow_bt.end_turn()
 	check("it gained the Strength", grower.status(StatusRules.STRENGTH), 1)
-	check("and struck nobody that turn", grow_bt.warden().hp, grow_hp)
+	check("and struck nobody that turn", grow_bt.player().hp, grow_hp)
 	grow_bt.end_turn()
-	check("the next blow carries it", grow_bt.warden().hp, grow_hp - 5)
+	check("the next blow carries it", grow_bt.player().hp, grow_hp - 5)
 	check("and the intent survives a save",
 		EnemyIntent.from_dict(EnemyIntent.grow(2).to_dict()).kind, EnemyIntent.Kind.GROW)
 
@@ -389,9 +389,9 @@ func _init() -> void:
 	hit(saw_bt, 2)
 	check("hit below the other, it still strikes this turn — what was read lands",
 		[far_end.hp, far_end.current_intent().kind], [34, EnemyIntent.Kind.ATTACK])
-	var saw_hp := saw_bt.warden().hp
+	var saw_hp := saw_bt.player().hp
 	saw_bt.end_turn()
-	check("it struck", saw_bt.warden().hp, saw_hp - 5)
+	check("it struck", saw_bt.player().hp, saw_hp - 5)
 	check("and the other guarded", near_end.block, 10)
 	check("then the ends swap: the one that was hit now guards",
 		[near_end.current_intent().kind, far_end.current_intent().kind],
@@ -414,18 +414,18 @@ func _init() -> void:
 	upper.link = 2
 	lower.link = 1
 	var glass_bt := battle(strikes(), [upper, lower])
-	var glass_hp := glass_bt.warden().hp
+	var glass_hp := glass_bt.player().hp
 	glass_bt.end_turn()
-	check("both struck with what they were showing", glass_bt.warden().hp, glass_hp - 10)
+	check("both struck with what they were showing", glass_bt.player().hp, glass_hp - 10)
 	check("four ran out of the upper", upper.hp, 16)
 	check("and into the lower, which is that much larger", [lower.hp, lower.max_hp], [18, 18])
 	check("the lower grew for it", lower.status(StatusRules.STRENGTH), 1)
 	check("and the time moved with the sand", [upper.restored_value, lower.restored_value],
 		[288, 432])
-	glass_hp = glass_bt.warden().hp
+	glass_hp = glass_bt.player().hp
 	glass_bt.end_turn()
 	check("the growth is on the next blow, not the one already shown",
-		glass_bt.warden().hp, glass_hp - 11)
+		glass_bt.player().hp, glass_hp - 11)
 	upper.hp = 3
 	glass_bt.end_turn()
 	check("the last of it runs out and the upper is gone", upper.is_alive(), false)
@@ -454,9 +454,9 @@ func _init() -> void:
 	hit(echo_bt, 1)
 	check("while it is being struck, what it shows does not change",
 		echo.current_intent().kind, EnemyIntent.Kind.WAIT)
-	var echo_hp := echo_bt.warden().hp
+	var echo_hp := echo_bt.player().hp
 	echo_bt.end_turn()
-	check("and nothing comes back the same turn", echo_bt.warden().hp, echo_hp)
+	check("and nothing comes back the same turn", echo_bt.player().hp, echo_hp)
 	check("18 taken is 12 shown, for the whole turn before it lands",
 		[echo.current_intent().kind, echo.current_intent().amount],
 		[EnemyIntent.Kind.ATTACK, 12])
@@ -465,7 +465,7 @@ func _init() -> void:
 		Stats.from_dict(echo.to_dict()).current_intent().amount, 12)
 	hit(echo_bt, 1)
 	echo_bt.end_turn()
-	check("the 12 landed", echo_bt.warden().hp, echo_hp - 12)
+	check("the 12 landed", echo_bt.player().hp, echo_hp - 12)
 	check("and the 6 taken meanwhile is the next 4", echo.current_intent().amount, 4)
 	echo_bt.end_turn()
 	echo_bt.end_turn()
@@ -491,7 +491,7 @@ func _init() -> void:
 			if whole_bt.card_at(i).id == id:
 				whole_bt.play_card(i, 1)
 				break
-	brace_block = whole_bt.warden().block
+	brace_block = whole_bt.player().block
 	check("a 끊어내기 and a 버티기 were played", [whole.hp, brace_block > 0], [90, true])
 	whole_bt.end_turn()
 	var plan: Array[EnemyIntent] = [whole.current_intent()]
@@ -506,19 +506,19 @@ func _init() -> void:
 		[EnemyIntent.Kind.STATUS, StatusRules.SOFTENED, 2])
 	var kept_plan := Stats.from_dict(whole.to_dict())
 	check("a resumed one still means all three", kept_plan.intents.size(), 3)
-	var whole_hp := whole_bt.warden().hp
+	var whole_hp := whole_bt.player().hp
 	whole_bt.end_turn()
-	check("the blow landed before the softening it carried", whole_bt.warden().hp, whole_hp - 6)
+	check("the blow landed before the softening it carried", whole_bt.player().hp, whole_hp - 6)
 	check("it is behind its guard", whole.block, plan[1].amount)
-	check("and the Warden is softened", whole_bt.warden().status(StatusRules.SOFTENED) > 0, true)
+	check("and the Warden is softened", whole_bt.player().status(StatusRules.SOFTENED) > 0, true)
 
 	var self_echo := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorEcho.new())
 	var self_bt := battle(strikes(), [self_echo])
 	self_bt.cost_in_play = 60
-	self_bt.heard_status(BattleState.WARDEN, StatusRules.STRENGTH, 2)
+	self_bt.heard_status(BattleState.PLAYER, StatusRules.STRENGTH, 2)
 	self_bt.cost_in_play = -1
 	self_bt.heard_status(1, StatusRules.SOFTENED, 2)
-	self_bt.heard_block(BattleState.WARDEN, 9)
+	self_bt.heard_block(BattleState.PLAYER, 9)
 	self_bt.end_turn()
 	check("what the Warden put on itself, it puts on itself",
 		[self_echo.current_intent().kind, self_echo.current_intent().status],
@@ -540,9 +540,9 @@ func _init() -> void:
 	var relay_hits := []
 	var relay_shown := []
 	for i in 4:
-		var before := relay_bt.warden().hp
+		var before := relay_bt.player().hp
 		relay_bt.end_turn()
-		relay_hits.append(before - relay_bt.warden().hp)
+		relay_hits.append(before - relay_bt.player().hp)
 		relay_shown.append(showing.call())
 	check("one blow a turn: 5, 8, 11, 14", relay_hits, [5, 8, 11, 14])
 	check("and who strikes next is on show the whole turn before",
@@ -556,9 +556,9 @@ func _init() -> void:
 	drop_bt.end_turn()
 	check("the third runner is holding an 11", dropped[2].current_intent().amount, 11)
 	dropped[2].hp = 0
-	var drop_hp := drop_bt.warden().hp
+	var drop_hp := drop_bt.player().hp
 	drop_bt.end_turn()
-	check("brought down holding it, the blow never comes", drop_bt.warden().hp, drop_hp)
+	check("brought down holding it, the blow never comes", drop_bt.player().hp, drop_hp)
 	check("and it is picked up at the weight it started",
 		dropped.slice(0, 2).map(func(c: EnemyStats) -> int:
 			var i := c.current_intent()
@@ -577,19 +577,19 @@ func _init() -> void:
 	for i in 3:
 		choir.append(enemy(40, [EnemyIntent.attack(2)] as Array[EnemyIntent], BehaviorChorus.new()))
 	var choir_bt := battle(strikes(), choir)
-	var choir_hp := choir_bt.warden().hp
+	var choir_hp := choir_bt.player().hp
 	choir_bt.end_turn()
-	check("three of them are 6 each", choir_bt.warden().hp, choir_hp - 18)
+	check("three of them are 6 each", choir_bt.player().hp, choir_hp - 18)
 	choir[0].hp = 0
 	check("one down, and what the others show drops in the same turn",
 		choir[1].behavior.outgoing_amount(choir_bt, 2, choir[1].current_intent()), 4)
-	choir_hp = choir_bt.warden().hp
+	choir_hp = choir_bt.player().hp
 	choir_bt.end_turn()
-	check("two are 4 each", choir_bt.warden().hp, choir_hp - 8)
+	check("two are 4 each", choir_bt.player().hp, choir_hp - 8)
 	choir[1].hp = 0
-	choir_hp = choir_bt.warden().hp
+	choir_hp = choir_bt.player().hp
 	choir_bt.end_turn()
-	check("and the last is the 2 it was written with", choir_bt.warden().hp, choir_hp - 2)
+	check("and the last is the 2 it was written with", choir_bt.player().hp, choir_hp - 2)
 
 	print("\n-- 도미노: one falls onto the next, for as long as that is enough --")
 	var line_run := strikes()
@@ -661,12 +661,12 @@ func _init() -> void:
 	hit(prop_bt, 1)
 	check("two blows land whole", prop.hp, 87)
 	check("the card says the third will only do 3 before it is played",
-		prop_bt.preview_damage(1, 6, BattleState.WARDEN), 3)
+		prop_bt.preview_damage(1, 6, BattleState.PLAYER), 3)
 	hit(prop_bt, 1)
 	check("and it does", prop.hp, 84)
-	check("after that nothing gets through", prop_bt.preview_damage(1, 6, BattleState.WARDEN), 0)
+	check("after that nothing gets through", prop_bt.preview_damage(1, 6, BattleState.PLAYER), 0)
 	prop_bt.end_turn()
-	check("a new turn is a new fifteen", prop_bt.preview_damage(1, 20, BattleState.WARDEN), 15)
+	check("a new turn is a new fifteen", prop_bt.preview_damage(1, 20, BattleState.PLAYER), 15)
 	check("and a resumed one knows how much of it is spent",
 		(Stats.from_dict(prop.to_dict()).behavior as BehaviorBulwark).taken(), 0)
 
@@ -678,7 +678,7 @@ func _init() -> void:
 		[guarded_prop.hp, (guarded_prop.behavior as BehaviorBulwark).taken()], [97, 2])
 	guarded_prop.block = 4
 	check("so past its block the full remainder is still there",
-		guarded_prop_bt.preview_damage(1, 30, BattleState.WARDEN), 17)
+		guarded_prop_bt.preview_damage(1, 30, BattleState.PLAYER), 17)
 
 	print("\n-- 해를 끄는 것: a pull that holds lands on the evening, and it grows for the hours --")
 	var sun_dragger := func() -> EnemyStats:
@@ -718,9 +718,9 @@ func _init() -> void:
 	pulled_bt.end_turn()
 	check("it grew by that", puller.status(StatusRules.STRENGTH), 5)
 	check("and the next evening is back to its own 1", puller.evening_intents[0].stacks, 1)
-	var night_hp := pulled_bt.warden().hp
+	var night_hp := pulled_bt.player().hp
 	pulled_bt.end_turn()
-	check("the night's 12 lands as 17", pulled_bt.warden().hp, night_hp - 17)
+	check("the night's 12 lands as 17", pulled_bt.player().hp, night_hp - 17)
 
 	print("\n-- 해를 끄는 것: a pull that is broken costs nothing now and more next time --")
 	var held_sun_run: RunState = sun_dawn.call()
@@ -769,7 +769,7 @@ func _init() -> void:
 	var light_foe := enemy(99, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorHeavy.new())
 	var light_bt := battle(light_run, [light_foe])
 	check("the card says so before it is played",
-		light_bt.card_at(0).rules_text_live(light_bt, BattleState.WARDEN, 1).contains("3"), true)
+		light_bt.card_at(0).rules_text_live(light_bt, BattleState.PLAYER, 1).contains("3"), true)
 	check("and the weighing does not outlast the preview", light_bt.cost_in_play, -1)
 	hit(light_bt, 1)
 	check("a one-hour 6 landed as 3", light_foe.hp, 96)

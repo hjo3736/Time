@@ -209,11 +209,11 @@ func _init() -> void:
 	print("\n-- front-loaded relics fire on turn one and then stop --")
 	var opener := battle_for(run_with([&"first_light", &"held_stone", &"quick_hand"]))
 	check("첫 빛 on the opening turn", opener.turn_budget, 240)
-	check("쥐고 있던 돌 with it", opener.warden().block, 8)
+	check("쥐고 있던 돌 with it", opener.player().block, 8)
 	check("빠른 손 dealt a wider hand", opener.piles().hand.size(), 7)
 	opener.end_turn()
 	check("and turn two is ordinary again", opener.turn_budget, 180)
-	check("with no stone left", opener.warden().block, 0)
+	check("with no stone left", opener.player().block, 0)
 	check("and a hand of five", opener.piles().hand.size(), 5)
 
 	print("\n-- back-loaded relics are worth nothing until the fight drags --")
@@ -225,22 +225,22 @@ func _init() -> void:
 
 	print("\n-- 가라앉은 먼지 is the same every turn, which is the point --")
 	var dust := battle_for(run_with([&"settled_dust"]))
-	check("turn one", dust.warden().block, 2)
+	check("turn one", dust.player().block, 2)
 	dust.end_turn()
-	check("turn two, on a cleared guard", dust.warden().block, 2)
+	check("turn two, on a cleared guard", dust.player().block, 2)
 
 	print("\n-- 마지막 불씨 reads the body, not the run --")
 	var hurt := run_with([&"last_ember"])
 	var hb := battle_for(hurt)
 	check("hale, so nothing", hb.turn_budget, 180)
-	hb.warden().hp = 10
+	hb.player().hp = 10
 	hb.end_turn()
 	check("wounded, so an hour", hb.turn_budget, 240)
 
 	print("\n-- 빌린 외투 and 짧은 끈 pay out on a kill --")
 	var coat := run_with([&"borrowed_coat"])
 	var cb := battle_for(coat, 6)
-	cb.warden().hp = 40
+	cb.player().hp = 40
 	hit(cb)
 	check("the coat healed the vessel", coat.hp, 43)
 	var rope := run_with([&"short_rope"])

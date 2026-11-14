@@ -107,7 +107,7 @@ func _init() -> void:
 	print("\n-- expiry fires once --")
 	var e := RunClock.new(_b, 120)
 	var expired := []
-	e.warden_expired.connect(func() -> void: expired.append(true))
+	e.player_expired.connect(func() -> void: expired.append(true))
 	check("can_afford 120 of 120", e.can_afford(120), false)
 	e.advance(90, RunClock.Source.TRAVEL)
 	check("not yet", expired.size(), 0)

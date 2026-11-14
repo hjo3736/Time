@@ -76,7 +76,7 @@ static func intent_amount(rc: RunController, p_handle: int, enemy: EnemyStats,
 		amount = enemy.behavior.outgoing_amount(rc.battle, p_handle, intent)
 	amount = roundi(amount * enemy.outgoing_multiplier)
 	if intent.kind == EnemyIntent.Kind.ATTACK:
-		amount = StatusRules.modified_damage(enemy, rc.battle.warden(), amount)
+		amount = StatusRules.modified_damage(enemy, rc.battle.player(), amount)
 	return amount
 
 static func intent_text(rc: RunController, p_handle: int, enemy: EnemyStats,

@@ -101,10 +101,10 @@ func _play(greed: float, seed_value: int) -> Dictionary:
 		match rc.phase:
 			RunController.Phase.BATTLE:
 				var before := rc.battle.turn
-				var hp_before := rc.battle.warden().hp
+				var hp_before := rc.battle.player().hp
 				policy.take_turn(rc)
 				turns += maxi(1, rc.battle.turn - before) if rc.battle != null else 1
-				var hp_after: int = rc.battle.warden().hp if rc.battle != null else rc.run.hp
+				var hp_after: int = rc.battle.player().hp if rc.battle != null else rc.run.hp
 				hp_lost += maxi(0, hp_before - hp_after)
 			RunController.Phase.REWARD:
 				fights += 1

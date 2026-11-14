@@ -468,10 +468,10 @@ func _go() -> void:
 	var probe: BattleState = s.rc.battle
 	var mark := probe.enemy_handles()[0]
 	probe.combatants[mark].statuses.clear()
-	probe.warden().statuses.clear()
+	probe.player().statuses.clear()
 
 	check("no modifiers, no change",
-		strike.rules_text_live(probe, BattleState.WARDEN, mark), strike.rules_text())
+		strike.rules_text_live(probe, BattleState.PLAYER, mark), strike.rules_text())
 
 	probe.combatants[mark].add_status(StatusRules.SOFTENED, 2)
 
@@ -482,23 +482,23 @@ func _go() -> void:
 		check("hand still shows printed numbers",
 			idle.get_rules_text(), s.rc.battle.card_at(0).rules_text())
 
-	var boosted := strike.rules_text_live(probe, BattleState.WARDEN, mark)
+	var boosted := strike.rules_text_live(probe, BattleState.PLAYER, mark)
 	check("softened pushes it up", boosted.contains("9"), true)
 	check("and marks it", boosted.contains("[color="), true)
 	probe.combatants[mark].block = 0
 	probe.combatants[mark].hp = probe.combatants[mark].max_hp
 	var hp_now: int = probe.combatants[mark].hp
-	probe.damage(mark, 6, BattleState.WARDEN)
+	probe.damage(mark, 6, BattleState.PLAYER)
 	check("and the blow matches", hp_now - probe.combatants[mark].hp, 9)
 
 	probe.combatants[mark].statuses.clear()
-	probe.warden().add_status(StatusRules.BLUNTED, 2)
-	var weakened := strike.rules_text_live(probe, BattleState.WARDEN, mark)
+	probe.player().add_status(StatusRules.BLUNTED, 2)
+	var weakened := strike.rules_text_live(probe, BattleState.PLAYER, mark)
 	check("blunted pulls it down", weakened.contains("4"), true)
 	probe.combatants[mark].block = 0
 	probe.combatants[mark].hp = probe.combatants[mark].max_hp
 	var hp_weak: int = probe.combatants[mark].hp
-	probe.damage(mark, 6, BattleState.WARDEN)
+	probe.damage(mark, 6, BattleState.PLAYER)
 	check("and that blow matches too", hp_weak - probe.combatants[mark].hp, 4)
 
 	print("\n-- dragging over a target changes the number on the card --")
@@ -519,8 +519,8 @@ func _go() -> void:
 	var duel := BattleState.new(two, db, [a, bmob] as Array[EnemyStats], rng2)
 
 	var strike_card := db.get_card(&"take")
-	var vs_plain := strike_card.rules_text_live(duel, BattleState.WARDEN, 1)
-	var vs_vuln := strike_card.rules_text_live(duel, BattleState.WARDEN, 2)
+	var vs_plain := strike_card.rules_text_live(duel, BattleState.PLAYER, 1)
+	var vs_vuln := strike_card.rules_text_live(duel, BattleState.PLAYER, 2)
 	check("plain target shows the printed number", vs_plain.contains("6"), true)
 	check("a softened target shows more", vs_vuln.contains("9"), true)
 	check("the two differ", vs_plain != vs_vuln, true)
@@ -529,7 +529,7 @@ func _go() -> void:
 	check("nothing to show with no card in the air", bv.aimed_damage(), 0)
 
 	s.rc.battle.combatants[mark].statuses.clear()
-	s.rc.battle.warden().statuses.clear()
+	s.rc.battle.player().statuses.clear()
 	s.rc.battle.combatants[mark].add_status(StatusRules.SOFTENED, 3)
 	s._battle.show_battle(s.rc)
 	await process_frame
@@ -636,12 +636,12 @@ func _go() -> void:
 	check("blunted on screen", EnemyPanel.intent_amount(stub, 1, w1, w1.current_intent()), 9)
 	check("and marked as reduced", EnemyPanel.intent_colour(stub, 1, w1), UiTheme.GREEN)
 
-	var hp_pre: int = tb.warden().hp
-	tb.damage(BattleState.WARDEN, 12, 1)
-	check("and that is what lands", hp_pre - tb.warden().hp, 9)
+	var hp_pre: int = tb.player().hp
+	tb.damage(BattleState.PLAYER, 12, 1)
+	check("and that is what lands", hp_pre - tb.player().hp, 9)
 
 	w1.add_status(StatusRules.BLUNTED, -2)
-	tb.warden().add_status(StatusRules.SOFTENED, 2)
+	tb.player().add_status(StatusRules.SOFTENED, 2)
 	check("softened pushes it the other way",
 		EnemyPanel.intent_amount(stub, 1, w1, w1.current_intent()), 18)
 	check("and is not marked as reduced", EnemyPanel.intent_colour(stub, 1, w1), UiTheme.BLOOD)
@@ -1428,7 +1428,7 @@ func _out_of_reach_is_shown(boot: RootScreen) -> void:
 
 	check("nothing reaches it", g.rc.battle.reaches(mark), false)
 	var hp_before := enemy.hp
-	g.rc.battle.damage(mark, 20, BattleState.WARDEN)
+	g.rc.battle.damage(mark, 20, BattleState.PLAYER)
 	check("and nothing does", enemy.hp, hp_before)
 
 	# The preview has to agree with that, or the card lies about what it will do.
@@ -1436,7 +1436,7 @@ func _out_of_reach_is_shown(boot: RootScreen) -> void:
 	strike.load_from()
 	var blade := strike.get_card(&"take")
 	check("the card says zero too",
-		blade.rules_text_live(g.rc.battle, BattleState.WARDEN, mark).contains("0"), true)
+		blade.rules_text_live(g.rc.battle, BattleState.PLAYER, mark).contains("0"), true)
 
 	g._battle.show_battle(g.rc)
 	await process_frame
@@ -1453,7 +1453,7 @@ func _out_of_reach_is_shown(boot: RootScreen) -> void:
 	window.is_break_window = true
 	enemy.intents[0] = window
 	check("in the window it can be reached", g.rc.battle.reaches(mark), true)
-	g.rc.battle.damage(mark, 20, BattleState.WARDEN)
+	g.rc.battle.damage(mark, 20, BattleState.PLAYER)
 	check("and the blow lands", enemy.hp < hp_before, true)
 
 

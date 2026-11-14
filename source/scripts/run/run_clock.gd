@@ -4,7 +4,7 @@ extends RefCounted
 
 signal time_changed
 signal threat_level_changed(new_level: int)
-signal warden_expired
+signal player_expired
 
 enum Source { TURN, TRAVEL, FIRE, SHOP, EVENT }
 enum Daytime { MORNING, DAY, EVENING, NIGHT }
@@ -73,7 +73,7 @@ func advance(minutes: int, source: Source) -> void:
 
 	if _remaining == 0 and not _expired_announced:
 		_expired_announced = true
-		warden_expired.emit()
+		player_expired.emit()
 
 
 func advance_turn() -> void:

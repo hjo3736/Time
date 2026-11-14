@@ -48,7 +48,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="WardenSlot" type="Control" parent="Stage"]
+[node name="PlayerSlot" type="Control" parent="Stage"]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -58,7 +58,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Warden" type="VBoxContainer" parent="Stage/WardenSlot"]
+[node name="Player" type="VBoxContainer" parent="Stage/PlayerSlot"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 1
@@ -72,12 +72,12 @@ offset_bottom = -60.0
 grow_vertical = 1
 theme_override_constants/separation = 5
 
-[node name="Title" type="Label" parent="Stage/WardenSlot/Warden"]
+[node name="Title" type="Label" parent="Stage/PlayerSlot/Player"]
 layout_mode = 2
 theme_type_variation = &"LabelBone"
 text = "warden.name"
 
-[node name="Health" type="ProgressBar" parent="Stage/WardenSlot/Warden"]
+[node name="Health" type="ProgressBar" parent="Stage/PlayerSlot/Player"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 16)
 layout_mode = 2
@@ -86,20 +86,20 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_fill")
 value = 60.0
 show_percentage = false
 
-[node name="HealthText" type="Label" parent="Stage/WardenSlot/Warden"]
+[node name="HealthText" type="Label" parent="Stage/PlayerSlot/Player"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"LabelDim"
 text = "60 / 60"
 
-[node name="Block" type="Label" parent="Stage/WardenSlot/Warden"]
+[node name="Block" type="Label" parent="Stage/PlayerSlot/Player"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_type_variation = &"LabelBone"
 text = "ui.battle.block"
 
-[node name="Statuses" type="VBoxContainer" parent="Stage/WardenSlot/Warden"]
+[node name="Statuses" type="VBoxContainer" parent="Stage/PlayerSlot/Player"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

@@ -25,7 +25,7 @@ func on_damaged(_battle: BattleState, _handle: int, dealt: int) -> void:
 
 
 func on_block_gained(battle: BattleState, _handle: int, target: int, amount: int) -> void:
-	if target == BattleState.WARDEN and battle.cost_in_play >= 0:
+	if target == BattleState.PLAYER and battle.cost_in_play >= 0:
 		_block += amount
 
 
@@ -35,7 +35,7 @@ func on_status_applied(battle: BattleState, handle: int, target: int,
 		return
 	if target == handle:
 		_inflicted[status] = int(_inflicted.get(status, 0)) + stacks
-	elif target == BattleState.WARDEN:
+	elif target == BattleState.PLAYER:
 		_taken_on[status] = int(_taken_on.get(status, 0)) + stacks
 
 

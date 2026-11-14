@@ -32,7 +32,7 @@ func incoming_from(battle: BattleState, handle: int) -> int:
 	if enemy.behavior != null:
 		amount = enemy.behavior.outgoing_amount(battle, handle, intent)
 	amount = roundi(amount * enemy.outgoing_multiplier)
-	amount = StatusRules.modified_damage(enemy, battle.warden(), amount)
+	amount = StatusRules.modified_damage(enemy, battle.player(), amount)
 	return amount * maxi(1, intent.times)
 
 
@@ -42,13 +42,13 @@ func worth(card: CardData, battle: BattleState = null, target: Stats = null) -> 
 	if card.keywords & 16 != 0:
 		return -100.0
 	var out := 0.0
-	var warden: Stats = battle.warden() if battle != null else null
+	var player: Stats = battle.player() if battle != null else null
 	for effect in card.effects:
 		if effect is EffectDamage:
 			var d: EffectDamage = effect
 			var hit := d.amount
-			if warden != null:
-				hit = StatusRules.modified_damage(warden, target, hit)
+			if player != null:
+				hit = StatusRules.modified_damage(player, target, hit)
 			out += float(hit * maxi(1, d.times))
 		elif effect is EffectVariableDamage:
 			out += float((effect as EffectVariableDamage).per_hour) * 2.0
@@ -86,7 +86,7 @@ func _damage_of(card: CardData, battle: BattleState, target: Stats) -> int:
 	for effect in card.effects:
 		if effect is EffectDamage:
 			var d: EffectDamage = effect
-			out += StatusRules.modified_damage(battle.warden(), target, d.amount) * maxi(1, d.times)
+			out += StatusRules.modified_damage(battle.player(), target, d.amount) * maxi(1, d.times)
 		elif effect is EffectVariableDamage:
 			out += (effect as EffectVariableDamage).per_hour
 		elif effect is EffectScalingDamage:
@@ -159,7 +159,7 @@ func _play_one(rc: RunController, battle: BattleState) -> bool:
 		if enemy.is_alive() and not _can_finish(battle, enemy):
 			clearing = false
 			break
-	var defend := incoming(battle) > battle.warden().block and not clearing
+	var defend := incoming(battle) > battle.player().block and not clearing
 
 	for i in _hand_order(battle, target, defend):
 		if rc.play_card(i, target_handle):

@@ -91,10 +91,10 @@ func _init() -> void:
 	var guard := battle(run_with_deck([&"brace", &"brace", &"brace", &"brace", &"brace"]),
 		[dummy(50, [EnemyIntent.attack(8)])])
 	guard.play_card(hand_index_of(guard, &"brace"))
-	check("block gained", guard.warden().block, 5)
+	check("block gained", guard.player().block, 5)
 	guard.end_turn()
-	check("only 3 got through", guard.warden().hp, _start_hp() - 3)
-	check("block cleared for the new turn", guard.warden().block, 0)
+	check("only 3 got through", guard.player().hp, _start_hp() - 3)
+	check("block cleared for the new turn", guard.player().block, 0)
 
 	print("\n-- softened is applied in one place and multiplies once --")
 	var vuln := battle(run_with_deck([&"soften", &"take", &"take", &"take", &"take"]),
@@ -142,7 +142,7 @@ func _init() -> void:
 		[dummy(50, [EnemyIntent.wait()])])
 	spare.play_card(hand_index_of(spare, &"take"), 1)
 	spare.play_card(hand_index_of(spare, &"leave_nothing"))
-	check("two hours were left, so twelve block", spare.warden().block, 12)
+	check("two hours were left, so twelve block", spare.player().block, 12)
 	check("and nothing is left of the turn", spare.turn_budget, 0)
 
 	print("\n-- killing the last enemy ends it and pays Restored --")
@@ -163,7 +163,7 @@ func _init() -> void:
 	var doomed_run := run_with_deck([&"brace", &"brace", &"brace", &"brace", &"brace"])
 	doomed_run.damage(_start_hp() - 5)
 	var doomed := battle(doomed_run, [dummy(50, [EnemyIntent.attack(20)])])
-	check("carried hp in", doomed.warden().hp, 5)
+	check("carried hp in", doomed.player().hp, 5)
 	doomed.end_turn()
 	check("defeat", doomed.phase, BattleState.Phase.DEFEAT)
 	check("hp written back to the run", doomed_run.hp, 0)
@@ -355,12 +355,12 @@ func _the_warden_comes_from_its_character() -> void:
 
 	run.damage(30)
 	var bt := battle(run, [dummy(30, [EnemyIntent.wait()])])
-	check("in a fight the Warden is a PlayerStats", bt.warden() is PlayerStats, true)
-	check("carrying the run's hp, not a fresh one", [bt.warden().hp, bt.warden().max_hp],
+	check("in a fight the Warden is a PlayerStats", bt.player() is PlayerStats, true)
+	check("carrying the run's hp, not a fresh one", [bt.player().hp, bt.player().max_hp],
 		[run.hp, run.max_hp])
 	check("and the definition is left alone", warden_def.hp, 1)
 
 	var back := BattleState.from_dict(JSON.parse_string(JSON.stringify(bt.to_dict())), run, _cards)
-	check("a saved fight brings the Warden back as a PlayerStats", back.warden() is PlayerStats, true)
-	check("still knowing which character it is", (back.warden() as PlayerStats).id, &"warden")
-	check("with its hp", back.warden().hp, run.hp)
+	check("a saved fight brings the Warden back as a PlayerStats", back.player() is PlayerStats, true)
+	check("still knowing which character it is", (back.player() as PlayerStats).id, &"warden")
+	check("with its hp", back.player().hp, run.hp)

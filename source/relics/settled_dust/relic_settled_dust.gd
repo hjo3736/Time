@@ -6,4 +6,4 @@ extends Relic
 
 
 func on_turn_start(_run: RunState, battle) -> void:
-	battle.warden().block += amount
+	battle.player().block += amount

@@ -222,7 +222,7 @@ func _init() -> void:
 		var group2 := _table.spawn(_table.get_encounter(&"a1_lone_squabble"), _enemies, _b, rng(2), level)
 		var bt := BattleState.new(run, cards, group2, rng(2))
 		bt.end_turn()
-		hits.append(_start_hp() - bt.warden().hp)
+		hits.append(_start_hp() - bt.player().hp)
 	check("threat 10 hurts more than threat 0", hits[1] > hits[0], true)
 
 	print("\n-- link_pairs binds twins for 겹침 --")

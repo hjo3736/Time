@@ -6,5 +6,5 @@ extends Relic
 
 
 func on_enemy_defeated(_run: RunState, battle, _enemy: EnemyStats) -> void:
-	var warden: Stats = battle.warden()
-	warden.hp = mini(warden.max_hp, warden.hp + amount)
+	var player: Stats = battle.player()
+	player.hp = mini(player.max_hp, player.hp + amount)

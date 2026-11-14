@@ -38,8 +38,8 @@ var _preview_target := -1
 @onready var _punch := %Punch as Punch
 var _watching: BattleState = null
 var _landed := 0
-@onready var _warden_node := %Warden as Control
-@onready var _warden_slot := %WardenSlot as Control
+@onready var _player_node := %Player as Control
+@onready var _player_slot := %PlayerSlot as Control
 @onready var _enemy_slot := %EnemySlot as Control
 
 
@@ -86,7 +86,7 @@ func show_battle(rc: RunController) -> void:
 
 
 func _rebuild_stage(rc: RunController) -> void:
-	_fill_warden(rc)
+	_fill_player(rc)
 
 	var row := %EnemyRow as HBoxContainer
 	ChoiceView._clear(row)
@@ -98,8 +98,10 @@ func _rebuild_stage(rc: RunController) -> void:
 		_enemy_panels.append({"handle": handle, "node": panel})
 
 
-func _fill_warden(rc: RunController) -> void:
-	var w := rc.battle.warden()
+func _fill_player(rc: RunController) -> void:
+	var w := rc.battle.player()
+	# The name is the character's, so a second character is not a second scene.
+	(_player_node.get_node("Title") as Label).text = tr(w.name_key)
 	var bar := %Health as ProgressBar
 	bar.max_value = maxi(1, w.max_hp)
 	bar.value = w.hp
@@ -273,7 +275,7 @@ func _refresh_card_numbers() -> void:
 		var card := _rc.battle.card_at(node.index)
 		if card == null:
 			continue
-		node.show_live_text(card.rules_text_live(_rc.battle, BattleState.WARDEN, _preview_target))
+		node.show_live_text(card.rules_text_live(_rc.battle, BattleState.PLAYER, _preview_target))
 
 
 func aimed_damage() -> int:
@@ -283,7 +285,7 @@ func aimed_damage() -> int:
 	if card == null:
 		return 0
 
-	var attacker := _rc.battle.warden()
+	var attacker := _rc.battle.player()
 	var victim: Stats = _rc.battle.combatants[_drag_target]
 	var total := 0
 	for effect in card.effects:
@@ -316,7 +318,7 @@ func _on_damaged(handle: int, amount: int) -> void:
 	get_tree().create_timer(Punch.STAGGER * 2.0).timeout.connect(
 		func() -> void: _landed = maxi(0, _landed - 1))
 
-	var hurt := handle == BattleState.WARDEN
+	var hurt := handle == BattleState.PLAYER
 	var tint := UiTheme.BLOOD if hurt else UiTheme.BONE
 	var where := Rect2(panel.global_position - global_position, panel.size)
 	_punch.land(where, amount, tint, waited)
@@ -324,8 +326,8 @@ func _on_damaged(handle: int, amount: int) -> void:
 
 
 func _panel_for(handle: int) -> Control:
-	if handle == BattleState.WARDEN:
-		return _warden_node
+	if handle == BattleState.PLAYER:
+		return _player_node
 	for entry in _enemy_panels:
 		if int(entry["handle"]) == handle:
 			return entry["node"]
@@ -351,4 +353,4 @@ func _on_blocked(handle: int, absorbed: int) -> void:
 
 
 func _slot_for(handle: int) -> Control:
-	return _warden_slot if handle == BattleState.WARDEN else _enemy_slot
+	return _player_slot if handle == BattleState.PLAYER else _enemy_slot

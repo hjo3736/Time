@@ -10,7 +10,7 @@ signal battle_ended(victory: bool)
 
 enum Phase { PLAYER_TURN, ENEMY_TURN, VICTORY, DEFEAT }
 
-const WARDEN := 0
+const PLAYER := 0
 
 var phase := Phase.PLAYER_TURN:
 	set(value):
@@ -86,8 +86,8 @@ func piles() -> BattlePiles:
 func run() -> RunState:
 	return _run
 
-func warden() -> Stats:
-	return combatants[WARDEN]
+func player() -> Stats:
+	return combatants[PLAYER]
 	
 func enemy(handle: int) -> EnemyStats:
 	return combatants[handle] as EnemyStats
@@ -152,7 +152,7 @@ func begin_turn() -> void:
 	turn_budget_max = turn_budget
 	borrowed_this_turn = 0
 	cards_played_this_turn = 0
-	warden().block = 0
+	player().block = 0
 	_piles.draw_cards(_hand_size)
 	for relic in _run.relic_defs():
 		relic.on_turn_start(_run, self)
@@ -182,7 +182,7 @@ func play_card(hand_index: int, chosen_target: int = -1) -> bool:
 	if cost > turn_budget:
 		return false
 
-	var targets := CardTargeting.resolve(card.targeting, WARDEN, enemy_handles(), _rng, chosen_target)
+	var targets := CardTargeting.resolve(card.targeting, PLAYER, enemy_handles(), _rng, chosen_target)
 	if targets.is_empty() and CardTargeting.requires_player_choice(card.targeting):
 		return false
 
@@ -196,7 +196,7 @@ func play_card(hand_index: int, chosen_target: int = -1) -> bool:
 		_piles.discard_one(hand_index)
 
 	var ctx := BattleEffectContext.new(self)
-	ctx.source = WARDEN
+	ctx.source = PLAYER
 	ctx.targets = targets
 	if card.is_variable_cost():
 		ctx.variable_amount = cost / Balance.MINUTES_PER_HOUR
@@ -217,7 +217,7 @@ func end_turn() -> void:
 
 	_piles.discard_hand()
 	_run.clock.advance(turn_cost_now(), RunClock.Source.TURN)
-	StatusRules.tick_down(warden())
+	StatusRules.tick_down(player())
 
 	if _run.clock.is_expired():
 		_finish(false)
@@ -271,7 +271,7 @@ func _resolve_enemies() -> void:
 			
 		StatusRules.tick_down(target)
 		
-		if not warden().is_alive():
+		if not player().is_alive():
 			_finish(false)
 			return
 			
@@ -289,11 +289,11 @@ func _perform(handle: int, intent: EnemyIntent) -> void:
 	match intent.kind:
 		EnemyIntent.Kind.ATTACK:
 			for i in maxi(1, intent.times):
-				damage(WARDEN, amount, handle)
+				damage(PLAYER, amount, handle)
 		EnemyIntent.Kind.BLOCK:
 			enemy.block += amount
 		EnemyIntent.Kind.STATUS:
-			warden().add_status(intent.status, intent.stacks)
+			player().add_status(intent.status, intent.stacks)
 		EnemyIntent.Kind.GROW:
 			enemy.add_status(StatusRules.STRENGTH, intent.stacks)
 		EnemyIntent.Kind.BEAR:
@@ -338,13 +338,13 @@ func damage(handle: int, amount: int, from: int = -1) -> int:
 	if dealt > 0:
 		combatant_damaged.emit(handle, dealt)
 		
-	if handle == WARDEN and dealt > 0 and from > WARDEN and from < combatants.size():
+	if handle == PLAYER and dealt > 0 and from > PLAYER and from < combatants.size():
 		var attacker: EnemyStats = enemy(from)
 		
 		if attacker.behavior != null:
-			attacker.behavior.on_hit_warden(self, from, dealt)
+			attacker.behavior.on_hit_player(self, from, dealt)
 			
-	if handle != WARDEN and not target.is_alive():
+	if handle != PLAYER and not target.is_alive():
 		_run.clock.restore(_run.relic_restored(foe.restored_value))
 		
 		for relic in _run.relic_defs():
@@ -372,7 +372,7 @@ func heard_status(target: int, status: StringName, stacks: int) -> void:
 			who.behavior.on_status_applied(self, handle, target, status, stacks)
 
 func _diverted(handle: int, from: int, through: int) -> int:
-	if handle != WARDEN or from <= WARDEN or from >= combatants.size():
+	if handle != PLAYER or from <= PLAYER or from >= combatants.size():
 		return 0
 		
 	var attacker: EnemyStats = enemy(from)
@@ -383,13 +383,13 @@ func _diverted(handle: int, from: int, through: int) -> int:
 	return clampi(attacker.behavior.diverts_hit(self, from, through), 0, through)
 
 func _check_end() -> void:
-	if not warden().is_alive():
+	if not player().is_alive():
 		_finish(false)
 	elif enemy_handles().is_empty():
 		_finish(true)
 
 func _finish(victory: bool) -> void:
-	_run.set_hp(warden().hp)
+	_run.set_hp(player().hp)
 	phase = Phase.VICTORY if victory else Phase.DEFEAT
 	battle_ended.emit(victory)
 
@@ -450,4 +450,4 @@ func preview_damage(handle: int, amount: int, from: int = -1) -> int:
 	return offered
 
 func reaches(handle: int) -> bool:
-	return preview_damage(handle, 100, WARDEN) > 0
+	return preview_damage(handle, 100, PLAYER) > 0

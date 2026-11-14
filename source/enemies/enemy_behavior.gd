@@ -40,13 +40,13 @@ func modify_turn_cost(_battle: BattleState, _handle: int, base: int) -> int:
 
 ## Called when one of this enemy's blows takes hp off the Warden — after block, so
 ## only what actually got through. `dealt` is that hp.
-func on_hit_warden(_battle: BattleState, _handle: int, _dealt: int) -> void:
+func on_hit_player(_battle: BattleState, _handle: int, _dealt: int) -> void:
 	pass
 
 
 ## Asked before one of this enemy's blows takes hp off the Warden, with what got
 ## past the block. Returns how much of it was paid for somewhere else; only the
-## rest reaches hp, and on_hit_warden follows only if some of it did.
+## rest reaches hp, and on_hit_player follows only if some of it did.
 func diverts_hit(_battle: BattleState, _handle: int, _through: int) -> int:
 	return 0
 

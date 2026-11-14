@@ -127,7 +127,7 @@ func _resolve_room() -> void:
 		Room.Kind.EVENT:
 			_start_event()
 		Room.Kind.SHOP:
-			shop = Shop.new(_cards, _balance, _rng, &"warden", [], false, _relics, run.relics)
+			shop = Shop.new(_cards, _balance, _rng, run.player.class_id, [], false, _relics, run.relics)
 			run.clock.advance(_balance.shop_cost, RunClock.Source.SHOP)
 			if _check_clock():
 				return
@@ -196,7 +196,7 @@ func _room_resolved(room: Room) -> void:
 		phase = Phase.ACT_CLEARED
 		return
 
-	var offer := CardReward.offer(_cards, _balance, _rng)
+	var offer := CardReward.offer(_cards, _balance, _rng, run.player.class_id)
 	if offer.is_empty():
 		phase = Phase.EXPLORING
 		return
