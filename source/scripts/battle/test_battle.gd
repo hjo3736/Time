@@ -93,7 +93,7 @@ func _init() -> void:
 	guard.play_card(hand_index_of(guard, &"brace"))
 	check("block gained", guard.warden().block, 5)
 	guard.end_turn()
-	check("only 3 got through", guard.warden().hp, _b.starting_max_hp - 3)
+	check("only 3 got through", guard.warden().hp, _start_hp() - 3)
 	check("block cleared for the new turn", guard.warden().block, 0)
 
 	print("\n-- softened is applied in one place and multiplies once --")
@@ -161,7 +161,7 @@ func _init() -> void:
 
 	print("\n-- the Warden falling ends the fight and reaches the run --")
 	var doomed_run := run_with_deck([&"brace", &"brace", &"brace", &"brace", &"brace"])
-	doomed_run.damage(_b.starting_max_hp - 5)
+	doomed_run.damage(_start_hp() - 5)
 	var doomed := battle(doomed_run, [dummy(50, [EnemyIntent.attack(20)])])
 	check("carried hp in", doomed.warden().hp, 5)
 	doomed.end_turn()
@@ -174,13 +174,13 @@ func _init() -> void:
 	var hurt := battle(hurt_run, [dummy(60, [EnemyIntent.attack(9)])])
 	hurt.end_turn()
 	check("still fighting", hurt.phase, BattleState.Phase.PLAYER_TURN)
-	check("run hp untouched mid-fight", hurt_run.hp, _b.starting_max_hp)
+	check("run hp untouched mid-fight", hurt_run.hp, _start_hp())
 	while hurt.combatants[1].is_alive() and hurt.turn < 30:
 		var idx := hand_index_of(hurt, &"take")
 		if idx < 0 or not hurt.play_card(idx, 1):
 			hurt.end_turn()
 	check("won", hurt.phase, BattleState.Phase.VICTORY)
-	check("run hp now reflects the fight", hurt_run.hp < _b.starting_max_hp, true)
+	check("run hp now reflects the fight", hurt_run.hp < _start_hp(), true)
 
 	print("\n-- running out of time mid-fight ends the run --")
 	var last_run := RunState.new(_b, 1)
@@ -214,6 +214,7 @@ func _init() -> void:
 	_stats_survive_a_save()
 	_stats_instances_do_not_share()
 	_spawned_askew_leave_the_template_alone()
+	_the_warden_comes_from_its_character()
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
@@ -302,11 +303,11 @@ func _stats_instances_do_not_share() -> void:
 	print("\n-- stats: each instance is its own --")
 	var template := Stats.new()
 	template.max_hp = 40
-	template.start_block = 6
 	template.hp = 1
 	var a := template.create_instance()
 	var b := template.create_instance()
-	check("an instance opens at full hp with its starting block", [a.hp, a.block], [40, 6])
+	# Starting block is an Askew's alone now; see the spawn test below.
+	check("an instance opens at full hp with no block", [a.hp, a.block], [40, 0])
 	a.take_damage(20)
 	check("striking one leaves the other whole", b.hp, 40)
 	check("and the template untouched", [template.hp, template.block], [1, 0])
@@ -334,3 +335,32 @@ func _spawned_askew_leave_the_template_alone() -> void:
 	check("and the other fighter's", b.intents.size(), 2)
 	a.take_damage(10)
 	check("striking a fighter leaves the template whole", [template.hp, template.block], [1, 0])
+
+
+## What a run opens on: the max hp of the character it is played as.
+func _start_hp() -> int:
+	return RunState.new(_b).player.max_hp
+
+
+func _the_warden_comes_from_its_character() -> void:
+	print("\n-- the Warden is built from warden.tres and the run it is in --")
+	var run := run_with_deck([&"take", &"take", &"brace", &"brace", &"take", &"brace"])
+	var warden_def := run.player
+	check("the run is played as the Warden", warden_def.id, &"warden")
+	check("its card class is set", warden_def.class_id, &"warden")
+	check("it opens with a deck", warden_def.starting_deck.is_empty(), false)
+	check("and no empty slot in it", warden_def.starting_deck.has(null), false)
+	check("the run opens on the character's max hp", [run.hp, run.max_hp],
+		[warden_def.max_hp, warden_def.max_hp])
+
+	run.damage(30)
+	var bt := battle(run, [dummy(30, [EnemyIntent.wait()])])
+	check("in a fight the Warden is a PlayerStats", bt.warden() is PlayerStats, true)
+	check("carrying the run's hp, not a fresh one", [bt.warden().hp, bt.warden().max_hp],
+		[run.hp, run.max_hp])
+	check("and the definition is left alone", warden_def.hp, 1)
+
+	var back := BattleState.from_dict(JSON.parse_string(JSON.stringify(bt.to_dict())), run, _cards)
+	check("a saved fight brings the Warden back as a PlayerStats", back.warden() is PlayerStats, true)
+	check("still knowing which character it is", (back.warden() as PlayerStats).id, &"warden")
+	check("with its hp", back.warden().hp, run.hp)

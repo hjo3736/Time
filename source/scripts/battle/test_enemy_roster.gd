@@ -168,7 +168,8 @@ func _best_opening_turn() -> int:
 	var cards := CardDatabase.new()
 	cards.load_from()
 	var counts := {}
-	for id in _b.starting_deck:
+	for card in RunState.new(_b).player.starting_deck:
+		var id := card.id
 		counts[id] = int(counts.get(id, 0)) + 1
 	var best := 0
 	for hand in _hands(counts.keys(), counts, 0, [], cards):

@@ -15,6 +15,7 @@ enum Tier { NORMAL, ELITE, BOSS }
 
 @export var hp_min := 20
 @export var hp_max := 26
+@export var start_block := 0
 
 @export var intents: Array[EnemyIntent] = []
 @export var morning_intents: Array[EnemyIntent] = []
@@ -72,6 +73,7 @@ func active_intents() -> Array[EnemyIntent]:
 func to_dict() -> Dictionary:
 	var written := super.to_dict()
 	written["kind"] = "enemy"
+	written["start_block"] = start_block
 	written["restored_value"] = restored_value
 	written["intents"] = intents.map(func(i: EnemyIntent) -> Dictionary: return i.to_dict())
 	written["morning_intents"] = morning_intents.map(func(i: EnemyIntent) -> Dictionary: return i.to_dict())
@@ -145,7 +147,7 @@ func spawn(balance: Balance, rng: RandomNumberGenerator) -> EnemyStats:
 	
 	c.max_hp = rng.randi_range(hp_min, maxi(hp_min, hp_max))
 	c.hp = c.max_hp
-	
+	c.block = start_block
 	c.restored_value = roundi(c.max_hp * balance.restored_minutes_per_hp * restored_multiplier)
 	
 	c.intents = c.intents.duplicate()

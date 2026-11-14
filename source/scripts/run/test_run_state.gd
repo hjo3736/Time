@@ -18,11 +18,11 @@ func _init() -> void:
 
 	print("\n-- damage does not end the run, only the fight --")
 	var s := RunState.new(_b)
-	check("starts full", s.hp, _b.starting_max_hp)
+	check("starts full", s.hp, _start_hp())
 	check("survives a hit", s.damage(30), false)
-	check("hp", s.hp, _b.starting_max_hp - 30)
+	check("hp", s.hp, _start_hp() - 30)
 	check("clock untouched by damage", s.clock.remaining, _b.starting_remaining)
-	check("lethal hit reported", s.damage(_b.starting_max_hp), true)
+	check("lethal hit reported", s.damage(_start_hp()), true)
 	check("hp floors at 0", s.hp, 0)
 	check("run clock still fine", s.clock.remaining, _b.starting_remaining)
 
@@ -139,3 +139,8 @@ func _init() -> void:
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
+
+
+## What a run opens on: the max hp of the character it is played as.
+func _start_hp() -> int:
+	return RunState.new(_b).player.max_hp

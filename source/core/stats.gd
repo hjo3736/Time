@@ -7,7 +7,6 @@ signal stats_changed
 @export var name_key := &""
 @export var max_hp := 1
 @export var art: Texture2D
-@export var start_block := 0
 
 var hp := 1 : set = set_hp
 var block: int : set = set_block
@@ -59,7 +58,6 @@ func to_dict() -> Dictionary:
 	var written := {
 		"name_key": String(name_key),
 		"max_hp": max_hp,
-		"start_block": start_block,
 		"hp": hp,
 		"block": block,
 		"statuses": _statuses_out()
@@ -79,7 +77,16 @@ func _statuses_out() -> Dictionary:
 	return out
 
 static func from_dict(data: Dictionary) -> Stats:
-	var out: Stats = EnemyStats.new() if data.get("kind", "") == "enemy" else Stats.new()
+	var out: Stats
+	
+	match data.get("kind", ""):
+		"player":
+			out = PlayerStats.new() as PlayerStats
+		"enemy":
+			out = EnemyStats.new() as EnemyStats
+		_:
+			out = Stats.new()
+	
 	out._read(data)
 	
 	return out
@@ -87,7 +94,6 @@ static func from_dict(data: Dictionary) -> Stats:
 func _read(data: Dictionary) -> void:
 	name_key = StringName(data.get("name_key", ""))
 	max_hp = int(data.get("max_hp", 1))
-	start_block = int(data.get("start_block", 0))
 	hp = int(data.get("hp", 1))
 	block = int(data.get("block", 0))
 
@@ -106,6 +112,5 @@ func create_instance() -> Stats:
 	var instance: Stats = self.duplicate() as Stats
 	
 	instance.hp = max_hp
-	instance.block = start_block
 	
 	return instance

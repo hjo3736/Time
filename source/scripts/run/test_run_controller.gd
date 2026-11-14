@@ -101,7 +101,7 @@ func _init() -> void:
 	var rc := controller(1)
 	check("act", rc.run.act, 1)
 	check("exploring", rc.phase, RunController.Phase.EXPLORING)
-	check("starting deck", rc.run.deck.size(), _b.starting_deck.size())
+	check("starting deck", rc.run.deck.size(), rc.run.player.starting_deck.size())
 	check("full clock", rc.run.clock.remaining, _b.starting_remaining)
 	check("standing on the start", rc.map.current, Vector2i.ZERO)
 	check("the boss door follows the dial",
@@ -195,7 +195,7 @@ func _init() -> void:
 	doomed.move_to(doomed.reachable()[0])
 	check("ended", doomed.phase, RunController.Phase.ENDED)
 	check("by the clock, not by damage", doomed.outcome, RunController.Outcome.RAN_OUT)
-	check("hp was never the problem", doomed.run.hp, _b.starting_max_hp)
+	check("hp was never the problem", doomed.run.hp, _start_hp())
 
 	print("\n-- an elite pays a relic on top of its card --")
 	var elite := controller(11)
@@ -260,3 +260,8 @@ func _walk_until(kind: Room.Kind, hurt_by: int) -> RunController:
 		if walk_to_kind(rc, kind):
 			return rc
 	return null
+
+
+## What a run opens on: the max hp of the character it is played as.
+func _start_hp() -> int:
+	return RunState.new(_b).player.max_hp

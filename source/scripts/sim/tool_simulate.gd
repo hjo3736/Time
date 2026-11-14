@@ -301,15 +301,17 @@ func _verdict(rows: Array) -> void:
 	var fires_total := 0
 	for act in range(1, _b.acts_per_run + 1):
 		fires_total += _b.fires_in(act)
-	var hp_supply := _b.starting_max_hp + fires_total * roundi(_b.starting_max_hp * _b.fire_heal_fraction)
+	# The Warden opens on what its own .tres says, not on a balance number.
+	var start_hp := RunState.new(_b).player.max_hp
+	var hp_supply := start_hp + fires_total * roundi(start_hp * _b.fire_heal_fraction)
 	var per_fight := float(high["hp_lost"]) / maxf(1.0, float(high["fights"]))
 	print("")
 	print("  hp available per run     %d  (%d starting + %d fires at %d)"
-		% [hp_supply, _b.starting_max_hp, fires_total, roundi(_b.starting_max_hp * _b.fire_heal_fraction)])
+		% [hp_supply, start_hp, fires_total, roundi(start_hp * _b.fire_heal_fraction)])
 	var fires_used := float(high["fires"]) / maxf(1.0, float(high["finished"] + high["fell"] + high["timeout"]))
 	var rests_used := float(high["rests"]) / maxf(1.0, float(high["finished"] + high["fell"] + high["timeout"]))
 	# A fire heals only if it is rested at; a fire used to sharpen heals nothing.
-	var reachable := float(_b.starting_max_hp) + rests_used * roundi(_b.starting_max_hp * _b.fire_heal_fraction)
+	var reachable := float(start_hp) + rests_used * roundi(start_hp * _b.fire_heal_fraction)
 	print("  hp actually lost a fight %.0f  (measured, not assumed)" % per_fight)
 	print("  fires actually reached   %.1f of %d" % [fires_used, fires_total])
 	print("  so a run affords         %d fights on paper, %d in practice"

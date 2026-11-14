@@ -101,12 +101,12 @@ func _init() -> void:
 	var stilled := enemy(99, [EnemyIntent.wait(), EnemyIntent.wait(), EnemyIntent.attack(10)] as Array[EnemyIntent], stilled_behavior)
 	var sb := battle(strikes(), [stilled])
 	sb.end_turn()
-	check("no damage on the first wait", sb.warden().hp, _b.starting_max_hp)
+	check("no damage on the first wait", sb.warden().hp, _start_hp())
 	check("charge 1", stilled_behavior.charge(), 1)
 	sb.end_turn()
 	check("charge 2", stilled_behavior.charge(), 2)
 	sb.end_turn()
-	check("10 became 18", sb.warden().hp, _b.starting_max_hp - 18)
+	check("10 became 18", sb.warden().hp, _start_hp() - 18)
 	check("charge reset after acting", stilled_behavior.charge(), 0)
 
 	print("\n-- 노화: it opens hard and falls apart --")
@@ -115,11 +115,11 @@ func _init() -> void:
 	var withered := enemy(99, [EnemyIntent.attack(20)] as Array[EnemyIntent], withered_behavior)
 	var wb := battle(strikes(), [withered])
 	wb.end_turn()
-	check("first exchange hurts", wb.warden().hp, _b.starting_max_hp - 20)
+	check("first exchange hurts", wb.warden().hp, _start_hp() - 20)
 	wb.end_turn()
-	check("weaker", wb.warden().hp, _b.starting_max_hp - 35)
+	check("weaker", wb.warden().hp, _start_hp() - 35)
 	wb.end_turn()
-	check("weaker still", wb.warden().hp, _b.starting_max_hp - 45)
+	check("weaker still", wb.warden().hp, _start_hp() - 45)
 
 	print("\n-- 겹침: damage lands on the twin, one turn late --")
 	var a := enemy(30, [EnemyIntent.wait()] as Array[EnemyIntent], BehaviorOverlaid.new())
@@ -158,7 +158,7 @@ func _init() -> void:
 	hit(nb, 1)
 	check("takes damage", plain.hp, 14)
 	nb.end_turn()
-	check("hits back", nb.warden().hp, _b.starting_max_hp - 5)
+	check("hits back", nb.warden().hp, _start_hp() - 5)
 
 	print("\n-- 힘 is flat, permanent, and blunted along with the blow --")
 	var strong := enemy(20, [EnemyIntent.attack(5)] as Array[EnemyIntent])
@@ -214,7 +214,7 @@ func _init() -> void:
 		lag_bt.turn_cost_now(), _b.turn_cost + 60)
 	lag_bt.end_turn()
 	check("and the run paid it", _b.starting_remaining - lag_run.clock.remaining, _b.turn_cost + 60)
-	check("nothing was taken off the vessel", lag_bt.warden().hp, _b.starting_max_hp)
+	check("nothing was taken off the vessel", lag_bt.warden().hp, _start_hp())
 
 	var two_run := strikes()
 	var two_bt := battle(two_run, [
@@ -878,3 +878,8 @@ func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
 	bt.end_turn()
 	check("a turn passed and the sky turned", run.clock.daytime() != opened_under, true)
 	check("and only now does the enemy read the new sky", enemy.sky, run.clock.daytime())
+
+
+## What a run opens on: the max hp of the character it is played as.
+func _start_hp() -> int:
+	return RunState.new(_b).player.max_hp

@@ -8,7 +8,6 @@ const MINUTES_PER_DAY := 1440
 
 @export var starting_remaining := 30 * MINUTES_PER_DAY
 
-@export var starting_max_hp := 80
 
 
 @export var turn_cost := 3 * MINUTES_PER_HOUR
@@ -76,7 +75,6 @@ const MINUTES_PER_DAY := 1440
 
 @export var acts_per_run := 3
 
-@export var starting_deck: Array[StringName] = []
 
 
 @export var fights_and_events_per_act: Array[int] = [14, 19, 24]
@@ -275,7 +273,6 @@ func validate() -> PackedStringArray:
 
 	for pair in [
 		["starting_remaining", starting_remaining],
-		["starting_max_hp", starting_max_hp],
 		["turn_cost", turn_cost],
 		["fire_rest_cost", fire_rest_cost],
 		["threat_step", threat_step],

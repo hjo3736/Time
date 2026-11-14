@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="EnemyStats" format=3]
+[gd_resource type="Resource" script_class="EnemyStats" format=3 uid="uid://pp7jplnwetsf"]
 
-[ext_resource type="Script" path="res://source/enemies/behaviors/behavior_domino.gd" id="1_e302e"]
-[ext_resource type="Script" path="res://source/enemies/enemy_intent.gd" id="2_kmwek"]
-[ext_resource type="Script" path="res://source/core/enemy_stats.gd" id="3_2buaa"]
+[ext_resource type="Script" uid="uid://df67bbjhs3l0u" path="res://source/enemies/behaviors/behavior_domino.gd" id="1_e302e"]
+[ext_resource type="Script" uid="uid://dlp3t2kd0355g" path="res://source/enemies/enemy_intent.gd" id="2_kmwek"]
+[ext_resource type="Script" uid="uid://dv8ti7qniymu" path="res://source/core/enemy_stats.gd" id="3_2buaa"]
 
 [sub_resource type="Resource" id="Resource_gi34m"]
 script = ExtResource("2_kmwek")
@@ -11,8 +11,8 @@ amount = 3
 [resource]
 script = ExtResource("3_2buaa")
 id = &"domino"
-name_key = &"enemy.domino.name"
 hp_min = 10
 hp_max = 10
 intents = Array[ExtResource("2_kmwek")]([SubResource("Resource_gi34m")])
 behavior_script = ExtResource("1_e302e")
+name_key = &"enemy.domino.name"

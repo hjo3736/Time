@@ -1,7 +1,6 @@
 class_name RunController
 extends RefCounted
 
-
 signal phase_changed(phase: Phase)
 signal act_started(act: int)
 signal battle_started
@@ -41,7 +40,6 @@ var fight_snapshot := {}
 ## it describes the last room, not the run, and is not saved.
 var last_relic := StringName()
 
-
 func _init(
 	balance: Balance,
 	cards: CardDatabase,
@@ -50,6 +48,7 @@ func _init(
 	relics: RelicDatabase,
 	seed_value: int = 0,
 	events: EventTable = null,
+	player: PlayerStats = null
 ) -> void:
 	_balance = balance
 	_cards = cards
@@ -57,24 +56,24 @@ func _init(
 	_encounters = encounters
 	_relics = relics
 	_events = events if events != null else EventTable.new()
+	
 	if events == null:
 		_events.load_from()
 
 	_rng = RandomNumberGenerator.new()
 	_rng.seed = seed_value
 
-	run = RunState.new(balance, seed_value)
-	for id in balance.starting_deck:
-		run.add_card(id)
+	run = RunState.new(balance, seed_value, player)
+	
+	for card in run.player.starting_deck:
+		run.add_card(card.id)
 
 	_begin_act(1)
-
 
 func _floor_rng(act: int) -> RandomNumberGenerator:
 	var r := RandomNumberGenerator.new()
 	r.seed = hash([run.seed, act])
 	return r
-
 
 func _begin_act(act: int) -> void:
 	run.act = act
@@ -82,14 +81,11 @@ func _begin_act(act: int) -> void:
 	phase = Phase.EXPLORING
 	act_started.emit(act)
 
-
 func current_room() -> Room:
 	return map.at(map.current)
 
-
 func reachable() -> Array:
 	return map.reachable()
-
 
 func status() -> Dictionary:
 	return {
@@ -107,7 +103,6 @@ func status() -> Dictionary:
 		"room": current_room().kind if current_room() != null else -1,
 	}
 
-
 func move_to(coord: Vector2i) -> bool:
 	if phase != Phase.EXPLORING:
 		return false
@@ -117,7 +112,6 @@ func move_to(coord: Vector2i) -> bool:
 		return true
 	_resolve_room()
 	return true
-
 
 func _resolve_room() -> void:
 	var room := current_room()
@@ -141,7 +135,6 @@ func _resolve_room() -> void:
 		_:
 			phase = Phase.EXPLORING
 
-
 func _start_battle(room: Room) -> void:
 	var data: EncounterData = null
 	if not _opened_with_teaching_fight:
@@ -163,25 +156,21 @@ func _start_battle(room: Room) -> void:
 	_snapshot_fight()
 	battle_started.emit()
 
-
 func _snapshot_fight() -> void:
 	if battle == null:
 		return
 	fight_snapshot = to_dict()
-
 
 func play_card(hand_index: int, target: int = -1) -> bool:
 	if phase != Phase.BATTLE or battle == null:
 		return false
 	return battle.play_card(hand_index, target)
 
-
 func end_turn() -> bool:
 	if phase != Phase.BATTLE or battle == null:
 		return false
 	battle.end_turn()
 	return true
-
 
 func _on_battle_ended(victory: bool) -> void:
 	battle_finished.emit(victory)
@@ -193,7 +182,6 @@ func _on_battle_ended(victory: bool) -> void:
 
 	map.clear_current()
 	_room_resolved(current_room())
-
 
 func _room_resolved(room: Room) -> void:
 	last_relic = StringName()
@@ -216,13 +204,11 @@ func _room_resolved(room: Room) -> void:
 	reward_offered.emit(Array(run.pending_reward()))
 	phase = Phase.REWARD
 
-
 func _grant_relic(relic: Relic) -> void:
 	if relic == null:
 		return
 	run.add_relic(relic.id, _relics)
 	last_relic = relic.id
-
 
 func take_reward(index: int) -> bool:
 	if phase != Phase.REWARD:
@@ -232,13 +218,11 @@ func take_reward(index: int) -> bool:
 	phase = Phase.EXPLORING
 	return true
 
-
 func skip_reward() -> void:
 	if phase != Phase.REWARD:
 		return
 	run.skip_reward()
 	phase = Phase.EXPLORING
-
 
 ## Rest, sharpen and keep can all be taken at one fire, each once. The Warden
 ## stays at the fire until it leaves; leaving having taken anything puts the
@@ -252,11 +236,9 @@ func use_fire(action: RunState.FireAction, argument: int = 0) -> bool:
 	_check_clock()
 	return true
 
-
 func fire_action_used(action: RunState.FireAction) -> bool:
 	var room := current_room()
 	return room != null and room.fire_used.has(action)
-
 
 func leave_fire() -> void:
 	if phase != Phase.FIRE:
@@ -266,18 +248,14 @@ func leave_fire() -> void:
 		map.clear_current()
 	phase = Phase.EXPLORING
 
-
 func buy_card(index: int) -> bool:
 	return phase == Phase.SHOP and shop != null and shop.buy_card(run, index)
-
 
 func buy_removal(deck_index: int) -> bool:
 	return phase == Phase.SHOP and shop != null and shop.buy_removal(run, deck_index)
 
-
 func buy_relic() -> bool:
 	return phase == Phase.SHOP and shop != null and shop.buy_relic(run, _relics)
-
 
 func leave_shop() -> void:
 	if phase != Phase.SHOP:
@@ -285,7 +263,6 @@ func leave_shop() -> void:
 	map.clear_current()
 	shop = null
 	phase = Phase.EXPLORING
-
 
 func advance_act() -> bool:
 	if phase != Phase.ACT_CLEARED:
@@ -296,10 +273,8 @@ func advance_act() -> bool:
 	_begin_act(run.act + 1)
 	return true
 
-
 func is_over() -> bool:
 	return phase == Phase.ENDED
-
 
 func _check_clock() -> bool:
 	if run.clock.is_expired():
@@ -310,12 +285,10 @@ func _check_clock() -> bool:
 		return true
 	return false
 
-
 func _finish(result: Outcome) -> void:
 	outcome = result
 	phase = Phase.ENDED
 	run_ended.emit(result)
-
 
 func ending() -> Dictionary:
 	return {
@@ -326,7 +299,6 @@ func ending() -> Dictionary:
 		"elapsed": run.clock.elapsed,
 		"act": run.act,
 	}
-
 
 func to_dict() -> Dictionary:
 	var written := {
@@ -347,9 +319,7 @@ func to_dict() -> Dictionary:
 		written["event"] = String(event.id)
 	return written
 
-
 const SAVE_VERSION := 3
-
 
 static func from_dict(
 	data: Dictionary,
@@ -363,7 +333,7 @@ static func from_dict(
 	# The save carries relic ids, not definitions. Without this a resumed run
 	# keeps the list and loses every effect on it, silently.
 	run.attach_relics(relics)
-	var out := RunController.new(balance, cards, enemies, encounters, relics, run.seed)
+	var out := RunController.new(balance, cards, enemies, encounters, relics, run.seed, null, run.player)
 	out.run = run
 	out._rng.seed = int(data.get("rng_seed", run.seed))
 	out._rng.state = int(data.get("rng_state", 0))
@@ -381,12 +351,10 @@ static func from_dict(
 	out._snapshot_fight()
 	return out
 
-
 func save_state() -> Dictionary:
 	if phase == Phase.BATTLE and not fight_snapshot.is_empty():
 		return fight_snapshot
 	return to_dict()
-
 
 func _start_event() -> void:
 	event = _events.pick(_rng, run.act, run.seen_events())
@@ -395,7 +363,6 @@ func _start_event() -> void:
 		phase = Phase.EXPLORING
 		return
 	phase = Phase.EVENT
-
 
 func choose_event(index: int) -> bool:
 	if phase != Phase.EVENT or event == null:

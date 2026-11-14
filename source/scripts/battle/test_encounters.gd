@@ -222,7 +222,7 @@ func _init() -> void:
 		var group2 := _table.spawn(_table.get_encounter(&"a1_lone_squabble"), _enemies, _b, rng(2), level)
 		var bt := BattleState.new(run, cards, group2, rng(2))
 		bt.end_turn()
-		hits.append(_b.starting_max_hp - bt.warden().hp)
+		hits.append(_start_hp() - bt.warden().hp)
 	check("threat 10 hurts more than threat 0", hits[1] > hits[0], true)
 
 	print("\n-- link_pairs binds twins for 겹침 --")
@@ -238,3 +238,8 @@ func _init() -> void:
 
 	print("\n%s (%d failures)\n" % ["PASS" if _failures == 0 else "FAILURES", _failures])
 	quit(1 if _failures > 0 else 0)
+
+
+## What a run opens on: the max hp of the character it is played as.
+func _start_hp() -> int:
+	return RunState.new(_b).player.max_hp

@@ -1,13 +1,16 @@
 class_name RunState
 extends RefCounted
 
-
 signal hp_changed(current: int, maximum: int)
 signal defeated
 signal memory_recovered(memory_id: StringName)
 signal fire_used(action: FireAction)
 
 enum FireAction { REST, UPGRADE, CONVERT }
+
+var player: PlayerStats:
+	get:
+		return _player
 
 var clock: RunClock:
 	get:
@@ -45,6 +48,7 @@ var act := 1
 var room_id := StringName()
 var seed := 0
 
+var _player: PlayerStats
 var _balance: Balance
 var _clock: RunClock
 var _hp: int
@@ -58,14 +62,13 @@ var _seen_events: Array[StringName] = []
 var _pending_reward: Array[StringName] = []
 var _relic_defs: Array[Relic] = []
 
-
-func _init(p_balance: Balance = null, p_seed: int = 0) -> void:
+func _init(p_balance: Balance = null, p_seed: int = 0, p_player: PlayerStats = null) -> void:
 	_balance = p_balance if p_balance != null else Balance.default()
+	_player = p_player if p_player != null else load("res://source/characters/warden/warden.tres")
 	_clock = RunClock.new(_balance, -1, p_seed)
-	_max_hp = _balance.starting_max_hp
+	_max_hp = _player.max_hp
 	_hp = _max_hp
 	seed = p_seed
-
 
 func damage(amount: int) -> bool:
 	if amount <= 0:
@@ -77,7 +80,6 @@ func damage(amount: int) -> bool:
 		return true
 	return false
 
-
 func set_hp(value: int) -> void:
 	var clamped := clampi(value, 0, _max_hp)
 	if clamped == _hp:
@@ -87,14 +89,11 @@ func set_hp(value: int) -> void:
 	if _hp == 0:
 		defeated.emit()
 
-
 func is_defeated() -> bool:
 	return _hp == 0
 
-
 func fire_heal_amount() -> int:
 	return maxi(1, roundi(_max_hp * _balance.fire_heal_fraction))
-
 
 func fire_cost_of(action: FireAction) -> int:
 	match action:
@@ -104,10 +103,8 @@ func fire_cost_of(action: FireAction) -> int:
 			return _balance.fire_upgrade_cost
 	return 0
 
-
 func can_use_fire(action: FireAction = FireAction.REST) -> bool:
 	return _clock.can_afford(fire_cost_of(action))
-
 
 func use_fire(action: FireAction, argument: int = 0) -> bool:
 	if not can_use_fire(action):
@@ -140,11 +137,9 @@ func use_fire(action: FireAction, argument: int = 0) -> bool:
 	fire_used.emit(action)
 	return true
 
-
 func defeat_askew(restored_minutes: int, memory_id: StringName = StringName()) -> void:
 	_clock.restore(restored_minutes)
 	recover_memory(memory_id)
-
 
 func recover_memory(memory_id: StringName) -> void:
 	if memory_id == StringName() or _memories.has(memory_id):
@@ -152,31 +147,25 @@ func recover_memory(memory_id: StringName) -> void:
 	_memories.append(memory_id)
 	memory_recovered.emit(memory_id)
 
-
 func heal(amount: int) -> void:
 	if amount <= 0:
 		return
 	_hp = mini(_max_hp, _hp + amount)
 	hp_changed.emit(_hp, _max_hp)
 
-
 func enter_room(next_room_id: StringName, minutes: int = -1) -> void:
 	room_id = next_room_id
 	var base := minutes if minutes > 0 else _balance.room_transition_cost
 	_clock.advance(relic_room_cost(base), RunClock.Source.TRAVEL)
 
-
 func offer_reward(card_ids: Array) -> void:
 	_pending_reward.assign(card_ids)
-
 
 func pending_reward() -> Array[StringName]:
 	return _pending_reward
 
-
 func has_pending_reward() -> bool:
 	return not _pending_reward.is_empty()
-
 
 func take_reward(index: int) -> bool:
 	if index < 0 or index >= _pending_reward.size():
@@ -185,14 +174,11 @@ func take_reward(index: int) -> bool:
 	_pending_reward.clear()
 	return true
 
-
 func skip_reward() -> void:
 	_pending_reward.clear()
 
-
 func add_card(card_id: StringName, upgrades: int = 0) -> void:
 	_deck.append({"id": card_id, "upgrades": upgrades})
-
 
 func remove_card(index: int) -> bool:
 	if index < 0 or index >= _deck.size():
@@ -200,10 +186,8 @@ func remove_card(index: int) -> bool:
 	_deck.remove_at(index)
 	return true
 
-
 func note_removal_purchased() -> void:
 	_removals_purchased += 1
-
 
 func attach_relics(db: RelicDatabase) -> void:
 	_relic_defs.clear()
@@ -213,10 +197,8 @@ func attach_relics(db: RelicDatabase) -> void:
 			_relic_defs.append(def)
 	_resettle_sky()
 
-
 func relic_defs() -> Array[Relic]:
 	return _relic_defs
-
 
 func add_relic(relic_id: StringName, db: RelicDatabase = null) -> void:
 	if _relics.has(relic_id):
@@ -228,7 +210,6 @@ func add_relic(relic_id: StringName, db: RelicDatabase = null) -> void:
 			_relic_defs.append(def)
 			_resettle_sky()
 
-
 ## Recomputed from Balance every time rather than folded onto what is already
 ## there, so losing a relic could never leave the sky bent the way it left it.
 func _resettle_sky() -> void:
@@ -237,13 +218,11 @@ func _resettle_sky() -> void:
 		bounds = r.modify_sky_bounds(self, bounds)
 	_clock.sky_bounds = bounds
 
-
 func relic_room_cost(base: int) -> int:
 	var out := base
 	for r in _relic_defs:
 		out = r.modify_room_cost(self, out)
 	return out
-
 
 func relic_restored(base: int) -> int:
 	var out := base
@@ -251,20 +230,18 @@ func relic_restored(base: int) -> int:
 		out = r.modify_restored(self, out)
 	return out
 
-
 func relic_turn_budget(base: int) -> int:
 	var out := base
 	for r in _relic_defs:
 		out = r.modify_turn_budget(self, out)
 	return out
 
-
 func delivered() -> int:
 	return _clock.restored
 
-
 func to_dict() -> Dictionary:
 	return {
+		"player": _player.resource_path,
 		"clock": _clock.to_dict(),
 		"hp": _hp,
 		"max_hp": _max_hp,
@@ -280,11 +257,16 @@ func to_dict() -> Dictionary:
 		"seed": seed,
 	}
 
-
 static func from_dict(data: Dictionary, p_balance: Balance = null) -> RunState:
-	var state := RunState.new(p_balance, int(data.get("seed", 0)))
+	var player: PlayerStats = null
+	var path: String = data.get("player", "")
+	
+	if path != "" and ResourceLoader.exists(path):
+		player = load(path) as PlayerStats
+		
+	var state := RunState.new(p_balance, int(data.get("seed", 0)), player)
 	state._clock = RunClock.from_dict(data.get("clock", {}), state._balance)
-	state._max_hp = int(data.get("max_hp", state._balance.starting_max_hp))
+	state._max_hp = int(data.get("max_hp", state.player.max_hp))
 	state._hp = int(data.get("hp", state._max_hp))
 	state._total_kept = int(data.get("total_kept", 0))
 	state._removals_purchased = int(data.get("removals_purchased", 0))
@@ -307,10 +289,8 @@ static func from_dict(data: Dictionary, p_balance: Balance = null) -> RunState:
 
 	return state
 
-
 func seen_events() -> Array[StringName]:
 	return _seen_events
-
 
 func note_event_seen(event_id: StringName) -> void:
 	if event_id != StringName() and not _seen_events.has(event_id):

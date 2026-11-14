@@ -52,11 +52,9 @@ func _init(run: RunState, cards: CardDatabase, enemies: Array[EnemyStats],
 		_piles = BattlePiles.new(run.deck.size(), rng)
 		return
 
-	var warden := Stats.new()
-	warden.name_key = &"warden.name"
-	warden.max_hp = run.max_hp
-	warden.hp = run.hp
-	combatants.append(warden)
+	var player := run.player.spawn(run)
+	
+	combatants.append(player)
 	combatants.append_array(enemies)
 
 	_piles = BattlePiles.new(run.deck.size(), rng)

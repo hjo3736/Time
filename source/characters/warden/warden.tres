@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PlayerStats" format=3 uid="uid://d1qxiv60ilmdb"]
+
+[ext_resource type="Script" uid="uid://ipjbvnyohwp6" path="res://source/core/player_stats.gd" id="1_bgtka"]
+[ext_resource type="Script" uid="uid://dax7yu6aiqpme" path="res://source/scripts/cards/card_data.gd" id="2_3e1x8"]
+[ext_resource type="Resource" uid="uid://b5hj2un0ep6i7" path="res://source/data/cards/take.tres" id="3_sswwf"]
+[ext_resource type="Resource" uid="uid://c0d7tytf7cujl" path="res://source/data/cards/brace.tres" id="4_uasdc"]
+[ext_resource type="Resource" uid="uid://b4j44035kfuqi" path="res://source/data/cards/sever.tres" id="5_u4lhn"]
+
+[resource]
+script = ExtResource("1_bgtka")
+id = &"warden"
+class_id = &"warden"
+starting_deck = Array[ExtResource("2_3e1x8")]([ExtResource("3_sswwf"), ExtResource("3_sswwf"), ExtResource("3_sswwf"), ExtResource("3_sswwf"), ExtResource("3_sswwf"), ExtResource("4_uasdc"), ExtResource("4_uasdc"), ExtResource("4_uasdc"), ExtResource("4_uasdc"), ExtResource("5_u4lhn")])
+name_key = &"warden.name"
+max_hp = 100
+metadata/_custom_type_script = "uid://ipjbvnyohwp6"
