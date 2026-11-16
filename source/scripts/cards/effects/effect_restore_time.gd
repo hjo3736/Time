@@ -9,5 +9,5 @@ func apply(ctx: EffectContext) -> void:
 	ctx.restore_time(hours * Balance.MINUTES_PER_HOUR)
 
 
-func describe(targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
+func describe(_targeting := CardTargeting.Mode.SINGLE_ENEMY, _name_target := true) -> String:
 	return tr("effect.restore").format({"hours": hours})

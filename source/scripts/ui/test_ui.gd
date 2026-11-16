@@ -378,18 +378,18 @@ func _go() -> void:
 		check("a hand was dealt", s.rc.battle.piles().hand.size(), 5)
 
 		print("\n-- playing a card reaches the rules --")
-		var budget := s.rc.battle.turn_budget
+		var opening_budget := s.rc.battle.turn_budget
 		var played := false
 		for i in s.rc.battle.piles().hand.size():
 			var card := s.rc.battle.card_at(i)
-			if card.cost_minutes() > 0 and card.cost_minutes() <= budget:
+			if card.cost_minutes() > 0 and card.cost_minutes() <= opening_budget:
 				var enemies := s.rc.battle.enemy_handles()
 				s._on_card(i, enemies[0] if not enemies.is_empty() else -1)
 				played = true
 				break
 		check("a card went down", played, true)
 		if played:
-			check("the budget moved", s.rc.battle.turn_budget < budget if s.rc.battle != null else true, true)
+			check("the budget moved", s.rc.battle.turn_budget < opening_budget if s.rc.battle != null else true, true)
 
 		print("\n-- ending the turn charges the full allotment --")
 		if s.rc.battle != null:
@@ -1191,7 +1191,7 @@ func _keybinds_are_rebindable(boot: RootScreen) -> void:
 
 func _press(keycode: int) -> void:
 	var down := InputEventKey.new()
-	down.keycode = keycode
+	down.keycode = keycode as Key
 	down.pressed = true
 	root.push_input(down)
 

@@ -28,7 +28,7 @@ func show_settings() -> void:
 
 
 func _select(tab: int) -> void:
-	_tab = tab
+	_tab = tab as Tab
 	_listening = -1
 	_rebuild()
 
@@ -66,12 +66,12 @@ func _build_screen() -> void:
 	]))
 
 	var sizes := []
-	for size in Settings.SIZES:
+	for option in Settings.SIZES:
 		sizes.append({
-			"label": "%d × %d" % [size.x, size.y],
-			"on": windowed and Settings.window_size == size,
+			"label": "%d × %d" % [option.x, option.y],
+			"on": windowed and Settings.window_size == option,
 			"disabled": not windowed,
-			"action": func() -> void: Settings.set_window_size(size),
+			"action": func() -> void: Settings.set_window_size(option),
 		})
 	body().add_child(_row(tr("ui.settings.window_size"), sizes))
 

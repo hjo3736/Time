@@ -38,9 +38,9 @@ func rng(seed_value: int) -> RandomNumberGenerator:
 
 
 func battle(run: RunState, enemies: Array[EnemyStats]) -> BattleState:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 7
-	return BattleState.new(run, _cards, enemies, rng)
+	var dice := RandomNumberGenerator.new()
+	dice.seed = 7
+	return BattleState.new(run, _cards, enemies, dice)
 
 
 func hit(bt: BattleState, target: int) -> bool:
@@ -872,12 +872,12 @@ func _the_pattern_is_fixed_at_the_turn_it_started() -> void:
 	fixture.intents = [EnemyIntent.attack(5)] as Array[EnemyIntent]
 	var group: Array[EnemyStats] = [fixture.spawn(b, rng(2))]
 	var bt := BattleState.new(run, cards, group, rng(2))
-	var enemy: EnemyStats = bt.enemy(1)
-	check("the fight opens under the sky the run is under", enemy.sky, opened_under)
+	var foe: EnemyStats = bt.enemy(1)
+	check("the fight opens under the sky the run is under", foe.sky, opened_under)
 
 	bt.end_turn()
 	check("a turn passed and the sky turned", run.clock.daytime() != opened_under, true)
-	check("and only now does the enemy read the new sky", enemy.sky, run.clock.daytime())
+	check("and only now does the enemy read the new sky", foe.sky, run.clock.daytime())
 
 
 ## What a run opens on: the max hp of the character it is played as.

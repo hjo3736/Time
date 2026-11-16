@@ -41,23 +41,23 @@ var _rng: RandomNumberGenerator
 var _piles: BattlePiles
 var _hand_size := 5
 
-func _init(run: RunState, cards: CardDatabase, enemies: Array[EnemyStats],
-		rng: RandomNumberGenerator, restoring := false) -> void:
-	_run = run
-	_balance = run.clock.balance
+func _init(p_run: RunState, cards: CardDatabase, enemies: Array[EnemyStats],
+		p_rng: RandomNumberGenerator, restoring := false) -> void:
+	_run = p_run
+	_balance = p_run.clock.balance
 	_cards = cards
-	_rng = rng
+	_rng = p_rng
 
 	if restoring:
-		_piles = BattlePiles.new(run.deck.size(), rng)
+		_piles = BattlePiles.new(p_run.deck.size(), p_rng)
 		return
 
-	var player := run.player.spawn(run)
-	
-	combatants.append(player)
+	var fighter := p_run.player.spawn(p_run)
+
+	combatants.append(fighter)
 	combatants.append_array(enemies)
 
-	_piles = BattlePiles.new(run.deck.size(), rng)
+	_piles = BattlePiles.new(p_run.deck.size(), p_rng)
 
 	follow_the_sky()
 	for handle in enemy_handles():
@@ -66,8 +66,8 @@ func _init(run: RunState, cards: CardDatabase, enemies: Array[EnemyStats],
 		if who.behavior != null:
 			who.behavior.on_battle_start(self, handle)
 			
-	for relic in run.relic_defs():
-		relic.on_battle_start(run, self)
+	for relic in p_run.relic_defs():
+		relic.on_battle_start(p_run, self)
 
 	begin_turn()
 
@@ -77,7 +77,7 @@ func follow_the_sky() -> void:
 	for handle in enemy_handles():
 		var who: EnemyStats = enemy(handle)
 		
-		who.sky = now
+		who.sky = now as RunClock.Daytime
 
 func piles() -> BattlePiles:
 	return _piles
@@ -278,26 +278,26 @@ func _resolve_enemies() -> void:
 	_check_end()
 
 func _perform(handle: int, intent: EnemyIntent) -> void:
-	var enemy := enemy(handle)
+	var foe := enemy(handle)
 	var amount := intent.amount
-	
-	if enemy.behavior != null:
-		amount = enemy.behavior.outgoing_amount(self, handle, intent)
-		
-	amount = roundi(amount * enemy.outgoing_multiplier)
+
+	if foe.behavior != null:
+		amount = foe.behavior.outgoing_amount(self, handle, intent)
+
+	amount = roundi(amount * foe.outgoing_multiplier)
 	
 	match intent.kind:
 		EnemyIntent.Kind.ATTACK:
 			for i in maxi(1, intent.times):
 				damage(PLAYER, amount, handle)
 		EnemyIntent.Kind.BLOCK:
-			enemy.block += amount
+			foe.block += amount
 		EnemyIntent.Kind.STATUS:
 			player().add_status(intent.status, intent.stacks)
 		EnemyIntent.Kind.GROW:
-			enemy.add_status(StatusRules.STRENGTH, intent.stacks)
+			foe.add_status(StatusRules.STRENGTH, intent.stacks)
 		EnemyIntent.Kind.BEAR:
-			enemy.add_status(intent.status, intent.stacks)
+			foe.add_status(intent.status, intent.stacks)
 		EnemyIntent.Kind.DRAG:
 			# `amount` is what is left of the grip. Nothing left, nothing pulled.
 			# The sun is dragged down, so it is always the evening it lands on —
@@ -408,12 +408,12 @@ func to_dict() -> Dictionary:
 		"combatants": combatants.map(func(c: Stats) -> Dictionary: return c.to_dict()),
 	}
 
-static func from_dict(data: Dictionary, run: RunState, cards: CardDatabase) -> BattleState:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = int(data.get("rng_seed", 0))
-	rng.state = int(data.get("rng_state", 0))
+static func from_dict(data: Dictionary, p_run: RunState, cards: CardDatabase) -> BattleState:
+	var saved_rng := RandomNumberGenerator.new()
+	saved_rng.seed = int(data.get("rng_seed", 0))
+	saved_rng.state = int(data.get("rng_state", 0))
 
-	var out := BattleState.new(run, cards, [] as Array[EnemyStats], rng, true)
+	var out := BattleState.new(p_run, cards, [] as Array[EnemyStats], saved_rng, true)
 	for entry in data.get("combatants", []):
 		out.combatants.append(Stats.from_dict(entry))
 	out._piles.from_dict(data.get("piles", {}))
@@ -423,7 +423,7 @@ static func from_dict(data: Dictionary, run: RunState, cards: CardDatabase) -> B
 	out.cards_played_this_turn = int(data.get("cards_played_this_turn", 0))
 	out.borrowed_this_turn = int(data.get("borrowed_this_turn", 0))
 	out._hand_size = int(data.get("hand_size", 5))
-	out.phase = int(data.get("phase", Phase.PLAYER_TURN))
+	out.phase = int(data.get("phase", Phase.PLAYER_TURN)) as Phase
 	out.follow_the_sky()
 	return out
 

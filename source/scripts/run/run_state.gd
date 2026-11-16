@@ -46,6 +46,7 @@ var removals_purchased: int:
 
 var act := 1
 var room_id := StringName()
+@warning_ignore("shadowed_global_identifier")
 var seed := 0
 
 var _player: PlayerStats
@@ -258,13 +259,13 @@ func to_dict() -> Dictionary:
 	}
 
 static func from_dict(data: Dictionary, p_balance: Balance = null) -> RunState:
-	var player: PlayerStats = null
+	var character: PlayerStats = null
 	var path: String = data.get("player", "")
 	
 	if path != "" and ResourceLoader.exists(path):
-		player = load(path) as PlayerStats
+		character = load(path) as PlayerStats
 		
-	var state := RunState.new(p_balance, int(data.get("seed", 0)), player)
+	var state := RunState.new(p_balance, int(data.get("seed", 0)), character)
 	state._clock = RunClock.from_dict(data.get("clock", {}), state._balance)
 	state._max_hp = int(data.get("max_hp", state.player.max_hp))
 	state._hp = int(data.get("hp", state._max_hp))

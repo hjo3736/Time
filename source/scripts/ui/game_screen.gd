@@ -23,7 +23,6 @@ enum PickerJob { NONE, DECK, UPGRADE, REMOVE, DRAW, DISCARD, EXHAUST }
 var _picker_job := PickerJob.NONE
 @onready var _battle := %BattleView as BattleView
 @onready var _choice := %ChoiceView as ChoiceView
-@onready var _content := %Content as Control
 
 var _balance: Balance
 var _cards: CardDatabase

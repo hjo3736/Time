@@ -5,10 +5,10 @@ extends Resource
 func apply(_ctx: EffectContext) -> void:
 	push_error("CardEffect.apply() not implemented by %s" % get_script().resource_path)
 
-func describe(targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
+func describe(_targeting := CardTargeting.Mode.SINGLE_ENEMY, _name_target := true) -> String:
 	return ""
 
-func describe_live(_battle, _source: int, _target: int, targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
+func describe_live(_battle, _source: int, _target: int, _targeting := CardTargeting.Mode.SINGLE_ENEMY, _name_target := true) -> String:
 	return describe()
 
 static func who_key(targeting: int) -> String:

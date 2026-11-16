@@ -77,10 +77,10 @@ func of_rarity(rarity: Relic.Rarity, owned: Array = []) -> Array[Relic]:
 static func rarity_for(balance: Balance, rng: RandomNumberGenerator) -> Relic.Rarity:
 	var total := (balance.reward_weight_common + balance.reward_weight_uncommon
 		+ balance.reward_weight_rare)
-	var roll := rng.randi_range(1, maxi(1, total))
-	if roll <= balance.reward_weight_common:
+	var drawn := rng.randi_range(1, maxi(1, total))
+	if drawn <= balance.reward_weight_common:
 		return Relic.Rarity.COMMON
-	if roll <= balance.reward_weight_common + balance.reward_weight_uncommon:
+	if drawn <= balance.reward_weight_common + balance.reward_weight_uncommon:
 		return Relic.Rarity.UNCOMMON
 	return Relic.Rarity.RARE
 

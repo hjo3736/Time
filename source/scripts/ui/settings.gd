@@ -27,7 +27,7 @@ static func load_from() -> void:
 	if file.has_section_key("window", "mode"):
 		var stored_mode := int(file.get_value("window", "mode", screen_mode))
 		if stored_mode >= Mode.WINDOWED and stored_mode <= Mode.FULLSCREEN:
-			screen_mode = stored_mode
+			screen_mode = stored_mode as Mode
 	elif bool(file.get_value("window", "fullscreen", false)):
 		screen_mode = Mode.BORDERLESS
 	var stored_locale: String = file.get_value("language", "locale", locale)
@@ -80,7 +80,7 @@ static func apply() -> void:
 static func set_screen_mode(value: int) -> void:
 	if value < Mode.WINDOWED or value > Mode.FULLSCREEN:
 		return
-	screen_mode = value
+	screen_mode = value as Mode
 	chosen = true
 	save()
 	apply()

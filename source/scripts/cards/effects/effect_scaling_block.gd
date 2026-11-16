@@ -18,7 +18,7 @@ func apply(ctx: EffectContext) -> void:
 		base + per_card * ctx.cards_played_this_turn() + per_turn * maxi(0, ctx.turn_index() - 1))
 
 
-func describe(targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
+func describe(_targeting := CardTargeting.Mode.SINGLE_ENEMY, _name_target := true) -> String:
 	return tr("effect.block").format({"amount": base}) + " " + _growth_text()
 
 

@@ -117,7 +117,7 @@ func _init() -> void:
 	check("so it cannot be bought twice", stall.buy_relic(buyer, relics), false)
 
 	print("\n-- a shop offers nothing the run already carries --")
-	var everything := relics.all().map(func(r: Relic) -> StringName: return r.id)
+	var everything := relics.all().map(func(relic: Relic) -> StringName: return relic.id)
 	var picked_over := Shop.new(_cards, _b, rng(2), &"warden", [], false, relics, everything)
 	check("no relic left to stock", picked_over.relic, null)
 

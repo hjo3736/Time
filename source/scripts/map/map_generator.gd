@@ -142,7 +142,7 @@ static func _assign(
 	distances: Dictionary,
 	travel: Dictionary,
 	combat_rooms: int,
-	empty_rooms: int,
+	_empty_rooms: int,
 	fires: int,
 	shops: int,
 	elites: int,

@@ -72,22 +72,22 @@ func _init() -> void:
 	check("by rarity", ids(db.filter({"rarity": CardData.Rarity.STARTER})), ["brace", "take"])
 	var skills := db.filter({"kind": CardData.Kind.SKILL})
 	check("kind filter returns only that kind",
-		skills.all(func(c: CardData) -> bool: return c.kind == CardData.Kind.SKILL), true)
+		skills.all(func(card: CardData) -> bool: return card.kind == CardData.Kind.SKILL), true)
 	check("and not everything", skills.size() < db.size(), true)
 	var rush := db.filter({"lane": CardData.Lane.RUSH})
 	check("lane filter returns only that lane",
-		rush.all(func(c: CardData) -> bool: return c.in_lane(CardData.Lane.RUSH)), true)
+		rush.all(func(card: CardData) -> bool: return card.in_lane(CardData.Lane.RUSH)), true)
 	var engine := db.filter({"lane": CardData.Lane.ENGINE})
 	check("every lane is stocked", engine.size() > 0 and rush.size() > 0
 		and db.filter({"lane": CardData.Lane.CHRONOMANCY}).size() > 0, true)
-	var neutral := db.all().filter(func(c: CardData) -> bool: return c.lanes.is_empty())
+	var neutral := db.all().filter(func(card: CardData) -> bool: return card.lanes.is_empty())
 	check("and the neutral core outnumbers any one lane",
 		neutral.size() > maxi(engine.size(), rush.size()), true)
 	check("by class", db.filter({"class_id": &"warden"}).size(), db.size())
 	check("wrong class", ids(db.filter({"class_id": &"nobody"})), [])
 	var common_attacks := db.filter({"kind": CardData.Kind.ATTACK, "rarity": CardData.Rarity.COMMON})
-	check("combined filters both apply", common_attacks.all(func(c: CardData) -> bool:
-		return c.kind == CardData.Kind.ATTACK and c.rarity == CardData.Rarity.COMMON), true)
+	check("combined filters both apply", common_attacks.all(func(card: CardData) -> bool:
+		return card.kind == CardData.Kind.ATTACK and card.rarity == CardData.Rarity.COMMON), true)
 
 	print("\n-- filters carry the meta-progression pool --")
 	check("unlocked subset", ids(db.filter({"unlocked": [&"take", &"disperse"]})), ["disperse", "take"])

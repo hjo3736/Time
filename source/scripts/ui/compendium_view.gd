@@ -39,7 +39,7 @@ func show_all(cards: CardDatabase, enemies: EnemyDatabase, relics: RelicDatabase
 
 
 func _select(tab: int) -> void:
-	_tab = tab
+	_tab = tab as Tab
 	_focus = null
 	_rebuild()
 
@@ -163,9 +163,9 @@ func _set_count(shown: int) -> void:
 		_count.text = tr("ui.compendium.filter_count").format({"n": shown})
 
 
-func _matches_query(name: String) -> bool:
+func _matches_query(text: String) -> bool:
 	return _query.strip_edges().is_empty() \
-		or name.to_lower().contains(_query.strip_edges().to_lower())
+		or text.to_lower().contains(_query.strip_edges().to_lower())
 
 
 func _visible_cards() -> Array:
@@ -248,8 +248,8 @@ func _build_card_detail(card: CardData) -> void:
 	var pad := MarginContainer.new()
 	pad.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pad.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	for side in ["left", "right", "top", "bottom"]:
-		pad.add_theme_constant_override("margin_%s" % side, 48)
+	for edge in ["left", "right", "top", "bottom"]:
+		pad.add_theme_constant_override("margin_%s" % edge, 48)
 	body().add_child(pad)
 
 	var split := HBoxContainer.new()

@@ -34,7 +34,7 @@ static func offer(
 
 static func _draw(
 	cards: CardDatabase,
-	balance: Balance,
+	_balance: Balance,
 	rng: RandomNumberGenerator,
 	class_id: StringName,
 	unlocked: Array,

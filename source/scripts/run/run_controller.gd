@@ -329,25 +329,25 @@ static func from_dict(
 	encounters: EncounterTable,
 	relics: RelicDatabase,
 ) -> RunController:
-	var run := RunState.from_dict(data.get("run", {}), balance)
+	var saved_run := RunState.from_dict(data.get("run", {}), balance)
 	# The save carries relic ids, not definitions. Without this a resumed run
 	# keeps the list and loses every effect on it, silently.
-	run.attach_relics(relics)
-	var out := RunController.new(balance, cards, enemies, encounters, relics, run.seed, null, run.player)
-	out.run = run
-	out._rng.seed = int(data.get("rng_seed", run.seed))
+	saved_run.attach_relics(relics)
+	var out := RunController.new(balance, cards, enemies, encounters, relics, saved_run.seed, null, saved_run.player)
+	out.run = saved_run
+	out._rng.seed = int(data.get("rng_seed", saved_run.seed))
 	out._rng.state = int(data.get("rng_state", 0))
 	out._opened_with_teaching_fight = bool(data.get("opened_with_teaching_fight", false))
-	out.outcome = int(data.get("outcome", Outcome.NONE))
+	out.outcome = int(data.get("outcome", Outcome.NONE)) as Outcome
 
-	out.map = MapState.from_dict(data.get("map", {}), run)
-	out.battle = BattleState.from_dict(data["battle"], run, cards) if data.has("battle") else null
+	out.map = MapState.from_dict(data.get("map", {}), saved_run)
+	out.battle = BattleState.from_dict(data["battle"], saved_run, cards) if data.has("battle") else null
 	if out.battle != null:
 		out.battle.battle_ended.connect(out._on_battle_ended, CONNECT_ONE_SHOT)
 	out.shop = Shop.from_dict(data["shop"], cards, balance, relics) if data.has("shop") else null
 	if data.has("event"):
 		out.event = out._events.get_event(StringName(data["event"]))
-	out.phase = int(data.get("phase", Phase.EXPLORING))
+	out.phase = int(data.get("phase", Phase.EXPLORING)) as Phase
 	out._snapshot_fight()
 	return out
 

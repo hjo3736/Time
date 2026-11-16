@@ -17,5 +17,5 @@ func apply(ctx: EffectContext) -> void:
 	ctx.gain_block(ctx.source, per_hour * hours)
 
 
-func describe(targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
+func describe(_targeting := CardTargeting.Mode.SINGLE_ENEMY, _name_target := true) -> String:
 	return tr("effect.per_hour_block").format({"amount": per_hour})

@@ -14,45 +14,45 @@ enum Kind { ATTACK, BLOCK, STATUS, WAIT, GROW, BEAR, DRAG }
 @export var is_break_window := false
 
 
-static func attack(amount: int, times: int = 1) -> EnemyIntent:
+static func attack(p_amount: int, p_times: int = 1) -> EnemyIntent:
 	var i := EnemyIntent.new()
 	i.kind = Kind.ATTACK
-	i.amount = amount
-	i.times = times
+	i.amount = p_amount
+	i.times = p_times
 	return i
 
 
-static func block(amount: int) -> EnemyIntent:
+static func block(p_amount: int) -> EnemyIntent:
 	var i := EnemyIntent.new()
 	i.kind = Kind.BLOCK
-	i.amount = amount
+	i.amount = p_amount
 	return i
 
 
-static func inflict(status_id: StringName, stacks: int) -> EnemyIntent:
+static func inflict(status_id: StringName, p_stacks: int) -> EnemyIntent:
 	var i := EnemyIntent.new()
 	i.kind = Kind.STATUS
 	i.status = status_id
-	i.stacks = stacks
+	i.stacks = p_stacks
 	return i
 
 
 ## 성장 as a turn of its own: the enemy spends the turn and keeps the Strength.
 ## Carried in `stacks`, like a status, so Threat does not scale it.
-static func grow(stacks: int) -> EnemyIntent:
+static func grow(p_stacks: int) -> EnemyIntent:
 	var i := EnemyIntent.new()
 	i.kind = Kind.GROW
-	i.stacks = stacks
+	i.stacks = p_stacks
 	return i
 
 
 ## A status the enemy puts on itself. STATUS is always aimed at the Warden, and
 ## GROW is only ever Strength; this is the rest.
-static func bear(status_id: StringName, stacks: int) -> EnemyIntent:
+static func bear(status_id: StringName, p_stacks: int) -> EnemyIntent:
 	var i := EnemyIntent.new()
 	i.kind = Kind.BEAR
 	i.status = status_id
-	i.stacks = stacks
+	i.stacks = p_stacks
 	return i
 
 
@@ -85,7 +85,7 @@ func to_dict() -> Dictionary:
 
 static func from_dict(data: Dictionary) -> EnemyIntent:
 	var out := EnemyIntent.new()
-	out.kind = int(data.get("kind", Kind.ATTACK))
+	out.kind = int(data.get("kind", Kind.ATTACK)) as Kind
 	out.amount = int(data.get("amount", 5))
 	out.times = int(data.get("times", 1))
 	out.status = StringName(data.get("status", ""))

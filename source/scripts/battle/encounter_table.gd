@@ -154,9 +154,9 @@ func draw_companions(rng: RandomNumberGenerator, act: int, count: int) -> Array[
 	return out
 
 ## The fight a room actually holds: its one enemy and enough of its company to
-## make `size`. A group is left exactly as written, and so is a room with no
+## make `wanted_size`. A group is left exactly as written, and so is a room with no
 ## company. The result is built for the fight and never joins the table.
-func mixed(base: EncounterData, companions: Array[StringName], size: int,
+func mixed(base: EncounterData, companions: Array[StringName], wanted_size: int,
 		hp_scale: float = 1.0) -> EncounterData:
 	if base == null or base.members.size() != 1 or companions.is_empty():
 		return base
@@ -171,7 +171,7 @@ func mixed(base: EncounterData, companions: Array[StringName], size: int,
 	out.hp_scale = hp_scale
 	
 	for id in companions:
-		if out.members.size() >= size:
+		if out.members.size() >= wanted_size:
 			break
 		if not out.members.has(id):
 			out.members.append(id)

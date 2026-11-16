@@ -60,7 +60,7 @@ func _init() -> void:
 	check("level one minute short of a step", t.threat_level(), 0)
 	check("minutes to next", t.minutes_to_next_threat(), 60)
 	var seen := []
-	t.threat_level_changed.connect(func(l: int) -> void: seen.append(l))
+	t.threat_level_changed.connect(func(level: int) -> void: seen.append(level))
 	t.advance(60, RunClock.Source.TRAVEL)
 	check("level on the step", t.threat_level(), 1)
 	check("signal fired once", seen, [1])

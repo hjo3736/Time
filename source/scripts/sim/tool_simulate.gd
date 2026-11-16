@@ -94,7 +94,6 @@ func _play(greed: float, seed_value: int) -> Dictionary:
 	rc.run.fire_used.connect(func(action: RunState.FireAction) -> void: taken[action] += 1)
 	var guard := 0
 	var hp_lost := 0
-	var hp_was := rc.run.hp
 
 	while not rc.is_over() and guard < 4000:
 		guard += 1
@@ -110,9 +109,9 @@ func _play(greed: float, seed_value: int) -> Dictionary:
 				fights += 1
 				policy.at_reward(rc)
 			RunController.Phase.FIRE:
-				var spent: int = rc.run.clock.spent_by_source()[RunClock.Source.FIRE]
+				var fire_before: int = rc.run.clock.spent_by_source()[RunClock.Source.FIRE]
 				policy.at_fire(rc, _b)
-				if int(rc.run.clock.spent_by_source()[RunClock.Source.FIRE]) > int(spent):
+				if int(rc.run.clock.spent_by_source()[RunClock.Source.FIRE]) > fire_before:
 					fires += 1
 			RunController.Phase.EVENT:
 				policy.at_event(rc)

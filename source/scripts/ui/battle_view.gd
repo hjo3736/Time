@@ -19,7 +19,6 @@ const FAN_SPREAD := 0.055
 var _rc: RunController
 @onready var _hand_layer := %HandLayer as Control
 @onready var _orb_value := %OrbValue as Label
-@onready var _orb_panel := %Orb as Panel
 @onready var _draw_label := %DrawPile as Button
 @onready var _discard_label := %DiscardPile as Button
 @onready var _exhaust_label := %ExhaustPile as Button

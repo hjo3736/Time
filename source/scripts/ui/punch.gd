@@ -58,8 +58,8 @@ func _flash(where: Rect2, tint: Color, waited: float) -> void:
 
 
 func _number(at: Vector2, amount: int, tint: Color, waited: float) -> void:
-	var size := 26 + mini(amount, 30)
-	var mark := UiTheme.label(str(amount), size, tint)
+	var font_size := 26 + mini(amount, 30)
+	var mark := UiTheme.label(str(amount), font_size, tint)
 	mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	mark.size = Vector2(140, 60)

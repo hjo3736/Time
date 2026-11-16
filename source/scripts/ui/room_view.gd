@@ -3,7 +3,6 @@ extends Control
 
 
 signal move_requested(coord: Vector2i)
-signal map_requested
 
 const DIRECTIONS := [
 	{"step": Vector2i.UP, "key": "ui.room.north"},

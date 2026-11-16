@@ -82,7 +82,7 @@ func to_dict() -> Dictionary:
 static func from_dict(data: Dictionary) -> Room:
 	var out := Room.new()
 	out.coord = Vector2i(int(data.get("x", 0)), int(data.get("y", 0)))
-	out.kind = int(data.get("kind", Kind.EMPTY))
+	out.kind = int(data.get("kind", Kind.EMPTY)) as Kind
 	out.encounter_id = StringName(data.get("encounter_id", ""))
 	out.morning_encounter_id = StringName(data.get("morning_encounter_id", ""))
 	out.evening_encounter_id = StringName(data.get("evening_encounter_id", ""))

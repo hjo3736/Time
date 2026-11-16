@@ -30,7 +30,7 @@ func apply(ctx: EffectContext) -> void:
 			ctx.deal_damage(target, hit)
 
 
-func describe(targeting := CardTargeting.Mode.SINGLE_ENEMY, name_target := true) -> String:
+func describe(_targeting := CardTargeting.Mode.SINGLE_ENEMY, _name_target := true) -> String:
 	return tr("effect.damage").format({"amount": base}) + " " + _growth_text()
 
 
