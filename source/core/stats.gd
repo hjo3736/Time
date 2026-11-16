@@ -81,9 +81,9 @@ static func from_dict(data: Dictionary) -> Stats:
 	
 	match data.get("kind", ""):
 		"player":
-			out = PlayerStats.new() as PlayerStats
+			out = PlayerStats.new()
 		"enemy":
-			out = EnemyStats.new() as EnemyStats
+			out = EnemyStats.new()
 		_:
 			out = Stats.new()
 	
