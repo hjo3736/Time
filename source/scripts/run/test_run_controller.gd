@@ -221,7 +221,11 @@ func _init() -> void:
 	var boss := controller(6)
 	boss.map.current = boss.map.neighbours(boss.map.boss_coord)[0]
 	var hp_at_the_fall := [-1]
-	boss.battle_finished.connect(func(_won: bool) -> void: hp_at_the_fall[0] = boss.run.hp)
+	# Reach the controller through a weakref: a lambda that captured boss itself
+	# would sit in boss's own signal, a cycle that keeps it alive past the test.
+	var boss_ref: WeakRef = weakref(boss)
+	boss.battle_finished.connect(func(_won: bool) -> void:
+		hp_at_the_fall[0] = (boss_ref.get_ref() as RunController).run.hp)
 	check("at the door", boss.move_to(boss.map.boss_coord), true)
 	if boss.phase == RunController.Phase.BATTLE:
 		_auto_fight(boss)
